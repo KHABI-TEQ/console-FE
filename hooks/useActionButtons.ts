@@ -75,27 +75,36 @@ export function useActionButtons({
     }
   };
 
-  const handleApprove = async (id: string, name?: string) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleApprove = (id: string, name?: string) => {
+    confirmAction({
+      title: `Approve ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      description: `Are you sure you want to approve ${name ? `"${name}"` : `this ${entityType}`}? This will grant the appropriate access and permissions.`,
+      confirmText: `Approve ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      cancelText: "Cancel",
+      variant: "success",
+      onConfirm: async () => {
+        try {
+          // Simulate API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      addNotification({
-        type: "success",
-        title: "Approved successfully",
-        message: `${name || entityType} has been approved.`,
-      });
+          addNotification({
+            type: "success",
+            title: "Approved successfully",
+            message: `${name || entityType} has been approved.`,
+          });
 
-      if (onRefresh) {
-        onRefresh();
-      }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Approval failed",
-        message: `Failed to approve ${entityType}. Please try again.`,
-      });
-    }
+          if (onRefresh) {
+            onRefresh();
+          }
+        } catch (error) {
+          addNotification({
+            type: "error",
+            title: "Approval failed",
+            message: `Failed to approve ${entityType}. Please try again.`,
+          });
+        }
+      },
+    });
   };
 
   const handleReject = (id: string, name?: string) => {
