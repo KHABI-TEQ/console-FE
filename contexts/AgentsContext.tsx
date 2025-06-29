@@ -33,6 +33,7 @@ interface AgentsContextType {
     totalPages: number;
   };
   fetchAgents: (newFilters?: any) => Promise<void>;
+  refreshAgents: () => Promise<void>;
   getAgent: (id: string) => Promise<Agent | null>;
   getAgentProperties: (agentId: string) => Promise<any[]>;
   deleteAgent: (id: string) => Promise<void>;
@@ -165,6 +166,10 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
+  const refreshAgents = useCallback(async () => {
+    await fetchAgents();
+  }, [fetchAgents]);
+
   const value: AgentsContextType = {
     agents,
     selectedAgent,
@@ -172,6 +177,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     filters,
     pagination,
     fetchAgents,
+    refreshAgents,
     getAgent,
     getAgentProperties,
     deleteAgent,
