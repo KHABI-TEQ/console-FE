@@ -686,7 +686,7 @@ export default function PropertyDetailPage() {
                         )}
                     </div>
                     <p className="text-gray-600">
-                      ${Math.round(property.price / property.sqft)}/sq ft
+                      ₦{Math.round(property.price / property.sqft)}/sq ft
                     </p>
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
