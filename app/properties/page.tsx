@@ -47,6 +47,7 @@ import {
   Camera,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
 import {
   EmptyState,
@@ -91,6 +92,14 @@ export default function PropertiesPage() {
 
   const properties = propertiesResponse?.data || [];
   const totalCount = propertiesResponse?.total || 0;
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <PropertiesSkeleton />
+      </AdminLayout>
+    );
+  }
 
   const stats = [
     {

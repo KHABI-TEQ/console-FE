@@ -15,6 +15,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { apiService } from "@/lib/services/apiService";
 
 const ForgotPasswordSchema = Yup.object().shape({
   email: Yup.string()
@@ -27,39 +29,27 @@ interface ForgotPasswordFormValues {
 }
 
 export default function ForgotPasswordPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const { addNotification } = useApp();
 
   const initialValues: ForgotPasswordFormValues = {
     email: "",
   };
 
-  const handleSubmit = async (values: ForgotPasswordFormValues) => {
-    setIsSubmitting(true);
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      setSubmittedEmail(values.email);
+  const forgotPasswordMutation = useApiMutation({
+    mutationFn: async (email: string) => {
+      return await apiService.forgotPassword(email);
+    },
+    onSuccess: (data, email) => {
+      setSubmittedEmail(email);
       setIsSuccess(true);
+    },
+    successMessage: "Password reset instructions have been sent to your email",
+    errorMessage: "Failed to send reset link. Please try again.",
+  });
 
-      addNotification({
-        type: "success",
-        title: "Reset link sent",
-        message: `Password reset instructions have been sent to ${values.email}`,
-      });
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Failed to send reset link",
-        message: "Please try again or contact support if the problem persists.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = async (values: ForgotPasswordFormValues) => {
+    forgotPasswordMutation.mutate(values.email);
   };
 
   if (isSuccess) {

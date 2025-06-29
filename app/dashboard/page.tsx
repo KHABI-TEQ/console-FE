@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardSkeleton } from "@/components/skeletons/PageSkeletons";
+import { apiService } from "@/lib/services/apiService";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,11 +51,31 @@ export default function AdminDashboard() {
   const [timeRange, setTimeRange] = useState("30d");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleRefresh = () => {
+  const {
+    data: dashboardData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["dashboard-stats", timeRange],
+    queryFn: () => apiService.getDashboardStats(),
+  });
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate API call
-    setTimeout(() => setIsRefreshing(false), 1500);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <DashboardSkeleton />
+      </AdminLayout>
+    );
+  }
 
   const stats = [
     {

@@ -47,6 +47,7 @@ import {
 import { useAdmin } from "@/contexts/AdminContext";
 import { AdminProvider } from "@/contexts/AdminContext";
 import { AddAdminModal } from "@/components/modals/AddAdminModal";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { EditAdminModal } from "@/components/modals/EditAdminModal";
 
 function AdminPageContent() {
@@ -63,6 +64,10 @@ function AdminPageContent() {
   useEffect(() => {
     fetchAdmins();
   }, []);
+
+  if (isLoading) {
+    return <ListPageSkeleton title="Admin Management" />;
+  }
 
   const handleOpenEdit = (adminId: string) => {
     setEditingAdminId(adminId);
