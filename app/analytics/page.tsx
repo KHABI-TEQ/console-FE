@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
   const stats = [
     {
       title: "Total Revenue",
-      value: "$2.4M",
+      value: "₦2.4M",
       change: "+18.2%",
       trend: "up" as const,
       icon: DollarSign,
