@@ -386,10 +386,6 @@ export default function PropertiesPage() {
           title="Property Management"
           description="Manage property listings, approvals, and portfolio"
         >
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
           <Button
             variant="outline"
             onClick={handleRefresh}
