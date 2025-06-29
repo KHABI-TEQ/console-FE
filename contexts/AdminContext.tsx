@@ -10,9 +10,10 @@ interface Admin {
   email: string;
   role: string;
   status: string;
+  avatar: string;
   permissions: string[];
   lastLogin: string;
-  createdAt: string;
+  created: string;
 }
 
 interface AdminContextType {
@@ -20,11 +21,12 @@ interface AdminContextType {
   selectedAdmin: Admin | null;
   isLoading: boolean;
   fetchAdmins: () => Promise<void>;
+  refreshAdmins: () => Promise<void>;
+  getAdmin: (id: string) => Promise<Admin | null>;
   createAdmin: (adminData: any) => Promise<void>;
   updateAdmin: (id: string, adminData: any) => Promise<void>;
   deleteAdmin: (id: string) => Promise<void>;
   changeAdminStatus: (id: string, status: string) => Promise<void>;
-  getAdmin: (id: string) => Promise<Admin | null>;
   setSelectedAdmin: (admin: Admin | null) => void;
 }
 
@@ -40,7 +42,15 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiService.getAdmins();
-      setAdmins(response.data || []);
+      if (response.success) {
+        setAdmins(response.data || []);
+      } else {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: response.error || "Failed to fetch admins",
+        });
+      }
     } catch (error) {
       addNotification({
         type: "error",
@@ -52,16 +62,50 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     }
   }, [addNotification]);
 
+  const getAdmin = useCallback(
+    async (id: string): Promise<Admin | null> => {
+      try {
+        const response = await apiService.getAdmin(id);
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch admin details",
+          });
+          return null;
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to fetch admin details",
+        });
+        return null;
+      }
+    },
+    [addNotification],
+  );
+
   const createAdmin = useCallback(
     async (adminData: any) => {
       try {
-        await apiService.createAdmin(adminData);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Admin created successfully",
-        });
-        fetchAdmins();
+        const response = await apiService.createAdmin(adminData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Admin created successfully",
+          });
+          fetchAdmins();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to create admin",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -76,13 +120,21 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const updateAdmin = useCallback(
     async (id: string, adminData: any) => {
       try {
-        await apiService.updateAdmin(id, adminData);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Admin updated successfully",
-        });
-        fetchAdmins();
+        const response = await apiService.updateAdmin(id, adminData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Admin updated successfully",
+          });
+          fetchAdmins();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to update admin",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -97,13 +149,21 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const deleteAdmin = useCallback(
     async (id: string) => {
       try {
-        await apiService.deleteAdmin(id);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Admin deleted successfully",
-        });
-        fetchAdmins();
+        const response = await apiService.deleteAdmin(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Admin deleted successfully",
+          });
+          fetchAdmins();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to delete admin",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -118,13 +178,21 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const changeAdminStatus = useCallback(
     async (id: string, status: string) => {
       try {
-        await apiService.changeAdminStatus(id, status);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: `Admin status changed to ${status}`,
-        });
-        fetchAdmins();
+        const response = await apiService.changeAdminStatus(id, status);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || `Admin status changed to ${status}`,
+          });
+          fetchAdmins();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to change admin status",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -136,33 +204,21 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     [addNotification, fetchAdmins],
   );
 
-  const getAdmin = useCallback(
-    async (id: string): Promise<Admin | null> => {
-      try {
-        const response = await apiService.getAdmin(id);
-        return response.data;
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to fetch admin details",
-        });
-        return null;
-      }
-    },
-    [addNotification],
-  );
+  const refreshAdmins = useCallback(async () => {
+    await fetchAdmins();
+  }, [fetchAdmins]);
 
   const value: AdminContextType = {
     admins,
     selectedAdmin,
     isLoading,
     fetchAdmins,
+    refreshAdmins,
+    getAdmin,
     createAdmin,
     updateAdmin,
     deleteAdmin,
     changeAdminStatus,
-    getAdmin,
     setSelectedAdmin,
   };
 

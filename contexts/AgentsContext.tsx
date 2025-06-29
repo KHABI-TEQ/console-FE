@@ -69,9 +69,17 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
           limit: pagination.limit,
         });
 
-        setAgents(response.data || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.success) {
+          setAgents(response.data || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agents",
+          });
         }
       } catch (error) {
         addNotification({
@@ -90,7 +98,16 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     async (id: string): Promise<Agent | null> => {
       try {
         const response = await apiService.getAgent(id);
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agent details",
+          });
+          return null;
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -107,7 +124,16 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     async (agentId: string): Promise<any[]> => {
       try {
         const response = await apiService.getAgentProperties(agentId);
-        return response.data || [];
+        if (response.success) {
+          return response.data || [];
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agent properties",
+          });
+          return [];
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -123,13 +149,21 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const deleteAgent = useCallback(
     async (id: string) => {
       try {
-        await apiService.deleteAgent(id);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Agent deleted successfully",
-        });
-        fetchAgents();
+        const response = await apiService.deleteAgent(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Agent deleted successfully",
+          });
+          fetchAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to delete agent",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -144,13 +178,21 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const flagAgent = useCallback(
     async (agentId: string, status: string) => {
       try {
-        await apiService.flagAgent(agentId, status);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: `Agent ${status} successfully`,
-        });
-        fetchAgents();
+        const response = await apiService.flagAgent(agentId, status);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || `Agent ${status} successfully`,
+          });
+          fetchAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || `Failed to ${status} agent`,
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
