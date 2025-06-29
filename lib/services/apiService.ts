@@ -287,7 +287,7 @@ class ApiService {
   }
 
   async logout(): Promise<ApiResponse<any>> {
-    return this.post("/auth/logout");
+    return this.post("/logout");
   }
 
   async forgotPassword(email: string): Promise<ApiResponse<any>> {
