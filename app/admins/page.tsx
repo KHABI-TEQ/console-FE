@@ -98,10 +98,10 @@ export default function AdminsPage() {
     isLoading,
     refetch,
     error,
-  } = useQuery<AdminsResponse>({
+  } = useQuery({
     queryKey: ["admins", currentPage, pageLimit],
     queryFn: async () => {
-      const response = await apiService.get<AdminsResponse>("/admins", {
+      const response = await apiService.get("/admins", {
         page: currentPage,
         limit: pageLimit,
       });
@@ -110,7 +110,15 @@ export default function AdminsPage() {
         throw new Error(response.error || "Failed to fetch admins");
       }
 
-      return response.data || response;
+      // Return the structure expected by the component
+      const apiResponse = response as any;
+      return {
+        admins: apiResponse.data || apiResponse.admins || [],
+        total: apiResponse.total || 0,
+        page: apiResponse.page || currentPage,
+        limit: apiResponse.limit || pageLimit,
+        success: apiResponse.success,
+      };
     },
   });
 
@@ -187,7 +195,7 @@ export default function AdminsPage() {
     }
   };
 
-  const filteredAdmins = admins.filter((admin) => {
+  const filteredAdmins = admins.filter((admin: Admin) => {
     const fullName = `${admin.firstName} ${admin.lastName}`.toLowerCase();
     const matchesSearch =
       fullName.includes(searchQuery.toLowerCase()) ||
@@ -215,7 +223,7 @@ export default function AdminsPage() {
     },
     {
       title: "Active Admins",
-      value: admins.filter((a) => a.isAccountVerified).length.toString(),
+      value: admins.filter((a: Admin) => a.isAccountVerified).length.toString(),
       change: "+5.1%",
       trend: "up" as const,
       icon: Shield,
@@ -223,7 +231,9 @@ export default function AdminsPage() {
     },
     {
       title: "Super Admins",
-      value: admins.filter((a) => a.role === "super_admin").length.toString(),
+      value: admins
+        .filter((a: Admin) => a.role === "super_admin")
+        .length.toString(),
       change: "0%",
       trend: "up" as const,
       icon: Crown,
@@ -387,7 +397,7 @@ export default function AdminsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAdmins.map((admin) => (
+                    {filteredAdmins.map((admin: Admin) => (
                       <TableRow
                         key={admin._id}
                         className="hover:bg-gray-50 transition-colors"
@@ -545,7 +555,19 @@ export default function AdminsPage() {
               setIsEditModalOpen(false);
               setSelectedAdmin(null);
             }}
-            adminData={selectedAdmin}
+            adminData={
+              selectedAdmin
+                ? {
+                    id: selectedAdmin._id || selectedAdmin.id || "",
+                    email: selectedAdmin.email,
+                    firstName: selectedAdmin.firstName,
+                    lastName: selectedAdmin.lastName,
+                    phoneNumber: selectedAdmin.phoneNumber || "",
+                    address: "",
+                    role: selectedAdmin.role,
+                  }
+                : undefined
+            }
             onSuccess={() => refetch()}
           />
 
@@ -555,7 +577,7 @@ export default function AdminsPage() {
               setIsChangePasswordModalOpen(false);
               setSelectedAdmin(null);
             }}
-            adminId={selectedAdmin?._id}
+            adminId={selectedAdmin?._id || null}
             adminName={`${selectedAdmin?.firstName} ${selectedAdmin?.lastName}`}
           />
 
@@ -565,7 +587,7 @@ export default function AdminsPage() {
               setIsDisableModalOpen(false);
               setSelectedAdmin(null);
             }}
-            adminId={selectedAdmin?._id}
+            adminId={selectedAdmin?._id || null}
             adminName={`${selectedAdmin?.firstName} ${selectedAdmin?.lastName}`}
             currentStatus={
               selectedAdmin?.isAccountVerified ? "active" : "inactive"

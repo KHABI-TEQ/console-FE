@@ -164,5 +164,5 @@ export interface InspectionDetailResponse {
 export interface InspectionActionResponse {
   success: boolean;
   message: string;
-  data: IInspectionBookingPopulated;
+  inspection?: any;
 }

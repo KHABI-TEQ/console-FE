@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 
 interface LoadingPlaceholderProps {
-  type?: "table" | "card" | "stats" | "form" | "page";
+  type?: "table" | "card" | "stats" | "form" | "page" | "grid";
   count?: number;
   showSpinner?: boolean;
   title?: string;
@@ -106,6 +106,27 @@ export function LoadingPlaceholder({
           ))}
         </div>
         <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (type === "grid") {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(count)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <Skeleton className="h-32 w-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
   }
