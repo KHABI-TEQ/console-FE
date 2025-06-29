@@ -54,7 +54,7 @@ import {
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   DropdownMenu,
@@ -77,18 +77,13 @@ interface BriefFilters {
 
 export default function BriefsPage() {
   const router = useRouter();
+  const { confirmAction } = useConfirmation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    briefId: string | null;
-    briefTitle: string;
-  }>({ isOpen: false, briefId: null, briefTitle: "" });
-  const [isDeleting, setIsDeleting] = useState(false);
   const limit = 12;
 
   const filters: BriefFilters = {
@@ -307,26 +302,21 @@ export default function BriefsPage() {
   };
 
   const handleDeleteBrief = (briefId: string, briefTitle: string) => {
-    setDeleteModal({
-      isOpen: true,
-      briefId,
-      briefTitle,
+    confirmAction({
+      title: "Delete Brief",
+      description: `Are you sure you want to delete "${briefTitle}"? This action cannot be undone and will remove all associated data including attachments and comments.`,
+      confirmText: "Delete Brief",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await apiService.deleteBrief(briefId);
+          refetch();
+        } catch (error) {
+          console.error("Failed to delete brief:", error);
+        }
+      },
     });
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteModal.briefId) return;
-
-    setIsDeleting(true);
-    try {
-      await apiService.deleteBrief(deleteModal.briefId);
-      refetch();
-      setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" });
-    } catch (error) {
-      console.error("Failed to delete brief:", error);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   const handleApproveBrief = async (briefId: string) => {
@@ -803,20 +793,6 @@ export default function BriefsPage() {
             onPageChange={setPage}
           />
         </Card>
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={deleteModal.isOpen}
-          onClose={() =>
-            setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" })
-          }
-          onConfirm={confirmDelete}
-          title="Delete Brief"
-          description={`Are you sure you want to delete "${deleteModal.briefTitle}"? This action cannot be undone.`}
-          confirmText="Delete Brief"
-          variant="danger"
-          isLoading={isDeleting}
-        />
       </div>
     </AdminLayout>
   );

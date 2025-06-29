@@ -53,6 +53,7 @@ import { DisableAdminModal } from "@/components/modals/DisableAdminModal";
 import { apiService } from "@/lib/services/apiService";
 import { useApp } from "@/contexts/AppContext";
 import { AdminProvider } from "@/contexts/AdminContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 
 interface Admin {
   _id: string;
@@ -92,6 +93,7 @@ export default function AdminsPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
 
   const { addNotification } = useApp();
+  const { confirmAction } = useConfirmation();
 
   const {
     data: adminsData,
@@ -148,7 +150,7 @@ export default function AdminsPage() {
     );
   }
 
-  const admins = adminsData?.admins || [];
+  const admins = Array.isArray(adminsData?.admins) ? adminsData.admins : [];
   const totalAdmins = adminsData?.total || 0;
   const totalPages = Math.ceil(totalAdmins / pageLimit);
 
@@ -167,32 +169,39 @@ export default function AdminsPage() {
     setIsDisableModalOpen(true);
   };
 
-  const handleDeleteAdmin = async (adminId: string) => {
-    if (window.confirm("Are you sure you want to delete this admin?")) {
-      try {
-        const response = await apiService.deleteAdmin(adminId);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: "Admin deleted successfully",
-          });
-          refetch();
-        } else {
+  const handleDeleteAdmin = (admin: Admin) => {
+    confirmAction({
+      title: "Delete Admin",
+      description: `Are you sure you want to delete ${admin.firstName} ${admin.lastName}? This action cannot be undone and will remove all admin privileges and access.`,
+      confirmText: "Delete Admin",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const response = await apiService.deleteAdmin(admin._id);
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: "Success",
+              message: "Admin deleted successfully",
+            });
+            refetch();
+          } else {
+            addNotification({
+              type: "error",
+              title: "Error",
+              message: response.error || "Failed to delete admin",
+            });
+          }
+        } catch (error) {
           addNotification({
             type: "error",
             title: "Error",
-            message: response.error || "Failed to delete admin",
+            message: "Failed to delete admin",
           });
         }
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to delete admin",
-        });
-      }
-    }
+      },
+    });
   };
 
   const filteredAdmins = admins.filter((admin: Admin) => {
@@ -474,7 +483,7 @@ export default function AdminsPage() {
                                 Account
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDeleteAdmin(admin._id)}
+                                onClick={() => handleDeleteAdmin(admin)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
