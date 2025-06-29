@@ -268,10 +268,7 @@ export default function AnalyticsPage() {
               <SelectItem value="1year">Last year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
+
           <Button variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
