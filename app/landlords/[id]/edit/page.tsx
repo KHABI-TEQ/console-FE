@@ -87,6 +87,7 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
           accountName: data.data.bankDetails?.accountName || "",
           accountNumber: data.data.bankDetails?.accountNumber || "",
           bankName: data.data.bankDetails?.bankName || "",
+          isVerified: data.data.bankDetails?.isVerified || false,
         },
       });
     }
