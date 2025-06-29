@@ -429,7 +429,18 @@ export default function AdminsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAdmins.map((admin: Admin) => (
+                    {filteredAdmins.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          <div className="text-gray-500">
+                            {admins.length === 0
+                              ? "No admins found in the system."
+                              : "No admins match your current filters."}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredAdmins.map((admin: Admin) => (
                       <TableRow
                         key={admin._id}
                         className="hover:bg-gray-50 transition-colors"
