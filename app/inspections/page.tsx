@@ -108,7 +108,7 @@ export default function InspectionsPage() {
   };
 
   const handleViewInspection = (inspection: IInspectionBookingPopulated) => {
-    setSelectedInspection(inspection);
+    setSelectedInspectionId(inspection._id);
     setIsDetailOpen(true);
   };
 
