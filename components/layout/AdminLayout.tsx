@@ -176,7 +176,7 @@ function NavMenuItem({ item, level = 0 }: { item: NavItem; level?: number }) {
   return (
     <div>
       <Link
-        href={item.disabled ? "#" : item.href}
+        href={item.disabled ? "#" : (item.href as any)}
         onClick={(e) => {
           if (item.disabled) {
             e.preventDefault();
@@ -307,7 +307,7 @@ function SidebarContent({
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
                 {user?.name
                   ?.split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("") || "AU"}
               </AvatarFallback>
             </Avatar>
@@ -355,7 +355,7 @@ function SidebarContent({
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
                 {user?.name
                   ?.split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("") || "AU"}
               </AvatarFallback>
             </Avatar>
