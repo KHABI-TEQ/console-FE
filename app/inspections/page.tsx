@@ -86,8 +86,7 @@ export default function InspectionsPage() {
     refetch,
   } = useQuery({
     queryKey: ["inspections", filters, page],
-    queryFn: () => fetch("/api/inspections").then((res) => res.json()),
-    select: (data) => data as InspectionListResponse,
+    queryFn: () => apiService.getInspections({ ...filters, page, limit }),
   });
 
   const handleFilterChange = (key: keyof InspectionFilters, value: string) => {
