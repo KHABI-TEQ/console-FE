@@ -46,6 +46,7 @@ declare namespace __next_route_internal_types__ {
     | `/api/inspections/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}/approve`
     | `/api/inspections/${SafeSlug<T>}/reject`
+    | `/agents/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
     | StaticRoutes
