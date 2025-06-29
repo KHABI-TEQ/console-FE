@@ -71,6 +71,8 @@ const statusOptions = [
 import { apiService } from "@/lib/services/apiService";
 import { Pagination } from "@/components/shared/Pagination";
 import { InspectionsProvider } from "@/contexts/InspectionsContext";
+import { InspectionsSkeleton } from "@/components/skeletons/PageSkeletons";
+import { useRequestLoader } from "@/components/ui/request-loader";
 
 export default function InspectionsPage() {
   const [filters, setFilters] = useState<InspectionFilters>({});
@@ -248,9 +250,7 @@ export default function InspectionsPage() {
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">
                         {stat.value}
                       </p>
-                      <div className="flex items-center mt-1 sm:mt-2">
-                        
-                      </div>
+                      <div className="flex items-center mt-1 sm:mt-2"></div>
                     </div>
                     <div
                       className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-${stat.color}-100 flex items-center justify-center flex-shrink-0 ml-2`}
@@ -280,7 +280,9 @@ export default function InspectionsPage() {
                   <Input
                     placeholder="Search properties, buyers, sellers, or addresses..."
                     value={filters.search || ""}
-                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("search", e.target.value)
+                    }
                     className="pl-10 h-11"
                   />
                 </div>
@@ -448,7 +450,8 @@ export default function InspectionsPage() {
                                     alt="Property"
                                     className="w-16 h-12 object-cover rounded-lg border shadow-sm"
                                   />
-                                  {inspection.status === "pending_transaction" && (
+                                  {inspection.status ===
+                                    "pending_transaction" && (
                                     <div className="absolute -top-1 -right-1">
                                       <Badge className="text-xs px-1.5 py-0.5 bg-red-500 hover:bg-red-600 text-white border-0 rounded-full">
                                         PT
@@ -493,7 +496,9 @@ export default function InspectionsPage() {
                                     <p className="text-sm font-medium">
                                       {inspection.requestedBy.fullName}
                                     </p>
-                                    <p className="text-xs text-gray-500">Buyer</p>
+                                    <p className="text-xs text-gray-500">
+                                      Buyer
+                                    </p>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -547,7 +552,9 @@ export default function InspectionsPage() {
                                 {inspection.isNegotiating && (
                                   <p className="text-xs text-orange-600">
                                     Offer:{" "}
-                                    {formatCurrency(inspection.negotiationPrice)}
+                                    {formatCurrency(
+                                      inspection.negotiationPrice,
+                                    )}
                                   </p>
                                 )}
                                 {inspection.pendingResponseFrom !== "none" && (
@@ -578,9 +585,11 @@ export default function InspectionsPage() {
                   {/* Mobile View */}
                   <div className="lg:hidden divide-y divide-gray-200">
                     {inspectionsData.map((inspection) => (
-                      <div key={inspection._id} className="p-4 hover:bg-gray-50">
+                      <div
+                        key={inspection._id}
+                        className="p-4 hover:bg-gray-50"
+                      >
                         <div className="space-y-3">
-
                           <div className="flex items-start space-x-3">
                             <div className="relative">
                               <img
@@ -607,7 +616,10 @@ export default function InspectionsPage() {
                                 <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
                                 <span className="truncate">
                                   {inspection.propertyId.location.area},{" "}
-                                  {inspection.propertyId.location.localGovernment}
+                                  {
+                                    inspection.propertyId.location
+                                      .localGovernment
+                                  }
                                 </span>
                               </p>
                             </div>
@@ -670,7 +682,7 @@ export default function InspectionsPage() {
                         </div>
                       </div>
                     ))}
-                  </div> 
+                  </div>
 
                   <Pagination
                     currentPage={page}
