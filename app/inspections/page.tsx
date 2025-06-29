@@ -688,16 +688,14 @@ export default function InspectionsPage() {
           </CardContent>
         </Card>
 
-        {selectedInspection && (
-          <InspectionDetailModal
-            inspection={selectedInspection}
-            isOpen={isDetailOpen}
-            onClose={() => {
-              setIsDetailOpen(false);
-              setSelectedInspection(null);
-            }}
-          />
-        )}
+        <InspectionDetailModal
+          inspectionId={selectedInspectionId}
+          isOpen={isDetailOpen}
+          onClose={() => {
+            setIsDetailOpen(false);
+            setSelectedInspectionId(null);
+          }}
+        />
       </div>
     </AdminLayout>
   );
