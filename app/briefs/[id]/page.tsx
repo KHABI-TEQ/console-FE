@@ -35,10 +35,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface BriefDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function BriefDetailPage({ params }: BriefDetailPageProps) {
+export default async function BriefDetailPage({
+  params,
+}: BriefDetailPageProps) {
+  const { id: briefId } = await params;
   const router = useRouter();
   const { confirmAction } = useConfirmation();
   const [isApproving, setIsApproving] = useState(false);
@@ -48,20 +51,19 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
     isLoading: false,
   });
 
-
   const {
     data: briefResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["brief", params.id],
-    queryFn: () => apiService.getBrief(params.id),
+    queryKey: ["brief", briefId],
+    queryFn: () => apiService.getBrief(briefId),
   });
 
   // Mock data for demonstration
   const mockBrief = {
-    _id: params.id,
+    _id: briefId,
     title: "Luxury Apartment Marketing Strategy",
     description:
       "Comprehensive marketing plan for high-end residential properties in Victoria Island. This brief outlines the strategic approach to positioning and promoting luxury apartments to target high-net-worth individuals.",
@@ -234,7 +236,7 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
       variant: "danger",
       onConfirm: async () => {
         try {
-          await apiService.deleteBrief(params.id);
+          await apiService.deleteBrief(briefId);
           router.push("/briefs");
         } catch (error) {
           console.error("Failed to delete brief:", error);
@@ -246,7 +248,7 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
   const handleApproveBrief = async () => {
     setIsApproving(true);
     try {
-      await apiService.patch(`/briefs/${params.id}/approve`);
+      await apiService.patch(`/briefs/${briefId}/approve`);
       refetch();
     } catch (error) {
       console.error("Failed to approve brief:", error);
@@ -364,7 +366,7 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/briefs/${params.id}/edit`)}
+              onClick={() => router.push(`/briefs/${briefId}/edit`)}
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit
