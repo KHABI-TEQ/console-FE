@@ -40,10 +40,8 @@ declare namespace __next_route_internal_types__ {
     | `/buyers`
     | `/contacts`
     | `/dashboard`
-    | `/forgot-password`
     | `/inspections`
     | `/landlords`
-    | `/login`
     | `/preferences`
     | `/preferences/buyers`
     | `/preferences/developers`
