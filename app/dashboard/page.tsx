@@ -97,7 +97,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Revenue",
-      value: "$485,200",
+      value: "₦485,200",
       change: "+15.3%",
       trend: "up",
       icon: DollarSign,
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
           {stats.map((stat, index) => (
             <Card
               key={index}
-              className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50 hover:shadow-md transition-shadow duration-200"
+              className="relative overflow-hidden border bg-gradient-to-br from-white via-gray-50/30 to-white hover:border-gray-300 transition-all duration-200"
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -319,8 +319,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Recent Activity */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="border-b bg-gray-50/50">
+            <Card className="border hover:border-gray-300 transition-all duration-200">
+              <CardHeader className="border-b bg-gradient-to-r from-gray-50/70 to-blue-50/30">
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center gap-2">
                     <Activity className="h-5 w-5 text-gray-600" />
@@ -377,10 +377,10 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="border-b bg-gray-50/50">
+            <Card className="border hover:border-gray-300 transition-all duration-200">
+              <CardHeader className="border-b bg-gradient-to-r from-gray-50/70 to-green-50/30">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Zap className="h-5 w-5 text-gray-600" />
+                  <Zap className="h-5 w-5 text-emerald-600" />
                   Quick Actions
                 </CardTitle>
               </CardHeader>
@@ -427,10 +427,10 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Top Performers */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="border-b bg-gray-50/50">
+            <Card className="border hover:border-gray-300 transition-all duration-200">
+              <CardHeader className="border-b bg-gradient-to-r from-gray-50/70 to-amber-50/30">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Trophy className="h-5 w-5 text-gray-600" />
+                  <Trophy className="h-5 w-5 text-amber-600" />
                   Top Performers
                 </CardTitle>
               </CardHeader>
@@ -439,7 +439,7 @@ export default function AdminDashboard() {
                   {topPerformers.map((performer, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-white to-gray-50/50 hover:from-gray-50 hover:to-gray-100/50 transition-all duration-200 border border-gray-100"
                     >
                       <div className="relative">
                         <Avatar className="h-10 w-10">
