@@ -87,6 +87,14 @@ export default function BuyersPage() {
   const buyers = buyersResponse?.data || [];
   const totalCount = buyersResponse?.total || 0;
 
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <ListPageSkeleton title="Buyer Management" />
+      </AdminLayout>
+    );
+  }
+
   const stats = [
     {
       title: "Total Buyers",
