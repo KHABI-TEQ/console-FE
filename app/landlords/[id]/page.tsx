@@ -44,12 +44,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface LandlordDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function LandlordDetailPage({
+export default async function LandlordDetailPage({
   params,
 }: LandlordDetailPageProps) {
+  const { id: landlordId } = await params;
   const router = useRouter();
 
   const {
@@ -58,13 +59,13 @@ export default function LandlordDetailPage({
     error,
     refetch,
   } = useQuery({
-    queryKey: ["landlord", params.id],
-    queryFn: () => apiService.getLandowner(params.id),
+    queryKey: ["landlord", landlordId],
+    queryFn: () => apiService.getLandowner(landlordId),
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
-    queryKey: ["landlord-properties", params.id],
-    queryFn: () => apiService.getProperties({ landlordId: params.id }),
+    queryKey: ["landlord-properties", landlordId],
+    queryFn: () => apiService.getProperties({ landlordId: landlordId }),
   });
 
   // Mock data for demonstration - replace with actual API data when available

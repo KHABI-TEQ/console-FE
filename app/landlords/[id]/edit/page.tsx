@@ -33,10 +33,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface LandlordEditPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function LandlordEditPage({ params }: LandlordEditPageProps) {
+export default async function LandlordEditPage({
+  params,
+}: LandlordEditPageProps) {
+  const { id: landlordId } = await params;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
