@@ -39,7 +39,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const fetchAdmins = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await apiService.fetchAdmins();
+      const response = await apiService.getAdmins();
       setAdmins(response.data || []);
     } catch (error) {
       addNotification({
