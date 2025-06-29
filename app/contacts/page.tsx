@@ -145,7 +145,7 @@ export default function ContactsPage() {
       source: "Website",
       lastContact: "2 hours ago",
       rating: 4.8,
-      notes: "Interested in downtown properties. Budget: $800K-1M",
+      notes: "Interested in downtown properties. Budget: ₦800K-1M",
       assignedAgent: "Sarah Johnson",
       properties: 3,
       interactions: 12,
