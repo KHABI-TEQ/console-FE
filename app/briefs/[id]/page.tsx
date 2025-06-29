@@ -331,10 +331,7 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+
             {!brief.isApproved && (
               <Button
                 onClick={handleApproveBrief}

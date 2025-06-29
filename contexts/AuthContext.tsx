@@ -19,7 +19,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, response?: any) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -52,7 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiService.getProfile();
 
       if (response.success) {
-        const userData = response.data?.user || response.admin?.admin || response.admin;
+        const userData =
+          response.data?.user || response.admin?.admin || response.admin;
 
         setUser({
           id: userData.id || userData._id || "admin-1",
@@ -67,7 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           lastName: userData.lastName,
         });
       } else {
-        console.error("Profile fetch failed:", response.error || response.message);
+        console.error(
+          "Profile fetch failed:",
+          response.error || response.message,
+        );
         document.cookie = "auth-token=; path=/; max-age=0";
         // Optionally setUser(null) or redirect to login
       }
@@ -80,15 +84,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-
-
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, response?: any) => {
     try {
       setIsLoading(true);
 
-      const response = await apiService.login({ email, password });
-
-      if (response.success) {
+      // If response is not provided, the API call was already made in the login page
+      if (response) {
         // Extract token from response - check multiple possible locations
         const token =
           response.admin?.token ||
@@ -102,11 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Set user data from response - check multiple possible locations
-        const userData = response.data?.user ||
-          response.admin?.admin ||
-          response.admin;
-
-        router.push("/dashboard");
+        const userData =
+          response.data?.user || response.admin?.admin || response.admin;
 
         setUser({
           id: userData.id || userData._id || "admin-1",
@@ -120,27 +118,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           firstName: userData.firstName,
           lastName: userData.lastName,
         });
-
-        addNotification({
-          type: "success",
-          title: "Welcome back!",
-          message: "You have successfully signed in to your account.",
-        });
-
-      } else {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: response.error || response.message || "Login failed",
-        });
-
       }
+
+      router.push("/dashboard");
+
+      addNotification({
+        type: "success",
+        title: "Welcome back!",
+        message: "You have successfully signed in to your account.",
+      });
     } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Login failed",
-        });
+      addNotification({
+        type: "error",
+        title: "Error",
+        message: "Login failed",
+      });
     } finally {
       setIsLoading(false);
     }
