@@ -41,7 +41,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const fetchAdmins = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await apiService.getAdmins();
+      const response = await apiService.get("/admins");
       if (response.success) {
         setAdmins(response.data || []);
       } else {
@@ -91,7 +91,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const createAdmin = useCallback(
     async (adminData: any) => {
       try {
-        const response = await apiService.createAdmin(adminData);
+        const response = await apiService.post("/admins", adminData);
         if (response.success) {
           addNotification({
             type: "success",
@@ -120,7 +120,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const updateAdmin = useCallback(
     async (id: string, adminData: any) => {
       try {
-        const response = await apiService.updateAdmin(id, adminData);
+        const response = await apiService.put(`/admin/${id}`, adminData);
         if (response.success) {
           addNotification({
             type: "success",
@@ -149,7 +149,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const deleteAdmin = useCallback(
     async (id: string) => {
       try {
-        const response = await apiService.deleteAdmin(id);
+        const response = await apiService.delete(`/admin/${id}`);
         if (response.success) {
           addNotification({
             type: "success",
@@ -178,7 +178,9 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const changeAdminStatus = useCallback(
     async (id: string, status: string) => {
       try {
-        const response = await apiService.changeAdminStatus(id, status);
+        const response = await apiService.patch(`/admin/${id}/status`, {
+          status,
+        });
         if (response.success) {
           addNotification({
             type: "success",
