@@ -80,13 +80,14 @@ export default function InspectionsPage() {
   const limit = 10;
 
   const {
-    data: inspectionsData,
+    data: inspectionsResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
     queryKey: ["inspections", filters, page],
-    queryFn: () => apiService.getInspections({ ...filters, page, limit }),
+    queryFn: () => fetch("/api/inspections").then((res) => res.json()),
+    select: (data) => data as InspectionListResponse,
   });
 
   const handleFilterChange = (key: keyof InspectionFilters, value: string) => {
@@ -126,13 +127,15 @@ export default function InspectionsPage() {
     }).format(amount);
   };
 
+  const inspectionsData = inspectionsResponse?.data || [];
+  const totalCount = inspectionsResponse?.meta?.total || 0;
+
   const statsData = [
     {
       title: "Pending Inspections",
       value:
-        inspectionsData?.inspections.filter(
-          (i) => i.status === "pending_inspection",
-        ).length || 0,
+        inspectionsData.filter((i) => i.status === "pending_inspection")
+          .length || 0,
       change: "+12%",
       trend: "up",
       icon: Calendar,
@@ -140,8 +143,7 @@ export default function InspectionsPage() {
     },
     {
       title: "Active Negotiations",
-      value:
-        inspectionsData?.inspections.filter((i) => i.isNegotiating).length || 0,
+      value: inspectionsData.filter((i) => i.isNegotiating).length || 0,
       change: "+8%",
       trend: "up",
       icon: DollarSign,
@@ -150,17 +152,16 @@ export default function InspectionsPage() {
     {
       title: "Pending Responses",
       value:
-        inspectionsData?.inspections.filter(
-          (i) => i.pendingResponseFrom !== "none",
-        ).length || 0,
+        inspectionsData.filter((i) => i.pendingResponseFrom !== "none")
+          .length || 0,
       change: "-5%",
       trend: "down",
       icon: Clock,
       color: "orange",
     },
     {
-      title: "Total Properties",
-      value: inspectionsData?.total || 0,
+      title: "Total Inspections",
+      value: totalCount,
       change: "+15%",
       trend: "up",
       icon: Building,
@@ -401,12 +402,12 @@ export default function InspectionsPage() {
                     Active Inspections
                   </span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {inspectionsData?.total || 0} total records found
+                    {totalCount} total records found
                   </p>
                 </div>
               </div>
               <Badge variant="secondary" className="text-sm px-3 py-1">
-                {inspectionsData?.inspections.length || 0} showing
+                {inspectionsData.length || 0} showing
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -448,7 +449,7 @@ export default function InspectionsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {inspectionsData?.inspections.map((inspection, index) => (
+                      {inspectionsData.map((inspection, index) => (
                         <TableRow
                           key={inspection._id}
                           className={`hover:bg-gray-50 transition-colors ${
@@ -458,20 +459,31 @@ export default function InspectionsPage() {
                           <TableCell className="py-4">
                             <div className="flex items-start space-x-3">
                               <img
-                                src={inspection.propertyId.images[0]}
-                                alt={inspection.propertyId.title}
+                                src={
+                                  inspection.propertyId.pictures[0] ||
+                                  "/placeholder.svg"
+                                }
+                                alt="Property"
                                 className="w-16 h-12 object-cover rounded-lg border shadow-sm"
                               />
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {inspection.propertyId.title}
+                                  {inspection.propertyId.briefType} Property
                                 </p>
                                 <p className="text-sm text-gray-500 flex items-center mt-1">
                                   <MapPin className="h-3 w-3 mr-1" />
-                                  {inspection.propertyId.address
-                                    .split(",")
-                                    .slice(0, 2)
-                                    .join(",")}
+                                  {inspection.propertyId.location.area},{" "}
+                                  {
+                                    inspection.propertyId.location
+                                      .localGovernment
+                                  }
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {
+                                    inspection.propertyId.additionalFeatures
+                                      .noOfBedrooms
+                                  }{" "}
+                                  bed • {inspection.propertyId.propertyType}
                                 </p>
                               </div>
                             </div>
@@ -480,30 +492,34 @@ export default function InspectionsPage() {
                           <TableCell className="py-4">
                             <div className="space-y-2">
                               <div className="flex items-center space-x-2">
-                                <img
-                                  src={inspection.requestedBy.avatar}
-                                  alt={inspection.requestedBy.name}
-                                  className="h-6 w-6 rounded-full"
-                                />
+                                <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <span className="text-xs font-medium text-blue-600">
+                                    {inspection.requestedBy.fullName?.charAt(
+                                      0,
+                                    ) || "B"}
+                                  </span>
+                                </div>
                                 <div>
                                   <p className="text-sm font-medium">
-                                    {inspection.requestedBy.name}
+                                    {inspection.requestedBy.fullName}
                                   </p>
                                   <p className="text-xs text-gray-500">Buyer</p>
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <img
-                                  src={inspection.owner.avatar}
-                                  alt={inspection.owner.name}
-                                  className="h-6 w-6 rounded-full"
-                                />
+                                <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                  <span className="text-xs font-medium text-green-600">
+                                    {inspection.owner.firstName?.charAt(0) ||
+                                      "S"}
+                                  </span>
+                                </div>
                                 <div>
                                   <p className="text-sm font-medium">
-                                    {inspection.owner.name}
+                                    {inspection.owner.firstName}{" "}
+                                    {inspection.owner.lastName}
                                   </p>
                                   <p className="text-xs text-gray-500">
-                                    Seller
+                                    {inspection.owner.role || "Seller"}
                                   </p>
                                 </div>
                               </div>
@@ -571,26 +587,27 @@ export default function InspectionsPage() {
 
                 {/* Mobile View */}
                 <div className="lg:hidden divide-y divide-gray-200">
-                  {inspectionsData?.inspections.map((inspection) => (
+                  {inspectionsData.map((inspection) => (
                     <div key={inspection._id} className="p-4 hover:bg-gray-50">
                       <div className="space-y-3">
                         <div className="flex items-start space-x-3">
                           <img
-                            src={inspection.propertyId.images[0]}
-                            alt={inspection.propertyId.title}
+                            src={
+                              inspection.propertyId.pictures[0] ||
+                              "/placeholder.svg"
+                            }
+                            alt="Property"
                             className="w-16 h-12 object-cover rounded-lg border shadow-sm flex-shrink-0"
                           />
                           <div className="min-w-0 flex-1">
                             <h3 className="font-medium text-gray-900 truncate">
-                              {inspection.propertyId.title}
+                              {inspection.propertyId.briefType} Property
                             </h3>
                             <p className="text-sm text-gray-500 flex items-center mt-1">
                               <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
                               <span className="truncate">
-                                {inspection.propertyId.address
-                                  .split(",")
-                                  .slice(0, 2)
-                                  .join(",")}
+                                {inspection.propertyId.location.area},{" "}
+                                {inspection.propertyId.location.localGovernment}
                               </span>
                             </p>
                           </div>
@@ -627,7 +644,7 @@ export default function InspectionsPage() {
                           <div>
                             <p className="text-gray-500">Buyer</p>
                             <p className="font-medium truncate">
-                              {inspection.requestedBy.name}
+                              {inspection.requestedBy.fullName}
                             </p>
                           </div>
                         </div>
@@ -655,147 +672,17 @@ export default function InspectionsPage() {
                   ))}
                 </div>
 
-                {/* Enhanced Pagination */}
-                {inspectionsData && inspectionsData.totalPages > 1 && (
-                  <div className="border-t border-gray-200 bg-white">
-                    <div className="lg:hidden px-4 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-700">
-                          Page {page} of {inspectionsData.totalPages}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={page === 1}
-                            onClick={() => setPage(page - 1)}
-                            className="px-3"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="text-sm font-medium px-2">
-                            {page}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={page >= inspectionsData.totalPages}
-                            onClick={() => setPage(page + 1)}
-                            className="px-3"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-2">
-                        Showing {(page - 1) * limit + 1} to{" "}
-                        {Math.min(page * limit, inspectionsData.total)} of{" "}
-                        {inspectionsData.total} results
-                      </div>
-                    </div>
-
-                    <div className="hidden lg:flex justify-between items-center px-6 py-4 bg-gray-50">
-                      <div className="flex items-center space-x-2">
-                        <p className="text-sm text-gray-700">
-                          Showing{" "}
-                          <span className="font-medium">
-                            {(page - 1) * limit + 1}
-                          </span>{" "}
-                          to{" "}
-                          <span className="font-medium">
-                            {Math.min(page * limit, inspectionsData.total)}
-                          </span>{" "}
-                          of{" "}
-                          <span className="font-medium">
-                            {inspectionsData.total}
-                          </span>{" "}
-                          results
-                        </p>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page === 1}
-                          onClick={() => setPage(page - 1)}
-                          className="flex items-center space-x-1"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          <span>Previous</span>
-                        </Button>
-
-                        <div className="flex items-center space-x-1">
-                          {(() => {
-                            const totalPages = inspectionsData.totalPages;
-                            const currentPage = page;
-                            const pages = [];
-
-                            if (currentPage > 3) {
-                              pages.push(1);
-                              if (currentPage > 4) {
-                                pages.push("...");
-                              }
-                            }
-
-                            for (
-                              let i = Math.max(1, currentPage - 2);
-                              i <= Math.min(totalPages, currentPage + 2);
-                              i++
-                            ) {
-                              pages.push(i);
-                            }
-
-                            if (currentPage < totalPages - 2) {
-                              if (currentPage < totalPages - 3) {
-                                pages.push("...");
-                              }
-                              pages.push(totalPages);
-                            }
-
-                            return pages.map((pageNum, index) => {
-                              if (pageNum === "...") {
-                                return (
-                                  <span
-                                    key={index}
-                                    className="px-3 py-2 text-gray-500"
-                                  >
-                                    ...
-                                  </span>
-                                );
-                              }
-
-                              return (
-                                <Button
-                                  key={pageNum}
-                                  variant={
-                                    page === pageNum ? "default" : "outline"
-                                  }
-                                  size="sm"
-                                  onClick={() => setPage(pageNum as number)}
-                                  className="min-w-[2.5rem]"
-                                >
-                                  {pageNum}
-                                </Button>
-                              );
-                            });
-                          })()}
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page >= inspectionsData.totalPages}
-                          onClick={() => setPage(page + 1)}
-                          className="flex items-center space-x-1"
-                        >
-                          <span>Next</span>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                {/* Pagination Info */}
+                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {inspectionsData.length}
+                    </span>{" "}
+                    of <span className="font-medium">{totalCount}</span> total
+                    inspections
                   </div>
-                )}
+                </div>
               </>
             )}
           </CardContent>
