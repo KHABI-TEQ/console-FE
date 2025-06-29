@@ -4,13 +4,16 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastContainer } from "@/components/ui/toast-container";
 import QueryProvider from "@/components/providers/QueryProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { AppProvider } from "@/contexts/AppContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PropertyAdmin - Management System",
-  description: "Advanced property management and inspection system",
+  title: "Khabi Teq Realty - Property Management System",
+  description: "Advanced real estate management platform for Khabi Teq Realty",
 };
 
 export default function RootLayout({
@@ -22,11 +25,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <TooltipProvider>
-            {children}
-            <Toaster />
-            <Sonner />
-          </TooltipProvider>
+          <AppProvider>
+            <AuthProvider>
+              <TooltipProvider>
+                {children}
+                <ToastContainer />
+                <Toaster />
+                <Sonner />
+              </TooltipProvider>
+            </AuthProvider>
+          </AppProvider>
         </QueryProvider>
       </body>
     </html>
