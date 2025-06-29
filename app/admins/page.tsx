@@ -93,6 +93,7 @@ export default function AdminsPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
 
   const { addNotification } = useApp();
+  const { confirmAction } = useConfirmation();
 
   const {
     data: adminsData,
