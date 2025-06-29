@@ -48,6 +48,7 @@ import {
   Clock,
   TrendingUp,
 } from "lucide-react";
+import { ToastNotifications } from "@/components/shared/ToastNotifications";
 
 interface NavItem {
   href: string;
@@ -250,10 +251,14 @@ function SidebarContent({
   onClose,
   isCollapsed,
   onToggleCollapse,
+  user,
+  logout,
 }: {
   onClose?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  user: any;
+  logout: () => void;
 }) {
   return (
     <div className="flex flex-col h-full bg-white">
@@ -264,16 +269,16 @@ function SidebarContent({
             <div className="w-10 h-10 flex items-center justify-center">
               <img
                 src="/khabi-teq-logo.svg"
-                alt="Khabi Teq Realty"
+                alt="Property Management"
                 className="h-8 w-8 object-contain"
               />
             </div>
             {!isCollapsed && (
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  Khabi Teq Realty
+                  Property Admin
                 </h1>
-                <p className="text-xs text-gray-500">Property Management</p>
+                <p className="text-xs text-gray-500">Management System</p>
               </div>
             )}
           </div>
@@ -354,9 +359,12 @@ function SidebarContent({
         ) : (
           <div className="flex justify-center">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/api/placeholder/32/32" />
+              <AvatarImage src={user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
-                AU
+                {user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("") || "AU"}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -382,6 +390,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Toast Notifications */}
+      <ToastNotifications />
+
       {/* Desktop Sidebar */}
       <div
         className={cn(
@@ -393,6 +404,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <SidebarContent
             isCollapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            user={user}
+            logout={logout}
           />
         </div>
       </div>
@@ -400,7 +413,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="w-80 p-0 mobile-menu-height">
-          <SidebarContent onClose={() => setSidebarOpen(false)} />
+          <SidebarContent
+            onClose={() => setSidebarOpen(false)}
+            user={user}
+            logout={logout}
+          />
         </SheetContent>
       </Sheet>
 
@@ -520,9 +537,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         className="flex items-center space-x-2 p-2"
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src="/api/placeholder/32/32" />
+                          <AvatarImage src={user?.avatar} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
-                            AU
+                            {user?.name
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("") || "AU"}
                           </AvatarFallback>
                         </Avatar>
                         <ChevronDown className="h-4 w-4 text-gray-500" />
@@ -544,7 +564,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         Support
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={logout}
+                      >
                         <LogOut className="mr-2 h-4 w-4" />
                         Log out
                       </DropdownMenuItem>
