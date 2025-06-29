@@ -90,7 +90,7 @@ export function AgentManagement({
     } else {
       fetchLandlordsData();
     }
-  }, [activeTab, statusFilter]);
+  }, [activeTab, statusFilter, searchQuery]);
 
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
