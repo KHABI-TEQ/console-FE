@@ -111,12 +111,13 @@ export default function AdminsPage() {
       }
 
       // Return the structure expected by the component
+      const apiResponse = response as any;
       return {
-        admins: response.data || response.admins || [],
-        total: response.total || 0,
-        page: response.page || currentPage,
-        limit: response.limit || pageLimit,
-        success: response.success,
+        admins: apiResponse.data || apiResponse.admins || [],
+        total: apiResponse.total || 0,
+        page: apiResponse.page || currentPage,
+        limit: apiResponse.limit || pageLimit,
+        success: apiResponse.success,
       };
     },
   });
