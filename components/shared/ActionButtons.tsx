@@ -18,7 +18,13 @@ import {
 import { useActionButtons } from "@/hooks/useActionButtons";
 
 interface ActionButtonsProps {
-  entityType: "agent" | "landlord" | "property" | "contact" | "inspection";
+  entityType:
+    | "agent"
+    | "landlord"
+    | "property"
+    | "contact"
+    | "inspection"
+    | "buyer";
   entityId: string;
   entityName?: string;
   email?: string;
