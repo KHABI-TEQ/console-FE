@@ -590,7 +590,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {parseInt(
                               tenantPreferences.defaultBudgetMin,
                             ).toLocaleString()}
@@ -621,7 +621,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {parseInt(
                               tenantPreferences.defaultBudgetMax,
                             ).toLocaleString()}
@@ -803,7 +803,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {(
                               parseInt(
                                 developerPreferences.investmentBudgetMin,
@@ -836,7 +836,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {(
                               parseInt(
                                 developerPreferences.investmentBudgetMax,
