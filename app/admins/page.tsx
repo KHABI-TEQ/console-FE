@@ -483,7 +483,7 @@ export default function AdminsPage() {
                                 Account
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDeleteAdmin(admin._id)}
+                                onClick={() => handleDeleteAdmin(admin)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
