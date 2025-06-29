@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -42,6 +43,9 @@ import {
   CheckCircle,
   AlertTriangle,
   Star,
+  Shield,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 
@@ -253,159 +257,562 @@ export default function BriefsPage() {
           </CardContent>
         </Card>
 
-        {/* Briefs Table */}
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <ClipboardList className="h-5 w-5 mr-2 text-gray-600" />
-                <div>
-                  <span className="text-lg font-medium">Active Briefs</span>
-                  <p className="text-sm text-gray-600 font-normal">
-                    {filteredBriefs.length} briefs found
-                  </p>
+        {/* Briefs Sections */}
+        <Tabs defaultValue="admin" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="admin" className="flex items-center space-x-2">
+              <Shield className="h-4 w-4" />
+              <span>Admin Briefs</span>
+            </TabsTrigger>
+            <TabsTrigger value="agent" className="flex items-center space-x-2">
+              <Users className="h-4 w-4" />
+              <span>Agent Briefs</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="landlord"
+              className="flex items-center space-x-2"
+            >
+              <UserCheck className="h-4 w-4" />
+              <span>Landlord Briefs</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="admin" className="mt-6">
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Shield className="h-5 w-5 mr-2 text-blue-600" />
+                    <div>
+                      <span className="text-lg font-medium">Admin Briefs</span>
+                      <p className="text-sm text-gray-600 font-normal">
+                        Internal administrative briefs and documentation
+                      </p>
+                    </div>
+                  </div>
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Admin Brief
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold text-gray-900">
+                          Brief
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Department
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Type & Status
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Assigned To
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Progress
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Timeline
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[
+                        {
+                          id: 1,
+                          title: "Q1 Performance Review Guidelines",
+                          description:
+                            "Comprehensive guidelines for quarterly performance reviews",
+                          type: "Policy",
+                          status: "Active",
+                          priority: "High",
+                          department: "HR",
+                          assignedTo: "Admin Team",
+                          createdDate: "2024-01-15",
+                          dueDate: "2024-02-15",
+                          progress: 85,
+                          attachments: 5,
+                          comments: 8,
+                        },
+                        {
+                          id: 2,
+                          title: "System Security Audit",
+                          description:
+                            "Annual security audit and compliance documentation",
+                          type: "Audit",
+                          status: "In Progress",
+                          priority: "High",
+                          department: "IT",
+                          assignedTo: "Security Team",
+                          createdDate: "2024-01-10",
+                          dueDate: "2024-03-01",
+                          progress: 45,
+                          attachments: 12,
+                          comments: 15,
+                        },
+                      ].map((brief, index) => (
+                        <TableRow
+                          key={brief.id}
+                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                        >
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {brief.title}
+                              </p>
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {brief.description}
+                              </p>
+                              <div className="flex items-center space-x-3 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {brief.attachments} files
+                                </span>
+                                <span>{brief.comments} comments</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <Badge
+                              variant="outline"
+                              className="text-blue-700 border-blue-200"
+                            >
+                              {brief.department}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <Badge variant="outline" className="text-xs">
+                                {brief.type}
+                              </Badge>
+                              <div>{getStatusBadge(brief.status)}</div>
+                              <div>{getPriorityBadge(brief.priority)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <User className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {brief.assignedTo}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">
+                                  {brief.progress}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full transition-all"
+                                  style={{ width: `${brief.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Created: {brief.createdDate}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Due: {brief.dueDate}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-blue-50 hover:border-blue-300"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-green-50 hover:border-green-300"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-red-50 hover:border-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              </div>
-              <Badge variant="secondary" className="text-sm px-3 py-1">
-                {filteredBriefs.length} showing
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900">
-                      Brief
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Property
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Type & Status
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Assigned To
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Progress
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Timeline
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBriefs.map((brief, index) => (
-                    <TableRow
-                      key={brief.id}
-                      className={`hover:bg-gray-50 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                      }`}
-                    >
-                      <TableCell className="py-4">
-                        <div className="space-y-1">
-                          <p className="font-medium text-gray-900">
-                            {brief.title}
-                          </p>
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {brief.description}
-                          </p>
-                          <div className="flex items-center space-x-3 text-xs text-gray-500">
-                            <span className="flex items-center">
-                              <FileText className="h-3 w-3 mr-1" />
-                              {brief.attachments} files
-                            </span>
-                            <span>{brief.comments} comments</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex items-center space-x-2">
-                          <Building className="h-4 w-4 text-gray-400" />
-                          <span className="font-medium">{brief.property}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-2">
-                          <Badge variant="outline" className="text-xs">
-                            {brief.type}
-                          </Badge>
-                          <div>{getStatusBadge(brief.status)}</div>
-                          <div>{getPriorityBadge(brief.priority)}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-gray-400" />
-                          <span className="font-medium">
-                            {brief.assignedTo}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {brief.progress}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${brief.progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                            <span>Created: {brief.createdDate}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                            <span>Due: {brief.dueDate}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-blue-50 hover:border-blue-300"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-green-50 hover:border-green-300"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-red-50 hover:border-red-300"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="agent" className="mt-6">
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Users className="h-5 w-5 mr-2 text-green-600" />
+                    <div>
+                      <span className="text-lg font-medium">Agent Briefs</span>
+                      <p className="text-sm text-gray-600 font-normal">
+                        Briefs and instructions for real estate agents
+                      </p>
+                    </div>
+                  </div>
+                  <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Agent Brief
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold text-gray-900">
+                          Brief
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Property
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Type & Status
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Agent
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Progress
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Timeline
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredBriefs.map((brief, index) => (
+                        <TableRow
+                          key={brief.id}
+                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                        >
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {brief.title}
+                              </p>
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {brief.description}
+                              </p>
+                              <div className="flex items-center space-x-3 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {brief.attachments} files
+                                </span>
+                                <span>{brief.comments} comments</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <Building className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {brief.property}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <Badge variant="outline" className="text-xs">
+                                {brief.type}
+                              </Badge>
+                              <div>{getStatusBadge(brief.status)}</div>
+                              <div>{getPriorityBadge(brief.priority)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <User className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {brief.assignedTo}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">
+                                  {brief.progress}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-green-600 h-2 rounded-full transition-all"
+                                  style={{ width: `${brief.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Created: {brief.createdDate}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Due: {brief.dueDate}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-blue-50 hover:border-blue-300"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-green-50 hover:border-green-300"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-red-50 hover:border-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="landlord" className="mt-6">
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <UserCheck className="h-5 w-5 mr-2 text-orange-600" />
+                    <div>
+                      <span className="text-lg font-medium">
+                        Landlord Briefs
+                      </span>
+                      <p className="text-sm text-gray-600 font-normal">
+                        Communication and documentation for landlords
+                      </p>
+                    </div>
+                  </div>
+                  <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Landlord Brief
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold text-gray-900">
+                          Brief
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Property
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Type & Status
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Landlord
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Progress
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Timeline
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-900">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[
+                        {
+                          id: 1,
+                          title: "Property Maintenance Guidelines",
+                          description:
+                            "Annual maintenance requirements and scheduling",
+                          type: "Maintenance",
+                          status: "Active",
+                          priority: "Medium",
+                          property: "Downtown Luxury Complex",
+                          assignedTo: "Premium Properties LLC",
+                          createdDate: "2024-01-12",
+                          dueDate: "2024-02-28",
+                          progress: 65,
+                          attachments: 7,
+                          comments: 12,
+                        },
+                        {
+                          id: 2,
+                          title: "Lease Renewal Process",
+                          description:
+                            "Updated lease renewal procedures and documentation",
+                          type: "Legal",
+                          status: "Pending",
+                          priority: "High",
+                          property: "Garden View Apartments",
+                          assignedTo: "Metro Holdings Inc",
+                          createdDate: "2024-01-18",
+                          dueDate: "2024-02-20",
+                          progress: 30,
+                          attachments: 4,
+                          comments: 8,
+                        },
+                      ].map((brief, index) => (
+                        <TableRow
+                          key={brief.id}
+                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                        >
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {brief.title}
+                              </p>
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {brief.description}
+                              </p>
+                              <div className="flex items-center space-x-3 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {brief.attachments} files
+                                </span>
+                                <span>{brief.comments} comments</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <Building className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {brief.property}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <Badge variant="outline" className="text-xs">
+                                {brief.type}
+                              </Badge>
+                              <div>{getStatusBadge(brief.status)}</div>
+                              <div>{getPriorityBadge(brief.priority)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <UserCheck className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {brief.assignedTo}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">
+                                  {brief.progress}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-orange-600 h-2 rounded-full transition-all"
+                                  style={{ width: `${brief.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Created: {brief.createdDate}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>Due: {brief.dueDate}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-blue-50 hover:border-blue-300"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-green-50 hover:border-green-300"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-red-50 hover:border-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );

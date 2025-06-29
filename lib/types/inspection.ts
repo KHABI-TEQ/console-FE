@@ -23,31 +23,83 @@ export type PendingResponseFrom = "buyer" | "seller" | "none";
 
 export interface IUser {
   _id: string;
-  name: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  phone?: string;
-  avatar?: string;
+  phoneNumber?: string;
+  role?: string;
+  accountApproved?: boolean;
+  accountStatus?: string;
+  isFlagged?: boolean;
+  isInActive?: boolean;
+  isAccountVerified?: boolean;
+  isAccountInRecovery?: boolean;
+  password?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+  id?: string;
+}
+
+export interface IPropertyLocation {
+  state: string;
+  localGovernment: string;
+  area: string;
+}
+
+export interface ILandSize {
+  measurementType: string;
+  size: number | null;
+}
+
+export interface IAdditionalFeatures {
+  additionalFeatures: string[];
+  noOfBedrooms?: number;
+  noOfBathrooms?: number;
+  noOfToilets?: number;
+  noOfCarParks?: number;
+}
+
+export interface IDocOnProperty {
+  isProvided: boolean;
+  _id: string;
+  docName: string;
 }
 
 export interface IProperty {
+  location: IPropertyLocation;
+  landSize: ILandSize;
+  additionalFeatures: IAdditionalFeatures;
   _id: string;
-  title: string;
-  address: string;
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  sqft: number;
-  images: string[];
-  description: string;
+  features: string[];
+  tenantCriteria: string[];
+  areYouTheOwner: boolean;
+  isAvailable: string;
+  pictures: string[];
+  isApproved: boolean;
+  isRejected: boolean;
+  isPreference: boolean;
+  isPremium: boolean;
   propertyType: string;
+  propertyCondition: string;
+  briefType: string;
+  price: number;
+  docOnProperty: IDocOnProperty[];
+  owner: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface ITransaction {
   _id: string;
-  amount: number;
-  status: string;
-  paymentMethod: string;
+  buyerId: string | IUser;
+  transactionReceipt: string;
+  propertyId: string;
   createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface IInspectionBooking {
@@ -93,19 +145,24 @@ export interface InspectionFilters {
 }
 
 export interface InspectionListResponse {
-  inspections: IInspectionBookingPopulated[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  success: boolean;
+  message: string;
+  data: IInspectionBookingPopulated[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
 }
 
 export interface InspectionDetailResponse {
-  inspection: IInspectionBookingPopulated;
+  success: boolean;
+  message: string;
+  data: IInspectionBookingPopulated;
 }
 
 export interface InspectionActionResponse {
   success: boolean;
   message: string;
-  inspection: IInspectionBookingPopulated;
+  data: IInspectionBookingPopulated;
 }
