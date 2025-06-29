@@ -38,12 +38,10 @@ export default function LoginPage() {
     rememberMe: false,
   };
 
+  
   const loginMutation = useApiMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
-      return await apiService.login(credentials);
-    },
-    onSuccess: (data, variables) => {
-      login(variables.email, variables.password, data);
+      return await login(credentials.email, credentials.password);
     },
   });
 
