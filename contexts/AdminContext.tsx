@@ -139,7 +139,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const getAdmin = useCallback(
     async (id: string): Promise<Admin | null> => {
       try {
-        const response = await apiService.getSingleAdmin(id);
+        const response = await apiService.getAdmin(id);
         return response.data;
       } catch (error) {
         addNotification({
