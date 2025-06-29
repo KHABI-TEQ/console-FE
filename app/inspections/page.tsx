@@ -672,90 +672,12 @@ export default function InspectionsPage() {
                   ))}
                 </div>
 
-                {/* Pagination */}
-                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="text-sm text-gray-700">
-                      Showing{" "}
-                      <span className="font-medium">
-                        {(page - 1) * limit + 1}
-                      </span>{" "}
-                      to{" "}
-                      <span className="font-medium">
-                        {Math.min(page * limit, totalCount)}
-                      </span>{" "}
-                      of <span className="font-medium">{totalCount}</span> total
-                      inspections
-                    </div>
-                    {totalCount > limit && (
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setPage(Math.max(1, page - 1))}
-                          disabled={page === 1}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
-                        </Button>
-                        <div className="flex items-center space-x-1">
-                          {Array.from(
-                            {
-                              length: Math.min(
-                                5,
-                                Math.ceil(totalCount / limit),
-                              ),
-                            },
-                            (_, i) => {
-                              const pageNum = i + 1;
-                              return (
-                                <Button
-                                  key={pageNum}
-                                  variant={
-                                    page === pageNum ? "default" : "outline"
-                                  }
-                                  size="sm"
-                                  onClick={() => setPage(pageNum)}
-                                  className="w-8 h-8 p-0"
-                                >
-                                  {pageNum}
-                                </Button>
-                              );
-                            },
-                          )}
-                          {Math.ceil(totalCount / limit) > 5 && (
-                            <>
-                              <span className="text-gray-500">...</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setPage(Math.ceil(totalCount / limit))
-                                }
-                                className="w-8 h-8 p-0"
-                              >
-                                {Math.ceil(totalCount / limit)}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setPage(
-                              Math.min(Math.ceil(totalCount / limit), page + 1),
-                            )
-                          }
-                          disabled={page >= Math.ceil(totalCount / limit)}
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={page}
+                  totalItems={totalCount}
+                  itemsPerPage={limit}
+                  onPageChange={setPage}
+                />
               </>
             )}
           </CardContent>
