@@ -40,6 +40,8 @@ declare namespace __next_route_internal_types__ {
     | `/forgot-password`
     | `/briefs`
     | `/contacts`
+    | `/preferences`
+    | `/buyer-preferences`
   type DynamicRoutes<T extends string = string> = 
     | `/api/inspections/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}/approve`
