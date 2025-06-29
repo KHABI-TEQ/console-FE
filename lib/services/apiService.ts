@@ -7,6 +7,9 @@ export interface ApiResponse<T = any> {
   limit?: number;
   total?: number;
   users?: T[];
+  admin?: T;
+  token?: string;
+  pagination?: T;
 }
 
 export interface PaginatedResponse<T> extends ApiResponse<T> {
