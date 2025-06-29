@@ -18,33 +18,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  LayoutGrid,
   Users,
-  FileText,
   Search,
   TrendingUp,
   TrendingDown,
   Activity,
   Calendar,
   DollarSign,
-  Eye,
   ArrowUpRight,
   Building,
   Clock,
   CheckCircle,
-  AlertTriangle,
   RefreshCw,
-  Download,
-  BarChart3,
-  PieChart,
-  MapPin,
-  Star,
-  Home,
-  UserCheck,
-  AlertCircle,
-  Target,
   Zap,
   Trophy,
+  Target,
+  Star,
+  BarChart3,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -84,9 +74,8 @@ export default function AdminDashboard() {
       change: "+12.5%",
       trend: "up",
       icon: Building,
-      color: "blue",
-      progress: 75,
-      target: "3,000",
+      color: "emerald",
+      description: "Properties listed",
     },
     {
       title: "Active Agents",
@@ -94,9 +83,8 @@ export default function AdminDashboard() {
       change: "+8.2%",
       trend: "up",
       icon: Users,
-      color: "green",
-      progress: 85,
-      target: "180",
+      color: "blue",
+      description: "Registered agents",
     },
     {
       title: "Pending Inspections",
@@ -104,19 +92,17 @@ export default function AdminDashboard() {
       change: "-3.1%",
       trend: "down",
       icon: Search,
-      color: "orange",
-      progress: 40,
-      target: "50",
+      color: "amber",
+      description: "Awaiting review",
     },
     {
-      title: "Monthly Revenue",
+      title: "Revenue",
       value: "$485,200",
       change: "+15.3%",
       trend: "up",
       icon: DollarSign,
-      color: "purple",
-      progress: 92,
-      target: "$500K",
+      color: "violet",
+      description: "This month",
     },
   ];
 
@@ -124,93 +110,77 @@ export default function AdminDashboard() {
     {
       id: 1,
       type: "inspection",
-      title: "New inspection request",
-      description: "Modern Downtown Apartment by John Doe",
+      title: "Property inspection requested",
+      location: "Downtown Lagos",
       time: "2 minutes ago",
       status: "pending",
-      priority: "high",
-      user: {
-        name: "John Doe",
-        avatar: "/placeholder.svg",
-      },
+      agent: "John Doe",
+      avatar: "/placeholder.svg",
     },
     {
       id: 2,
       type: "agent",
-      title: "Agent registered",
-      description: "Sarah Johnson joined as premium agent",
+      title: "New agent registered",
+      location: "Victoria Island",
       time: "1 hour ago",
-      status: "completed",
-      priority: "medium",
-      user: {
-        name: "Sarah Johnson",
-        avatar: "/placeholder.svg",
-      },
+      status: "approved",
+      agent: "Sarah Johnson",
+      avatar: "/placeholder.svg",
     },
     {
       id: 3,
       type: "property",
-      title: "Property listed",
-      description: "Luxury Penthouse added to listings",
+      title: "Property listing updated",
+      location: "Lekki Phase 1",
       time: "3 hours ago",
-      status: "completed",
-      priority: "low",
-      user: {
-        name: "Emma Wilson",
-        avatar: "/placeholder.svg",
-      },
+      status: "published",
+      agent: "Emma Wilson",
+      avatar: "/placeholder.svg",
     },
     {
       id: 4,
-      type: "inspection",
+      type: "approval",
       title: "Inspection approved",
-      description: "Suburban Family Home inspection confirmed",
+      location: "Ikeja GRA",
       time: "5 hours ago",
       status: "completed",
-      priority: "medium",
-      user: {
-        name: "Mike Davis",
-        avatar: "/placeholder.svg",
-      },
+      agent: "Mike Davis",
+      avatar: "/placeholder.svg",
     },
   ];
 
   const quickActions = [
     {
-      title: "Manage Inspections",
-      description: "Review and approve property inspections",
-      icon: Search,
-      href: "/inspections",
-      color: "blue",
+      title: "Review Inspections",
       count: 23,
-      badge: "Urgent",
+      href: "/inspections",
+      icon: Search,
+      color: "orange",
+      description: "Pending approvals",
     },
     {
-      title: "Agent Management",
-      description: "Manage agent profiles and permissions",
-      icon: Users,
-      href: "/agents",
-      color: "green",
+      title: "Manage Agents",
       count: 156,
-      badge: "Active",
+      href: "/agents",
+      icon: Users,
+      color: "blue",
+      description: "Active agents",
     },
     {
       title: "Property Briefs",
-      description: "Handle property briefings and documentation",
-      icon: FileText,
-      href: "/briefs",
-      color: "purple",
       count: 89,
-      badge: "Pending",
+      href: "/briefs",
+      icon: Calendar,
+      color: "purple",
+      description: "New submissions",
     },
     {
-      title: "Contact Management",
-      description: "Manage customer contacts and communications",
-      icon: Calendar,
-      href: "/contacts",
-      color: "orange",
-      count: 342,
-      badge: "New",
+      title: "Analytics",
+      count: 0,
+      href: "/analytics",
+      icon: BarChart3,
+      color: "green",
+      description: "View reports",
     },
   ];
 
@@ -220,58 +190,24 @@ export default function AdminDashboard() {
       role: "Premium Agent",
       avatar: "/placeholder.svg",
       sales: 24,
-      commission: "$125,000",
       rating: 4.9,
-      badge: "Top Performer",
+      change: "+12%",
     },
     {
       name: "Mike Wilson",
       role: "Senior Agent",
       avatar: "/placeholder.svg",
       sales: 18,
-      commission: "$95,000",
       rating: 4.7,
-      badge: "Rising Star",
+      change: "+8%",
     },
     {
       name: "Emma Davis",
       role: "Agent",
       avatar: "/placeholder.svg",
       sales: 15,
-      commission: "$78,000",
       rating: 4.8,
-      badge: "Consistent",
-    },
-  ];
-
-  const marketInsights = [
-    {
-      title: "Average Sale Price",
-      value: "$685,000",
-      change: "+5.2%",
-      trend: "up",
-      description: "Up from last month",
-    },
-    {
-      title: "Days on Market",
-      value: "18 days",
-      change: "-12%",
-      trend: "up",
-      description: "Faster than average",
-    },
-    {
-      title: "Conversion Rate",
-      value: "68%",
-      change: "+3.1%",
-      trend: "up",
-      description: "Leads to sales",
-    },
-    {
-      title: "Client Satisfaction",
-      value: "4.8/5",
-      change: "+0.2",
-      trend: "up",
-      description: "Average rating",
+      change: "+5%",
     },
   ];
 
@@ -288,63 +224,46 @@ export default function AdminDashboard() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "text-red-600 bg-red-100";
-      case "medium":
-        return "text-yellow-600 bg-yellow-100";
-      case "low":
-        return "text-green-600 bg-green-100";
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-amber-100 text-amber-800";
+      case "approved":
+      case "completed":
+      case "published":
+        return "bg-emerald-100 text-emerald-800";
       default:
-        return "text-gray-600 bg-gray-100";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
     <AdminLayout>
-      <div className="p-4 sm:p-6 space-y-6">
-        {/* Enhanced Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="p-6 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Dashboard Analytics
-              </h1>
-            </div>
-            <p className="text-gray-600 text-lg">
-              Real-time insights into your property management ecosystem
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-1">
+              Welcome back! Here's what's happening with your properties today.
             </p>
-            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-              <span className="flex items-center">
-                <Clock className="h-4 w-4 mr-1" />
-                Last updated: {new Date().toLocaleTimeString()}
-              </span>
-              <span className="flex items-center">
-                <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
-                All systems operational
-              </span>
-            </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="7d">Last 7 days</SelectItem>
                 <SelectItem value="30d">Last 30 days</SelectItem>
                 <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="1y">Last year</SelectItem>
               </SelectContent>
             </Select>
-
             <Button
-              size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              variant="outline"
+              size="sm"
             >
               <RefreshCw
                 className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
@@ -354,86 +273,68 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Enhanced Stats Grid */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <Card
               key={index}
-              className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50 hover:shadow-md transition-shadow duration-200"
             >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-50 to-${stat.color}-100 opacity-50`}
-              />
-              <CardContent className="relative p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-600">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                    <p className="text-2xl font-bold text-gray-900">
                       {stat.value}
                     </p>
+                    <p className="text-xs text-gray-500">{stat.description}</p>
                   </div>
-                  <div
-                    className={`w-14 h-14 rounded-xl bg-${stat.color}-100 flex items-center justify-center shadow-inner`}
-                  >
-                    <stat.icon className={`h-7 w-7 text-${stat.color}-600`} />
+                  <div className={`p-3 rounded-xl bg-${stat.color}-100`}>
+                    <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Progress to target</span>
-                    <span className="font-medium">{stat.target}</span>
-                  </div>
-                  <Progress
-                    value={stat.progress}
-                    className={`h-2 bg-${stat.color}-100`}
-                  />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      {stat.trend === "up" ? (
-                        <TrendingUp className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 text-red-600" />
-                      )}
-                      <span
-                        className={`text-sm font-medium ${
-                          stat.trend === "up"
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {stat.change}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      vs last period
-                    </span>
-                  </div>
+                <div className="flex items-center mt-4 text-sm">
+                  {stat.trend === "up" ? (
+                    <TrendingUp className="h-4 w-4 text-emerald-600 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                  )}
+                  <span
+                    className={`font-medium ${
+                      stat.trend === "up" ? "text-emerald-600" : "text-red-600"
+                    }`}
+                  >
+                    {stat.change}
+                  </span>
+                  <span className="text-gray-500 ml-1">vs last period</span>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Recent Activity - Enhanced */}
+          {/* Recent Activity */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b bg-gray-50/50">
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <div className="flex items-center gap-2">
                     <Activity className="h-5 w-5 text-gray-600" />
-                    <span>Recent Activity</span>
-                    <Badge variant="secondary" className="ml-2">
+                    Recent Activity
+                    <Badge
+                      variant="secondary"
+                      className="bg-emerald-100 text-emerald-700"
+                    >
                       Live
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View All
+                  <Button variant="ghost" size="sm" className="text-blue-600">
+                    View all
+                    <ArrowUpRight className="h-4 w-4 ml-1" />
                   </Button>
                 </CardTitle>
               </CardHeader>
@@ -442,71 +343,30 @@ export default function AdminDashboard() {
                   {recentActivities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-start space-x-4 p-6 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition-colors"
                     >
                       <div className="flex-shrink-0">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            activity.status === "pending"
-                              ? "bg-yellow-100"
-                              : "bg-green-100"
-                          }`}
-                        >
-                          {activity.status === "pending" ? (
-                            <Clock className="h-5 w-5 text-yellow-600" />
-                          ) : (
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                          )}
+                        <div className="p-2 rounded-lg bg-blue-100">
+                          {getActivityIcon(activity.type)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-900">
-                              {activity.title}
-                            </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {activity.description}
-                            </p>
-                            <div className="flex items-center space-x-3 mt-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={activity.user.avatar} />
-                                <AvatarFallback className="text-xs">
-                                  {activity.user.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs text-gray-500">
-                                {activity.user.name}
-                              </span>
-                              <span className="text-xs text-gray-400">•</span>
-                              <span className="text-xs text-gray-500">
-                                {activity.time}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end space-y-2">
-                            <Badge
-                              variant={
-                                activity.status === "pending"
-                                  ? "secondary"
-                                  : "default"
-                              }
-                              className="text-xs"
-                            >
-                              {activity.status}
-                            </Badge>
-                            <div
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-                                activity.priority,
-                              )}`}
-                            >
-                              {activity.priority}
-                            </div>
-                          </div>
-                        </div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {activity.title}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {activity.location} • by {activity.agent}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge
+                          className={`text-xs ${getStatusColor(activity.status)}`}
+                        >
+                          {activity.status}
+                        </Badge>
+                        <span className="text-xs text-gray-500">
+                          {activity.time}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -515,171 +375,113 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          {/* Quick Actions - Enhanced */}
-          <div>
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 border-b">
-                <CardTitle className="flex items-center space-x-2">
+          {/* Quick Actions */}
+          <div className="space-y-6">
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b bg-gray-50/50">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Zap className="h-5 w-5 text-gray-600" />
-                  <span>Quick Actions</span>
+                  Quick Actions
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="space-y-3">
                   {quickActions.map((action, index) => (
-                    <Card
+                    <Button
                       key={index}
-                      className="border hover:shadow-md transition-all duration-200 cursor-pointer group"
+                      variant="ghost"
+                      className="w-full h-auto p-4 justify-start hover:bg-gray-50"
+                      asChild
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start space-x-3">
+                      <a href={action.href}>
+                        <div className="flex items-center gap-3 w-full">
                           <div
-                            className={`w-12 h-12 rounded-lg bg-${action.color}-100 flex items-center justify-center flex-shrink-0 group-hover:bg-${action.color}-200 transition-colors`}
+                            className={`p-2 rounded-lg bg-${action.color}-100`}
                           >
                             <action.icon
-                              className={`h-6 w-6 text-${action.color}-600`}
+                              className={`h-5 w-5 text-${action.color}-600`}
                             />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h3 className="font-medium text-gray-900 text-sm">
-                                {action.title}
-                              </h3>
-                              <Badge
-                                variant="secondary"
-                                className={`text-xs bg-${action.color}-100 text-${action.color}-800`}
-                              >
-                                {action.badge}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-2">
+                          <div className="flex-1 text-left">
+                            <p className="font-medium text-gray-900 text-sm">
+                              {action.title}
+                            </p>
+                            <p className="text-xs text-gray-600">
                               {action.description}
                             </p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-lg font-bold text-gray-900">
-                                {action.count}
-                              </span>
-                              <Button size="sm" variant="ghost" className="p-1">
-                                <ArrowUpRight className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </div>
+                          {action.count > 0 && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-100 text-blue-700"
+                            >
+                              {action.count}
+                            </Badge>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </a>
+                    </Button>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
 
-        {/* Bottom Row - Performance & Insights */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {/* Top Performers */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <Trophy className="h-5 w-5 text-gray-600" />
-                <span>Top Performers</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {topPerformers.map((performer, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-4 p-4 rounded-lg border hover:shadow-sm transition-shadow"
-                  >
-                    <div className="relative">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={performer.avatar} />
-                        <AvatarFallback>
-                          {performer.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      {index === 0 && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                          <Star className="h-3 w-3 text-white fill-current" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium text-gray-900">
-                          {performer.name}
-                        </h3>
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-purple-50 text-purple-700 border-purple-200"
-                        >
-                          {performer.badge}
-                        </Badge>
+            {/* Top Performers */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b bg-gray-50/50">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Trophy className="h-5 w-5 text-gray-600" />
+                  Top Performers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="space-y-4">
+                  {topPerformers.map((performer, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="relative">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={performer.avatar} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                            {performer.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        {index === 0 && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                            <Star className="h-2.5 w-2.5 text-white fill-current" />
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {performer.role}
-                      </p>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-4">
-                          <span className="text-gray-600">
-                            {performer.sales} sales
-                          </span>
-                          <span className="font-medium text-green-600">
-                            {performer.commission}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                          <span className="font-medium">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">
+                          {performer.name}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {performer.role}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">
+                          {performer.sales} sales
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 text-amber-400 fill-current" />
+                          <span className="text-xs text-gray-600">
                             {performer.rating}
                           </span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Market Insights */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5 text-gray-600" />
-                <span>Market Insights</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-4">
-                {marketInsights.map((insight, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-lg border bg-gradient-to-br from-gray-50 to-white"
-                  >
-                    <p className="text-sm font-medium text-gray-600 mb-2">
-                      {insight.title}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">
-                      {insight.value}
-                    </p>
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                      <span className="text-sm font-medium text-green-600">
-                        {insight.change}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {insight.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AdminLayout>
