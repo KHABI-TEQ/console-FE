@@ -86,20 +86,19 @@ export default function AgentEditPage({ params }: AgentEditPageProps) {
         location: data.data.location || "",
         bio: data.data.bio || "",
         isAccountVerified: data.data.isAccountVerified || false,
-          accountApproved: data.data.accountApproved || false,
-          isFlagged: data.data.isFlagged || false,
-          isInActive: data.data.isInActive || false,
-          agentData: {
-            specialties: data.data.agentData?.specialties || [],
-            tier: data.data.agentData?.tier || "basic",
-            rating: data.data.agentData?.rating || 0,
-            commission: data.data.agentData?.commission || 0,
-            sales: data.data.agentData?.sales || 0,
-          },
-        });
-      }
-    },
-  });
+        accountApproved: data.data.accountApproved || false,
+        isFlagged: data.data.isFlagged || false,
+        isInActive: data.data.isInActive || false,
+        agentData: {
+          specialties: data.data.agentData?.specialties || [],
+          tier: data.data.agentData?.tier || "basic",
+          rating: data.data.agentData?.rating || 0,
+          commission: data.data.agentData?.commission || 0,
+          sales: data.data.agentData?.sales || 0,
+        },
+      });
+    }
+  }, [agentResponse]);
 
   const handleInputChange = (field: string, value: any) => {
     if (field.startsWith("agentData.")) {
