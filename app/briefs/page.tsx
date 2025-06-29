@@ -793,20 +793,6 @@ export default function BriefsPage() {
             onPageChange={setPage}
           />
         </Card>
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={deleteModal.isOpen}
-          onClose={() =>
-            setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" })
-          }
-          onConfirm={confirmDelete}
-          title="Delete Brief"
-          description={`Are you sure you want to delete "${deleteModal.briefTitle}"? This action cannot be undone.`}
-          confirmText="Delete Brief"
-          variant="danger"
-          isLoading={isDeleting}
-        />
       </div>
     </AdminLayout>
   );
