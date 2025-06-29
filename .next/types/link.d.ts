@@ -33,9 +33,9 @@ declare namespace __next_route_internal_types__ {
     | `/admins`
     | `/agents`
     | `/analytics`
-    | `/api/inspections`
     | `/api/all-agents`
     | `/api/all-users`
+    | `/api/inspections`
     | `/auth/forgot-password`
     | `/auth/login`
     | `/briefs`
