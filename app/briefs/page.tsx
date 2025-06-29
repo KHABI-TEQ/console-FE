@@ -54,34 +54,51 @@ export default function BriefsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
 
+  const {
+    data: briefsResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["briefs", filters],
+    queryFn: () => apiService.getBriefs(filters),
+  });
+
+  const briefs = briefsResponse?.data || [];
+  const totalCount = briefsResponse?.total || 0;
+
   const stats = [
     {
       title: "Total Briefs",
-      value: "342",
-      change: "+18.5%",
+      value: totalCount.toString(),
+      change: "+12.5%",
       trend: "up" as const,
       icon: FileText,
       color: "blue" as const,
     },
     {
       title: "Active Briefs",
-      value: "187",
-      change: "+12.3%",
+      value: briefs.filter((b: any) => b.status === "active").length.toString(),
+      change: "+8.2%",
       trend: "up" as const,
       icon: ClipboardList,
       color: "green" as const,
     },
     {
       title: "Pending Review",
-      value: "24",
+      value: briefs
+        .filter((b: any) => b.status === "pending")
+        .length.toString(),
       change: "-8.2%",
       trend: "down" as const,
       icon: Clock,
       color: "orange" as const,
     },
     {
-      title: "Templates Created",
-      value: "45",
+      title: "Completed",
+      value: briefs
+        .filter((b: any) => b.status === "completed")
+        .length.toString(),
       change: "+25.1%",
       trend: "up" as const,
       icon: Star,
