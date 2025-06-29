@@ -82,15 +82,32 @@ class ApiService {
           }
         }
 
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`,
-        );
+        // Return error response instead of throwing
+        return {
+          success: false,
+          error: data.message || `HTTP error! status: ${response.status}`,
+          message:
+            data.message || `Request failed with status ${response.status}`,
+        };
       }
 
-      return data;
+      // Return successful response
+      return {
+        ...data,
+        success: true,
+      };
     } catch (error) {
       console.error(`API Error (${endpoint}):`, error);
-      throw error;
+
+      // Return error response instead of throwing
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        message: "Network or parsing error occurred",
+      };
     }
   }
 

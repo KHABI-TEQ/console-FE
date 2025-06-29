@@ -104,30 +104,19 @@ const stageColors = {
 };
 
 async function approveInspection(id: string) {
-  const response = await fetch(`/api/inspections/${id}/approve`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to approve inspection");
+  const response = await apiService.approveInspection(id);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to approve inspection");
   }
-  return response.json();
+  return response;
 }
 
 async function rejectInspection(id: string, reason: string) {
-  const response = await fetch(`/api/inspections/${id}/reject`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ reason }),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to reject inspection");
+  const response = await apiService.rejectInspection(id, reason);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to reject inspection");
   }
-  return response.json();
+  return response;
 }
 
 export function InspectionDetailModal({
@@ -146,8 +135,14 @@ export function InspectionDetailModal({
     error,
   } = useQuery({
     queryKey: ["inspection", inspectionId],
-    queryFn: () =>
-      inspectionId ? apiService.getSingleInspection(inspectionId) : null,
+    queryFn: async () => {
+      if (!inspectionId) return null;
+      const response = await apiService.getInspection(inspectionId);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch inspection");
+      }
+      return response;
+    },
     enabled: !!inspectionId && isOpen,
   });
 

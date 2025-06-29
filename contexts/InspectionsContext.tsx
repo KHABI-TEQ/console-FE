@@ -5,17 +5,29 @@ import { apiService } from "@/lib/services/apiService";
 import { useApp } from "./AppContext";
 
 interface Inspection {
-  _id: string;
-  propertyId: any;
-  requestedBy: any;
-  owner: any;
+  id: string;
+  property: {
+    id: string;
+    title: string;
+    location: string;
+    type: string;
+  };
+  buyer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  agent: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  date: string;
+  time: string;
   status: string;
-  stage: string;
-  inspectionDate: string;
-  inspectionTime: string;
-  isNegotiating: boolean;
-  negotiationPrice: number;
-  pendingResponseFrom: string;
+  notes?: string;
+  created: string;
+  updated: string;
 }
 
 interface InspectionsContextType {
@@ -30,7 +42,10 @@ interface InspectionsContextType {
     totalPages: number;
   };
   fetchInspections: (newFilters?: any) => Promise<void>;
+  refreshInspections: () => Promise<void>;
   getInspection: (id: string) => Promise<Inspection | null>;
+  approveInspection: (id: string) => Promise<void>;
+  rejectInspection: (id: string, reason: string) => Promise<void>;
   updateInspectionStatus: (id: string, status: string) => Promise<void>;
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
@@ -70,9 +85,17 @@ export function InspectionsProvider({
           limit: pagination.limit,
         });
 
-        setInspections(response.data || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.success) {
+          setInspections(response.data || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch inspections",
+          });
         }
       } catch (error) {
         addNotification({
@@ -91,7 +114,16 @@ export function InspectionsProvider({
     async (id: string): Promise<Inspection | null> => {
       try {
         const response = await apiService.getInspection(id);
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch inspection details",
+          });
+          return null;
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -104,16 +136,83 @@ export function InspectionsProvider({
     [addNotification],
   );
 
+  const approveInspection = useCallback(
+    async (id: string) => {
+      try {
+        const response = await apiService.approveInspection(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Inspection approved successfully",
+          });
+          fetchInspections();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to approve inspection",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to approve inspection",
+        });
+      }
+    },
+    [addNotification, fetchInspections],
+  );
+
+  const rejectInspection = useCallback(
+    async (id: string, reason: string) => {
+      try {
+        const response = await apiService.rejectInspection(id, reason);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Inspection rejected successfully",
+          });
+          fetchInspections();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to reject inspection",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to reject inspection",
+        });
+      }
+    },
+    [addNotification, fetchInspections],
+  );
+
   const updateInspectionStatus = useCallback(
     async (id: string, status: string) => {
       try {
-        await apiService.updateInspectionStatus(id, status);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Inspection status updated successfully",
-        });
-        fetchInspections();
+        const response = await apiService.updateInspectionStatus(id, status);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message:
+              response.message || "Inspection status updated successfully",
+          });
+          fetchInspections();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to update inspection status",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -129,6 +228,10 @@ export function InspectionsProvider({
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
+  const refreshInspections = useCallback(async () => {
+    await fetchInspections();
+  }, [fetchInspections]);
+
   const value: InspectionsContextType = {
     inspections,
     selectedInspection,
@@ -136,7 +239,10 @@ export function InspectionsProvider({
     filters,
     pagination,
     fetchInspections,
+    refreshInspections,
     getInspection,
+    approveInspection,
+    rejectInspection,
     updateInspectionStatus,
     setFilters,
     setPage,
