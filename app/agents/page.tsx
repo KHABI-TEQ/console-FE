@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -17,6 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AddAgentModal } from "@/components/modals/AddAgentModal";
+import { EditAgentModal } from "@/components/modals/EditAgentModal";
+import { useAgents } from "@/contexts/AgentsContext";
+import { AgentsProvider } from "@/contexts/AgentsContext";
 import {
   Table,
   TableBody,
@@ -48,10 +52,25 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export default function AgentsPage() {
+function AgentsPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+
+  const { agents, isLoading, filters, fetchAgents, setFilters, flagAgent } =
+    useAgents();
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const handleOpenEdit = (agentId: string) => {
+    setEditingAgentId(agentId);
+    setIsEditModalOpen(true);
+  };
 
   const stats = [
     {
@@ -92,89 +111,6 @@ export default function AgentsPage() {
       trend: "up" as const,
       icon: DollarSign,
       color: "purple" as const,
-    },
-  ];
-
-  const agents = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      location: "Downtown District",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Premium",
-      rating: 4.9,
-      sales: 24,
-      commission: 185000,
-      joined: "2023-01-15",
-      lastActive: "2 hours ago",
-      specialties: ["Luxury Homes", "Commercial"],
-    },
-    {
-      id: 2,
-      name: "Mike Wilson",
-      email: "mike.wilson@example.com",
-      phone: "+1 (555) 234-5678",
-      location: "Suburban Area",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Standard",
-      rating: 4.7,
-      sales: 18,
-      commission: 145000,
-      joined: "2023-03-10",
-      lastActive: "1 day ago",
-      specialties: ["Family Homes", "First-time Buyers"],
-    },
-    {
-      id: 3,
-      name: "Emma Davis",
-      email: "emma.davis@example.com",
-      phone: "+1 (555) 345-6789",
-      location: "Arts District",
-      avatar: "/placeholder.svg",
-      status: "Inactive",
-      tier: "Basic",
-      rating: 4.5,
-      sales: 12,
-      commission: 95000,
-      joined: "2024-01-05",
-      lastActive: "2 weeks ago",
-      specialties: ["Condos", "Investment Properties"],
-    },
-    {
-      id: 4,
-      name: "Robert Brown",
-      email: "robert.brown@example.com",
-      phone: "+1 (555) 456-7890",
-      location: "Financial District",
-      avatar: "/placeholder.svg",
-      status: "Banned",
-      tier: "Standard",
-      rating: 3.2,
-      sales: 8,
-      commission: 45000,
-      joined: "2023-08-20",
-      lastActive: "1 month ago",
-      specialties: ["Commercial", "Office Spaces"],
-    },
-    {
-      id: 5,
-      name: "Jessica Chen",
-      email: "jessica.chen@example.com",
-      phone: "+1 (555) 567-8901",
-      location: "Uptown",
-      avatar: "/placeholder.svg",
-      status: "Pending",
-      tier: "Basic",
-      rating: 4.3,
-      sales: 3,
-      commission: 18000,
-      joined: "2024-01-20",
-      lastActive: "5 hours ago",
-      specialties: ["Residential", "New Construction"],
     },
   ];
 
@@ -246,7 +182,10 @@ export default function AgentsPage() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
             <UserPlus className="h-4 w-4 mr-2" />
             Add Agent
           </Button>
@@ -477,6 +416,7 @@ export default function AgentsPage() {
                             variant="outline"
                             size="sm"
                             className="hover:bg-green-50 hover:border-green-300"
+                            onClick={() => handleOpenEdit(agent.id.toString())}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -496,7 +436,29 @@ export default function AgentsPage() {
             </div>
           </CardContent>
         </Card>
+        {/* Modals */}
+        <AddAgentModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+        />
+
+        <EditAgentModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingAgentId(null);
+          }}
+          agentId={editingAgentId}
+        />
       </div>
     </AdminLayout>
+  );
+}
+
+export default function AgentsPage() {
+  return (
+    <AgentsProvider>
+      <AgentsPageContent />
+    </AgentsProvider>
   );
 }
