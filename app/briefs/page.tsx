@@ -791,6 +791,12 @@ export default function BriefsPage() {
               </div>
             )}
           </CardContent>
+          <Pagination
+            currentPage={page}
+            totalItems={totalCount}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+          />
         </Card>
 
         {/* Delete Confirmation Modal */}
