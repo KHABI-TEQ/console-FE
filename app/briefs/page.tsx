@@ -55,6 +55,7 @@ import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   DropdownMenu,
   DropdownMenuContent,
