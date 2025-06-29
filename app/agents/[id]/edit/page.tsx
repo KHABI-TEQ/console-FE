@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -71,31 +71,34 @@ export default function AgentEditPage({ params }: AgentEditPageProps) {
   } = useQuery({
     queryKey: ["agent", params.id],
     queryFn: () => apiService.getAgent(params.id),
-    onSuccess: (data) => {
-      if (data.success && data.data) {
-        setFormData({
-          firstName: data.data.firstName || "",
-          lastName: data.data.lastName || "",
-          email: data.data.email || "",
-          phoneNumber: data.data.phoneNumber || "",
-          company: data.data.company || "",
-          location: data.data.location || "",
-          bio: data.data.bio || "",
-          isAccountVerified: data.data.isAccountVerified || false,
-          accountApproved: data.data.accountApproved || false,
-          isFlagged: data.data.isFlagged || false,
-          isInActive: data.data.isInActive || false,
-          agentData: {
-            specialties: data.data.agentData?.specialties || [],
-            tier: data.data.agentData?.tier || "basic",
-            rating: data.data.agentData?.rating || 0,
-            commission: data.data.agentData?.commission || 0,
-            sales: data.data.agentData?.sales || 0,
-          },
-        });
-      }
-    },
   });
+
+  // Handle data update using useEffect instead of onSuccess
+  useEffect(() => {
+    if (agentResponse?.success && agentResponse.data) {
+      const data = agentResponse;
+      setFormData({
+        firstName: data.data.firstName || "",
+        lastName: data.data.lastName || "",
+        email: data.data.email || "",
+        phoneNumber: data.data.phoneNumber || "",
+        company: data.data.company || "",
+        location: data.data.location || "",
+        bio: data.data.bio || "",
+        isAccountVerified: data.data.isAccountVerified || false,
+        accountApproved: data.data.accountApproved || false,
+        isFlagged: data.data.isFlagged || false,
+        isInActive: data.data.isInActive || false,
+        agentData: {
+          specialties: data.data.agentData?.specialties || [],
+          tier: data.data.agentData?.tier || "basic",
+          rating: data.data.agentData?.rating || 0,
+          commission: data.data.agentData?.commission || 0,
+          sales: data.data.agentData?.sales || 0,
+        },
+      });
+    }
+  }, [agentResponse]);
 
   const handleInputChange = (field: string, value: any) => {
     if (field.startsWith("agentData.")) {

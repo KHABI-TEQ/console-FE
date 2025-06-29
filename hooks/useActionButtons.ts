@@ -2,7 +2,13 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 
 interface UseActionButtonsProps {
-  entityType: "agent" | "landlord" | "property" | "contact" | "inspection";
+  entityType:
+    | "agent"
+    | "landlord"
+    | "property"
+    | "contact"
+    | "inspection"
+    | "buyer";
   onRefresh?: () => void;
 }
 

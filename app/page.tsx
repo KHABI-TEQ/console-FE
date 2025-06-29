@@ -17,7 +17,7 @@ export default function HomePage() {
       router.replace("/dashboard");
     } else {
       // Redirect to login if not authenticated
-      router.replace("/login");
+      router.replace("/auth/login");
     }
   }, [router]);
 

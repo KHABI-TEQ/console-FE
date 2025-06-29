@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -66,30 +66,32 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
   } = useQuery({
     queryKey: ["landlord", params.id],
     queryFn: () => apiService.getLandowner(params.id),
-    onSuccess: (data) => {
-      if (data.success && data.data) {
-        setFormData({
-          firstName: data.data.firstName || "",
-          lastName: data.data.lastName || "",
-          email: data.data.email || "",
-          phoneNumber: data.data.phoneNumber || "",
-          location: data.data.location || "",
-          userType: data.data.userType || "Individual",
-          bio: data.data.bio || "",
-          isAccountVerified: data.data.isAccountVerified || false,
-          accountApproved: data.data.accountApproved || false,
-          isFlagged: data.data.isFlagged || false,
-          isInActive: data.data.isInActive || false,
-          bankDetails: {
-            accountName: data.data.bankDetails?.accountName || "",
-            accountNumber: data.data.bankDetails?.accountNumber || "",
-            bankName: data.data.bankDetails?.bankName || "",
-            isVerified: data.data.bankDetails?.isVerified || false,
-          },
-        });
-      }
-    },
   });
+
+  useEffect(() => {
+    if (landlordResponse?.success && landlordResponse.data) {
+      const data = landlordResponse;
+      setFormData({
+        firstName: data.data.firstName || "",
+        lastName: data.data.lastName || "",
+        email: data.data.email || "",
+        phoneNumber: data.data.phoneNumber || "",
+        location: data.data.location || "",
+        userType: data.data.userType || "Individual",
+        bio: data.data.bio || "",
+        isAccountVerified: data.data.isAccountVerified || false,
+        accountApproved: data.data.accountApproved || false,
+        isFlagged: data.data.isFlagged || false,
+        isInActive: data.data.isInActive || false,
+        bankDetails: {
+          accountName: data.data.bankDetails?.accountName || "",
+          accountNumber: data.data.bankDetails?.accountNumber || "",
+          bankName: data.data.bankDetails?.bankName || "",
+          isVerified: data.data.bankDetails?.isVerified || false,
+        },
+      });
+    }
+  }, [landlordResponse]);
 
   const handleInputChange = (field: string, value: any) => {
     if (field.startsWith("bankDetails.")) {

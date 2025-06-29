@@ -18,7 +18,13 @@ import {
 import { useActionButtons } from "@/hooks/useActionButtons";
 
 interface ActionButtonsProps {
-  entityType: "agent" | "landlord" | "property" | "contact" | "inspection";
+  entityType:
+    | "agent"
+    | "landlord"
+    | "property"
+    | "contact"
+    | "inspection"
+    | "buyer";
   entityId: string;
   entityName?: string;
   email?: string;
@@ -26,6 +32,10 @@ interface ActionButtonsProps {
   showApproval?: boolean;
   showContact?: boolean;
   showMore?: boolean;
+  showView?: boolean;
+  showEdit?: boolean;
+  showDelete?: boolean;
+  showVerification?: boolean;
   size?: "sm" | "default";
   variant?: "inline" | "dropdown";
   onRefresh?: () => void;

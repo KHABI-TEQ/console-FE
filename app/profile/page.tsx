@@ -130,14 +130,17 @@ export default function ProfilePage() {
     data: profileData,
     isLoading: profileLoading,
     refetch: refetchProfile,
-  } = useQuery<{ success: boolean; admin: ProfileData }>({
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const response = await apiService.getProfile();
       if (!response.success) {
         throw new Error(response.error || "Failed to fetch profile");
       }
-      return response;
+      return {
+        success: response.success,
+        admin: response.data || {},
+      };
     },
   });
 
@@ -158,12 +161,13 @@ export default function ProfilePage() {
       });
 
       // Update user context if available
-      if (user && data.data) {
+      if (user && data?.data) {
+        const userData = (data.data as any) || {};
         updateUser({
-          name: `${data.data.firstName || profileForm.firstName} ${data.data.lastName || profileForm.lastName}`,
-          email: data.data.email || profileForm.email,
-          firstName: data.data.firstName || profileForm.firstName,
-          lastName: data.data.lastName || profileForm.lastName,
+          name: `${userData.firstName || profileForm.firstName} ${userData.lastName || profileForm.lastName}`,
+          email: userData.email || profileForm.email,
+          firstName: userData.firstName || profileForm.firstName,
+          lastName: userData.lastName || profileForm.lastName,
         });
       }
 
