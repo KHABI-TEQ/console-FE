@@ -1,0 +1,856 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  MapPin,
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  Mail,
+  DollarSign,
+  Home,
+  Bath,
+  Bed,
+  Square,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+  Eye,
+  Building,
+  CreditCard,
+  FileText,
+  Activity,
+  TrendingUp,
+  Star,
+  Shield,
+  AlertTriangle,
+  Info,
+  Award,
+  Target,
+} from "lucide-react";
+import {
+  IInspectionBookingPopulated,
+  InspectionActionResponse,
+} from "@/lib/types/inspection";
+import { cn } from "@/lib/utils";
+
+interface InspectionDetailModalProps {
+  inspection: IInspectionBookingPopulated;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const statusColors = {
+  pending_transaction:
+    "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200",
+  transaction_failed:
+    "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200",
+  pending_inspection:
+    "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-blue-200",
+  inspection_approved:
+    "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200",
+  inspection_rescheduled:
+    "bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border-orange-200",
+  inspection_rejected_by_seller:
+    "bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200",
+  inspection_rejected_by_buyer:
+    "bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200",
+  negotiation_countered:
+    "bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border-purple-200",
+  negotiation_accepted:
+    "bg-gradient-to-r from-green-100 to-teal-100 text-green-800 border-green-200",
+  negotiation_rejected:
+    "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200",
+  negotiation_cancelled:
+    "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200",
+  completed:
+    "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200",
+  cancelled:
+    "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200",
+};
+
+const stageColors = {
+  inspection:
+    "bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200",
+  negotiation:
+    "bg-gradient-to-r from-purple-100 to-fuchsia-100 text-purple-800 border-purple-200",
+  LOI: "bg-gradient-to-r from-green-100 to-teal-100 text-green-800 border-green-200",
+};
+
+async function approveInspection(
+  id: string,
+): Promise<InspectionActionResponse> {
+  const response = await fetch(`/api/inspections/${id}/approve`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to approve inspection");
+  }
+  return response.json();
+}
+
+async function rejectInspection(
+  id: string,
+  reason: string,
+): Promise<InspectionActionResponse> {
+  const response = await fetch(`/api/inspections/${id}/reject`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ reason }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to reject inspection");
+  }
+  return response.json();
+}
+
+export function InspectionDetailModal({
+  inspection,
+  isOpen,
+  onClose,
+}: InspectionDetailModalProps) {
+  const [rejectReason, setRejectReason] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const approveMutation = useMutation({
+    mutationFn: () => approveInspection(inspection._id),
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["inspections"] });
+      onClose();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve inspection",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: () => rejectInspection(inspection._id, rejectReason),
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["inspections"] });
+      setRejectReason("");
+      onClose();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reject inspection",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
+  const canApprove = inspection.status === "pending_inspection";
+  const canReject = ["pending_inspection", "negotiation_countered"].includes(
+    inspection.status,
+  );
+
+  const propertyFeatures = [
+    {
+      icon: Bed,
+      label: "Bedrooms",
+      value: inspection.propertyId.bedrooms,
+    },
+    {
+      icon: Bath,
+      label: "Bathrooms",
+      value: inspection.propertyId.bathrooms,
+    },
+    {
+      icon: Square,
+      label: "Square Feet",
+      value: inspection.propertyId.sqft.toLocaleString(),
+    },
+    {
+      icon: Building,
+      label: "Property Type",
+      value: inspection.propertyId.propertyType,
+    },
+  ];
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:max-w-5xl overflow-y-auto">
+        <SheetHeader className="pb-4 sm:pb-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="text-xl sm:text-2xl font-semibold text-gray-900">
+                Inspection Details
+              </SheetTitle>
+              <SheetDescription className="text-gray-600 mt-1 text-sm sm:text-base">
+                Complete inspection information and actions
+              </SheetDescription>
+            </div>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Badge variant="outline" className="text-xs sm:text-sm">
+                {inspection.status.replace(/_/g, " ")}
+              </Badge>
+              <Badge variant="secondary" className="text-xs sm:text-sm">
+                {inspection.stage}
+              </Badge>
+            </div>
+          </div>
+        </SheetHeader>
+
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full mt-4 sm:mt-6"
+        >
+          <TabsList className="grid w-full grid-cols-5 h-auto">
+            <TabsTrigger
+              value="overview"
+              className="flex-col sm:flex-row p-2 sm:p-3"
+            >
+              <Eye className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="property"
+              className="flex-col sm:flex-row p-2 sm:p-3"
+            >
+              <Home className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Property</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="participants"
+              className="flex-col sm:flex-row p-2 sm:p-3"
+            >
+              <User className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">People</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="financial"
+              className="flex-col sm:flex-row p-2 sm:p-3"
+            >
+              <DollarSign className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Financial</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="actions"
+              className="flex-col sm:flex-row p-2 sm:p-3"
+            >
+              <Shield className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Actions</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent
+            value="overview"
+            className="space-y-4 sm:space-y-6 mt-4 sm:mt-6"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Inspection Date</p>
+                      <p className="font-medium text-gray-900">
+                        {formatDate(inspection.inspectionDate)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {inspection.inspectionTime}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Property Value</p>
+                      <p className="font-medium text-gray-900">
+                        {formatCurrency(inspection.propertyId.price)}
+                      </p>
+                      {inspection.isNegotiating && (
+                        <p className="text-sm text-orange-600">
+                          Offer: {formatCurrency(inspection.negotiationPrice)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Current Stage</p>
+                      <p className="font-medium text-gray-900 capitalize">
+                        {inspection.stage}
+                      </p>
+                      {inspection.pendingResponseFrom !== "none" && (
+                        <p className="text-sm text-amber-600">
+                          Awaiting {inspection.pendingResponseFrom}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5" />
+                  <span>Timeline</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Inspection Requested</p>
+                      <p className="text-sm text-gray-500">
+                        {formatDate(inspection.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {inspection.status === "pending_inspection" && (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <Clock className="h-3 w-3 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Pending Approval</p>
+                        <p className="text-sm text-gray-500">
+                          Awaiting admin action
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {inspection.status === "inspection_approved" && (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                        <Award className="h-3 w-3 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Inspection Approved</p>
+                        <p className="text-sm text-gray-500">
+                          Ready to proceed
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {inspection.letterOfIntention && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5" />
+                    <span>Letter of Intention</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
+                    <p className="text-gray-700 leading-relaxed italic">
+                      &quot;{inspection.letterOfIntention}&quot;
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="property"
+            className="space-y-4 sm:space-y-6 mt-4 sm:mt-6"
+          >
+            <Card className="overflow-hidden">
+              <div className="relative">
+                <img
+                  src={inspection.propertyId.images[0]}
+                  alt={inspection.propertyId.title}
+                  className="w-full h-48 sm:h-64 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl sm:text-2xl font-bold">
+                    {inspection.propertyId.title}
+                  </h3>
+                  <p className="flex items-center mt-1 opacity-90 text-sm sm:text-base">
+                    <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="truncate">
+                      {inspection.propertyId.address}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-6">
+                  {propertyFeatures.map((feature, index) => (
+                    <div key={index} className="text-center">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mx-auto mb-2">
+                        <feature.icon className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <p className="text-sm text-gray-600">{feature.label}</p>
+                      <p className="font-semibold">{feature.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator className="my-6" />
+
+                <div>
+                  <h4 className="font-semibold mb-3">Property Description</h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    {inspection.propertyId.description}
+                  </p>
+                </div>
+
+                {inspection.propertyId.images.length > 1 && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold mb-3">Additional Images</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {inspection.propertyId.images
+                        .slice(1)
+                        .map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Property view ${index + 2}`}
+                            className="w-full h-24 object-cover rounded-lg"
+                          />
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="participants" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <span>Buyer Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start space-x-4">
+                    <img
+                      src={inspection.requestedBy.avatar}
+                      alt={inspection.requestedBy.name}
+                      className="h-20 w-20 rounded-xl shadow-md"
+                    />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {inspection.requestedBy.name}
+                        </h3>
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                          Primary Buyer
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm">
+                            {inspection.requestedBy.email}
+                          </span>
+                        </div>
+                        {inspection.requestedBy.phone && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm">
+                              {inspection.requestedBy.phone}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                      <Home className="h-4 w-4 text-white" />
+                    </div>
+                    <span>Seller Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start space-x-4">
+                    <img
+                      src={inspection.owner.avatar}
+                      alt={inspection.owner.name}
+                      className="h-20 w-20 rounded-xl shadow-md"
+                    />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {inspection.owner.name}
+                        </h3>
+                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                          Property Owner
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm">
+                            {inspection.owner.email}
+                          </span>
+                        </div>
+                        {inspection.owner.phone && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm">
+                              {inspection.owner.phone}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="financial" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5" />
+                  <span>Transaction Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                    <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Transaction Amount</p>
+                    <p className="text-2xl font-bold text-green-700">
+                      {formatCurrency(inspection.transaction.amount)}
+                    </p>
+                  </div>
+
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
+                    <CreditCard className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Payment Method</p>
+                    <p className="text-lg font-semibold">
+                      {inspection.transaction.paymentMethod}
+                    </p>
+                  </div>
+
+                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-xl">
+                    <Activity className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Status</p>
+                    <Badge
+                      variant={
+                        inspection.transaction.status === "completed"
+                          ? "default"
+                          : "secondary"
+                      }
+                      className="text-sm"
+                    >
+                      {inspection.transaction.status}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Pricing Overview</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                    <span className="font-medium">Listed Price</span>
+                    <span className="text-lg font-bold">
+                      {formatCurrency(inspection.propertyId.price)}
+                    </span>
+                  </div>
+
+                  {inspection.isNegotiating && (
+                    <>
+                      <div className="flex justify-between items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                        <span className="font-medium text-orange-800">
+                          Buyer&apos;s Offer
+                        </span>
+                        <span className="text-lg font-bold text-orange-700">
+                          {formatCurrency(inspection.negotiationPrice)}
+                        </span>
+                      </div>
+
+                      {inspection.sellerCounterOffer && (
+                        <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <span className="font-medium text-purple-800">
+                            Seller&apos;s Counter
+                          </span>
+                          <span className="text-lg font-bold text-purple-700">
+                            {formatCurrency(inspection.sellerCounterOffer)}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="actions" className="space-y-6 mt-6">
+            {canApprove || canReject ? (
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Shield className="h-5 w-5" />
+                    <span>Administrative Actions</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {canApprove && (
+                        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                              <CheckCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-green-900">
+                                Approve Inspection
+                              </h3>
+                              <p className="text-sm text-green-700">
+                                Grant permission to proceed
+                              </p>
+                            </div>
+                          </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve Inspection
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="flex items-center space-x-2">
+                                  <CheckCircle className="h-5 w-5 text-green-600" />
+                                  <span>Approve Inspection</span>
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to approve this
+                                  inspection? This action will notify both the
+                                  buyer and seller and allow the inspection to
+                                  proceed as scheduled.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => approveMutation.mutate()}
+                                  disabled={approveMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  {approveMutation.isPending
+                                    ? "Approving..."
+                                    : "Approve"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      )}
+
+                      {canReject && (
+                        <div className="p-6 bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border border-red-200">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center">
+                              <XCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-red-900">
+                                Reject Inspection
+                              </h3>
+                              <p className="text-sm text-red-700">
+                                Decline the inspection request
+                              </p>
+                            </div>
+                          </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject Inspection
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="flex items-center space-x-2">
+                                  <XCircle className="h-5 w-5 text-red-600" />
+                                  <span>Reject Inspection</span>
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Please provide a reason for rejecting this
+                                  inspection. This will be communicated to the
+                                  parties involved.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <div className="py-4">
+                                <Textarea
+                                  placeholder="Enter reason for rejection..."
+                                  value={rejectReason}
+                                  onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                  }
+                                  className="border-gray-300 focus:border-red-500"
+                                />
+                              </div>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => rejectMutation.mutate()}
+                                  disabled={
+                                    rejectMutation.isPending ||
+                                    !rejectReason.trim()
+                                  }
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  {rejectMutation.isPending
+                                    ? "Rejecting..."
+                                    : "Reject"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      )}
+                    </div>
+
+                    {!canApprove && !canReject && (
+                      <div className="text-center p-8 bg-gray-50 rounded-xl">
+                        <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="font-semibold text-gray-600 mb-2">
+                          No Actions Available
+                        </h3>
+                        <p className="text-gray-500">
+                          This inspection is in a state that doesn&apos;t
+                          require administrative action at this time.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-lg">
+                <CardContent className="text-center p-8">
+                  <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <h3 className="font-semibold text-gray-600 mb-2">
+                    No Actions Available
+                  </h3>
+                  <p className="text-gray-500">
+                    This inspection is in a state that doesn&apos;t require
+                    administrative action at this time.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </SheetContent>
+    </Sheet>
+  );
+}
