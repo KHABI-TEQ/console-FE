@@ -369,15 +369,15 @@ function SidebarContent({
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { sidebarCollapsed, setSidebarCollapsed } = useApp();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
+  if (!mounted || isLoading) {
+    return <PagePreloader text="Initializing dashboard..." />;
   }
 
   return (
