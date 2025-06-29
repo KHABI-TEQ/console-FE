@@ -980,17 +980,6 @@ export default function ProfilePage() {
                         variant="outline"
                         className="h-auto p-4 flex flex-col items-center space-y-2"
                       >
-                        <Download className="h-6 w-6" />
-                        <span>Export Data</span>
-                        <span className="text-xs text-gray-500">
-                          Download your account data
-                        </span>
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        className="h-auto p-4 flex flex-col items-center space-y-2"
-                      >
                         <RefreshCw className="h-6 w-6" />
                         <span>Reset Preferences</span>
                         <span className="text-xs text-gray-500">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApp } from "@/contexts/AppContext";
+import { PagePreloader } from "@/components/shared/Preloader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -272,7 +273,6 @@ function SidebarContent({
                 className="object-contain"
               />
             </div>
-            
           </div>
           {onToggleCollapse && (
             <Button
@@ -369,15 +369,15 @@ function SidebarContent({
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { sidebarCollapsed, setSidebarCollapsed } = useApp();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
+  if (!mounted || isLoading) {
+    return <PagePreloader text="Initializing dashboard..." />;
   }
 
   return (

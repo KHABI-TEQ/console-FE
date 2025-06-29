@@ -188,10 +188,6 @@ export default function BuyersPage() {
           title="Buyer Management"
           description="Manage registered buyers, preferences, and activity"
         >
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
           <Button
             variant="outline"
             onClick={handleRefresh}
