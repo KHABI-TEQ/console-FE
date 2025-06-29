@@ -31,7 +31,7 @@ interface EditAdminModalProps {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-    address: string;
+    address?: string;
     role: string;
   };
 }
