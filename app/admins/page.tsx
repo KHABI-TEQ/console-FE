@@ -108,6 +108,8 @@ export default function AdminsPage() {
         limit: pageLimit,
       });
 
+      console.log("API Response:", response);
+
       if (!response.success) {
         throw new Error(response.error || "Failed to fetch admins");
       }
