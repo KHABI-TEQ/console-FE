@@ -63,7 +63,7 @@ export default async function BriefDetailPage({
 
   // Mock data for demonstration
   const mockBrief = {
-    _id: params.id,
+    _id: briefId,
     title: "Luxury Apartment Marketing Strategy",
     description:
       "Comprehensive marketing plan for high-end residential properties in Victoria Island. This brief outlines the strategic approach to positioning and promoting luxury apartments to target high-net-worth individuals.",
@@ -236,7 +236,7 @@ export default async function BriefDetailPage({
       variant: "danger",
       onConfirm: async () => {
         try {
-          await apiService.deleteBrief(params.id);
+          await apiService.deleteBrief(briefId);
           router.push("/briefs");
         } catch (error) {
           console.error("Failed to delete brief:", error);
@@ -248,7 +248,7 @@ export default async function BriefDetailPage({
   const handleApproveBrief = async () => {
     setIsApproving(true);
     try {
-      await apiService.patch(`/briefs/${params.id}/approve`);
+      await apiService.patch(`/briefs/${briefId}/approve`);
       refetch();
     } catch (error) {
       console.error("Failed to approve brief:", error);
