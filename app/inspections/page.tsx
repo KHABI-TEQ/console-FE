@@ -68,27 +68,7 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-async function fetchInspections(
-  filters: InspectionFilters & { page: number; limit: number },
-): Promise<InspectionListResponse> {
-  const params = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      if (Array.isArray(value)) {
-        value.forEach((v) => params.append(key, v));
-      } else {
-        params.append(key, value.toString());
-      }
-    }
-  });
-
-  const response = await fetch(`/api/inspections?${params}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch inspections");
-  }
-  return response.json();
-}
+import { apiService } from "@/lib/services/apiService";
 
 export default function InspectionsPage() {
   const [filters, setFilters] = useState<InspectionFilters>({});
@@ -106,7 +86,7 @@ export default function InspectionsPage() {
     refetch,
   } = useQuery({
     queryKey: ["inspections", filters, page],
-    queryFn: () => fetchInspections({ ...filters, page, limit }),
+    queryFn: () => apiService.getInspections({ ...filters, page, limit }),
   });
 
   const handleFilterChange = (key: keyof InspectionFilters, value: string) => {
