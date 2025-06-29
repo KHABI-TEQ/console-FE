@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
+import { ActionButtons } from "@/components/shared/ActionButtons";
 
 interface AgentManagementProps {
   defaultTab?: "agents" | "landlords";
@@ -472,25 +473,16 @@ export function AgentManagement({
                 </div>
               </TableCell>
               <TableCell className="py-4">
-                <div className="flex items-center space-x-2">
-                  <Link href={`/agents/${agent.id}`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-blue-50 hover:border-blue-300"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="hover:bg-green-50 hover:border-green-300"
-                    onClick={() => handleOpenEdit(agent.id.toString())}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
+                <ActionButtons
+                  entityType="agent"
+                  entityId={agent.id.toString()}
+                  entityName={agent.name}
+                  email={agent.email}
+                  phone={agent.phone}
+                  showContact={true}
+                  showMore={true}
+                  onRefresh={handleRefresh}
+                />
               </TableCell>
             </TableRow>
           ))}
@@ -646,32 +638,17 @@ export function AgentManagement({
                 </div>
               </TableCell>
               <TableCell className="py-4">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="hover:bg-blue-50 hover:border-blue-300"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="hover:bg-green-50 hover:border-green-300"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {landlord.verificationStatus === "pending" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-green-50 hover:border-green-300"
-                      onClick={() => verifyLandlord(landlord.id, "verified")}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                <ActionButtons
+                  entityType="landlord"
+                  entityId={landlord.id}
+                  entityName={landlord.name}
+                  email={landlord.email}
+                  phone={landlord.phone}
+                  showContact={true}
+                  showApproval={landlord.verificationStatus === "pending"}
+                  showMore={true}
+                  onRefresh={handleRefresh}
+                />
               </TableCell>
             </TableRow>
           ))}
