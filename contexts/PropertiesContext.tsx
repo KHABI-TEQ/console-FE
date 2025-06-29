@@ -7,18 +7,23 @@ import { useApp } from "./AppContext";
 interface Property {
   id: string;
   title: string;
-  address: string;
+  location: string;
   price: number;
+  type: string;
+  status: string;
+  images: string[];
   bedrooms: number;
   bathrooms: number;
   sqft: number;
-  type: string;
-  status: string;
-  featured: boolean;
-  images: string[];
-  agent: string;
+  agent: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
   listed: string;
-  views: number;
+  updated: string;
+  description: string;
+  features: string[];
 }
 
 interface PropertiesContextType {
@@ -33,10 +38,13 @@ interface PropertiesContextType {
     totalPages: number;
   };
   fetchProperties: (newFilters?: any) => Promise<void>;
+  refreshProperties: () => Promise<void>;
   getProperty: (id: string) => Promise<Property | null>;
   createProperty: (propertyData: any) => Promise<void>;
+  updateProperty: (id: string, propertyData: any) => Promise<void>;
   deleteProperty: (id: string) => Promise<void>;
-  approveDisapproveProperty: (id: string, status: string) => Promise<void>;
+  approveProperty: (id: string) => Promise<void>;
+  rejectProperty: (id: string, reason?: string) => Promise<void>;
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
   setSelectedProperty: (property: Property | null) => void;
@@ -76,9 +84,17 @@ export function PropertiesProvider({
           limit: pagination.limit,
         });
 
-        setProperties(response.data || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.success) {
+          setProperties(response.data || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch properties",
+          });
         }
       } catch (error) {
         addNotification({
@@ -97,7 +113,16 @@ export function PropertiesProvider({
     async (id: string): Promise<Property | null> => {
       try {
         const response = await apiService.getProperty(id);
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch property details",
+          });
+          return null;
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -113,13 +138,21 @@ export function PropertiesProvider({
   const createProperty = useCallback(
     async (propertyData: any) => {
       try {
-        await apiService.createProperty(propertyData);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Property created successfully",
-        });
-        fetchProperties();
+        const response = await apiService.createProperty(propertyData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Property created successfully",
+          });
+          fetchProperties();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to create property",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -131,16 +164,53 @@ export function PropertiesProvider({
     [addNotification, fetchProperties],
   );
 
+  const updateProperty = useCallback(
+    async (id: string, propertyData: any) => {
+      try {
+        const response = await apiService.updateProperty(id, propertyData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Property updated successfully",
+          });
+          fetchProperties();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to update property",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to update property",
+        });
+      }
+    },
+    [addNotification, fetchProperties],
+  );
+
   const deleteProperty = useCallback(
     async (id: string) => {
       try {
-        await apiService.deleteProperty(id);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Property deleted successfully",
-        });
-        fetchProperties();
+        const response = await apiService.deleteProperty(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Property deleted successfully",
+          });
+          fetchProperties();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to delete property",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -152,21 +222,58 @@ export function PropertiesProvider({
     [addNotification, fetchProperties],
   );
 
-  const approveDisapproveProperty = useCallback(
-    async (id: string, status: string) => {
+  const approveProperty = useCallback(
+    async (id: string) => {
       try {
-        await apiService.approveDisapproveProperty(id, status);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: `Property ${status} successfully`,
-        });
-        fetchProperties();
+        const response = await apiService.approveProperty(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Property approved successfully",
+          });
+          fetchProperties();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to approve property",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
           title: "Error",
-          message: `Failed to ${status} property`,
+          message: "Failed to approve property",
+        });
+      }
+    },
+    [addNotification, fetchProperties],
+  );
+
+  const rejectProperty = useCallback(
+    async (id: string, reason?: string) => {
+      try {
+        const response = await apiService.rejectProperty(id, reason);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Property rejected successfully",
+          });
+          fetchProperties();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to reject property",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to reject property",
         });
       }
     },
@@ -177,6 +284,10 @@ export function PropertiesProvider({
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
+  const refreshProperties = useCallback(async () => {
+    await fetchProperties();
+  }, [fetchProperties]);
+
   const value: PropertiesContextType = {
     properties,
     selectedProperty,
@@ -184,10 +295,13 @@ export function PropertiesProvider({
     filters,
     pagination,
     fetchProperties,
+    refreshProperties,
     getProperty,
     createProperty,
+    updateProperty,
     deleteProperty,
-    approveDisapproveProperty,
+    approveProperty,
+    rejectProperty,
     setFilters,
     setPage,
     setSelectedProperty,
