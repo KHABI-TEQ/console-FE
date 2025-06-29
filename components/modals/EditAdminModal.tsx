@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,8 +18,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { X, Plus, Shield, User, Mail, Phone, MapPin, Edit } from "lucide-react";
+import { Shield, User, Mail, Phone, MapPin, Edit } from "lucide-react";
+import { useAdmin } from "@/contexts/AdminContext";
 
 interface EditAdminModalProps {
   isOpen: boolean;
@@ -28,14 +27,12 @@ interface EditAdminModalProps {
   onSuccess?: () => void;
   adminData?: {
     id: string;
-    name: string;
     email: string;
-    phone: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    address: string;
     role: string;
-    department: string;
-    permissions: string[];
-    bio: string;
-    location: string;
   };
 }
 
@@ -46,29 +43,26 @@ export function EditAdminModal({
   adminData,
 }: EditAdminModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
-    phone: "",
-    role: "Admin",
-    department: "",
-    permissions: [] as string[],
-    bio: "",
-    location: "",
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    address: "",
+    role: "admin",
   });
-  const [newPermission, setNewPermission] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { updateAdmin } = useAdmin();
 
   useEffect(() => {
     if (adminData) {
       setFormData({
-        name: adminData.name || "",
         email: adminData.email || "",
-        phone: adminData.phone || "",
-        role: adminData.role || "Admin",
-        department: adminData.department || "",
-        permissions: adminData.permissions || [],
-        bio: adminData.bio || "",
-        location: adminData.location || "",
+        firstName: adminData.firstName || "",
+        lastName: adminData.lastName || "",
+        phoneNumber: adminData.phoneNumber || "",
+        address: adminData.address || "",
+        role: adminData.role || "admin",
       });
     }
   }, [adminData]);
@@ -77,36 +71,16 @@ export function EditAdminModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addPermission = () => {
-    if (
-      newPermission.trim() &&
-      !formData.permissions.includes(newPermission.trim())
-    ) {
-      setFormData((prev) => ({
-        ...prev,
-        permissions: [...prev.permissions, newPermission.trim()],
-      }));
-      setNewPermission("");
-    }
-  };
-
-  const removePermission = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: prev.permissions.filter((_, i) => i !== index),
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      onSuccess?.();
-      onClose();
+      if (adminData?.id) {
+        await updateAdmin(adminData.id, formData);
+        onSuccess?.();
+        onClose();
+      }
     } catch (error) {
       console.error("Failed to update admin:", error);
     } finally {
@@ -140,15 +114,32 @@ export function EditAdminModal({
             </h3>
 
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name*</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Enter administrator's full name"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name*</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
+                    placeholder="Enter first name"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name*</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
+                    placeholder="Enter last name"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -168,152 +159,66 @@ export function EditAdminModal({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phoneNumber">Phone Number*</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="+1 (555) 123-4567"
+                    id="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
+                    placeholder="+234 (XXX) XXX-XXXX"
                     className="pl-10"
+                    required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="address">Address*</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    id="location"
-                    value={formData.location}
+                    id="address"
+                    value={formData.address}
                     onChange={(e) =>
-                      handleInputChange("location", e.target.value)
+                      handleInputChange("address", e.target.value)
                     }
-                    placeholder="Office location or department"
+                    placeholder="Street, State, Local Government Area"
                     className="pl-10"
+                    required
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Role & Department */}
+          {/* Role & Access */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center">
               <Shield className="h-5 w-5 mr-2 text-gray-600" />
               Role & Access
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="role">Admin Role</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) => handleInputChange("role", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Super Admin">Super Admin</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Manager">Manager</SelectItem>
-                    <SelectItem value="Supervisor">Supervisor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Select
-                  value={formData.department}
-                  onValueChange={(value) =>
-                    handleInputChange("department", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Operations">Operations</SelectItem>
-                    <SelectItem value="Sales">Sales</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                    <SelectItem value="HR">Human Resources</SelectItem>
-                    <SelectItem value="IT">Information Technology</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Permissions */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Permissions</h3>
             <div className="space-y-2">
-              <Label>Add Permissions</Label>
-              <div className="flex space-x-2">
-                <Select value={newPermission} onValueChange={setNewPermission}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select permission" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="User Management">
-                      User Management
-                    </SelectItem>
-                    <SelectItem value="Property Management">
-                      Property Management
-                    </SelectItem>
-                    <SelectItem value="Agent Management">
-                      Agent Management
-                    </SelectItem>
-                    <SelectItem value="Financial Reports">
-                      Financial Reports
-                    </SelectItem>
-                    <SelectItem value="System Settings">
-                      System Settings
-                    </SelectItem>
-                    <SelectItem value="Audit Logs">Audit Logs</SelectItem>
-                    <SelectItem value="Backup & Recovery">
-                      Backup & Recovery
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="button" onClick={addPermission} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.permissions.map((permission, index) => (
-                  <Badge key={index} variant="outline" className="pr-1">
-                    {permission}
-                    <button
-                      type="button"
-                      onClick={() => removePermission(index)}
-                      className="ml-1 hover:bg-red-100 rounded-full p-0.5"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Bio */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Additional Information</h3>
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio / Notes</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => handleInputChange("bio", e.target.value)}
-                placeholder="Enter additional notes or biography..."
-                rows={3}
-              />
+              <Label htmlFor="role">Admin Role*</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => handleInputChange("role", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="superAdmin">Super Admin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Super Admin has full system access, Admin has limited
+                permissions
+              </p>
             </div>
           </div>
 
