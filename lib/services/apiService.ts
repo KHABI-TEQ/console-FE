@@ -17,7 +17,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
 class ApiService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = "http://localhost:8081/api") {
+  constructor(baseUrl: string = "/api") {
     this.baseUrl = baseUrl;
   }
 
