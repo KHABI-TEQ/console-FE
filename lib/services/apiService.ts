@@ -135,12 +135,21 @@ class ApiService {
   }
 
   // Agent-specific methods
-  async getAgents(filters?: any): Promise<PaginatedResponse<any[]>> {
+  async getAgents(filters?: any): Promise<ApiResponse<any>> {
+    return this.get("/agents", filters);
+  }
+
+  async getAllAgents(filters?: any): Promise<PaginatedResponse<any[]>> {
     return this.get("/all-agents", filters);
   }
 
   async getAgent(id: string): Promise<ApiResponse<any>> {
     return this.get(`/agent/${id}`);
+  }
+
+  // Landowners-specific methods
+  async getLandowners(filters?: any): Promise<ApiResponse<any>> {
+    return this.get("/landowners", filters);
   }
 
   async getAgentProperties(agentId: string): Promise<ApiResponse<any[]>> {
