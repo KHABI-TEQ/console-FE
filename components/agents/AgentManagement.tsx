@@ -142,25 +142,8 @@ export function AgentManagement({
   };
 
   // Filter functions
-  const filteredAgents =
-    agentsData?.users?.filter((agent: any) => {
-      const fullName =
-        `${agent.firstName || ""} ${agent.lastName || ""}`.trim();
-      const matchesSearch =
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.email.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    }) || [];
-
-  const filteredLandlords =
-    landlordsData?.agents?.data?.filter((landlord: any) => {
-      const fullName =
-        `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim();
-      const matchesSearch =
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        landlord.email.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    }) || [];
+  const filteredAgents = agentsData?.users || [];
+  const filteredLandlords = landlordsData?.users || [];
 
   // Stats for agents
   const agentStats = [
