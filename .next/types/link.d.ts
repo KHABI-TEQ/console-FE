@@ -32,7 +32,10 @@ declare namespace __next_route_internal_types__ {
     | `/`
     | `/admins`
     | `/agents`
+    | `/analytics`
     | `/api/inspections`
+    | `/api/all-agents`
+    | `/api/all-users`
     | `/auth/forgot-password`
     | `/auth/login`
     | `/briefs`
@@ -46,13 +49,16 @@ declare namespace __next_route_internal_types__ {
     | `/preferences/buyers`
     | `/preferences/developers`
     | `/preferences/tenants`
+    | `/profile`
     | `/properties`
     | `/properties/new`
+    | `/settings`
   type DynamicRoutes<T extends string = string> = 
     | `/agents/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}/approve`
     | `/api/inspections/${SafeSlug<T>}/reject`
+    | `/properties/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
     | StaticRoutes

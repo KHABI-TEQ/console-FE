@@ -132,295 +132,408 @@ export default function BuyerPreferencesPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Matching & Search Settings */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <CardTitle className="flex items-center">
-                <Heart className="h-5 w-5 mr-2 text-blue-600" />
-                Matching & Search Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">
-                    Auto-Match Notifications
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    Automatically notify buyers of matching properties
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.autoMatchNotifications}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("autoMatchNotifications", checked)
-                  }
-                />
-              </div>
+        {/* Preferences Table */}
+        <Card className="border border-gray-200 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+            <CardTitle className="flex items-center">
+              <Settings className="h-5 w-5 mr-2 text-blue-600" />
+              Buyer Preference Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-4 font-semibold text-gray-900">
+                      Setting
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-900">
+                      Description
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-900">
+                      Value
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-900">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">
+                      Auto-Match Notifications
+                    </td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Automatically notify buyers of matching properties
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.autoMatchNotifications}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange(
+                            "autoMatchNotifications",
+                            checked,
+                          )
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.autoMatchNotifications
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.autoMatchNotifications
+                          ? "Enabled"
+                          : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Daily Digest</Label>
-                  <p className="text-sm text-gray-600">
-                    Send daily summary of new matching properties
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.dailyDigest}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("dailyDigest", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Daily Digest</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Send daily summary of new matching properties
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.dailyDigest}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("dailyDigest", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.dailyDigest
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.dailyDigest ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Instant Alerts</Label>
-                  <p className="text-sm text-gray-600">
-                    Send immediate notifications for high-priority matches
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.instantAlerts}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("instantAlerts", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Instant Alerts</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Send immediate notifications for high-priority matches
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.instantAlerts}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("instantAlerts", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.instantAlerts
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.instantAlerts ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="space-y-2">
-                <Label>Default Match Radius (miles)</Label>
-                <Select
-                  value={preferences.matchRadius}
-                  onValueChange={(value) =>
-                    handlePreferenceChange("matchRadius", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5 miles</SelectItem>
-                    <SelectItem value="10">10 miles</SelectItem>
-                    <SelectItem value="25">25 miles</SelectItem>
-                    <SelectItem value="50">50 miles</SelectItem>
-                    <SelectItem value="100">100 miles</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Default Match Radius</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Default search radius for property matching
+                    </td>
+                    <td className="p-4">
+                      <Select
+                        value={preferences.matchRadius}
+                        onValueChange={(value) =>
+                          handlePreferenceChange("matchRadius", value)
+                        }
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 miles</SelectItem>
+                          <SelectItem value="10">10 miles</SelectItem>
+                          <SelectItem value="25">25 miles</SelectItem>
+                          <SelectItem value="50">50 miles</SelectItem>
+                          <SelectItem value="100">100 miles</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-4">
+                      <Badge variant="outline">
+                        {preferences.matchRadius} miles
+                      </Badge>
+                    </td>
+                  </tr>
 
-          {/* Budget & Pricing */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
-              <CardTitle className="flex items-center">
-                <DollarSign className="h-5 w-5 mr-2 text-green-600" />
-                Budget & Pricing Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Default Min Budget</Label>
-                  <Input
-                    type="number"
-                    value={preferences.defaultBudgetRange.min}
-                    onChange={(e) =>
-                      handlePreferenceChange("defaultBudgetRange", {
-                        ...preferences.defaultBudgetRange,
-                        min: e.target.value,
-                      })
-                    }
-                    placeholder="400000"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Default Max Budget</Label>
-                  <Input
-                    type="number"
-                    value={preferences.defaultBudgetRange.max}
-                    onChange={(e) =>
-                      handlePreferenceChange("defaultBudgetRange", {
-                        ...preferences.defaultBudgetRange,
-                        max: e.target.value,
-                      })
-                    }
-                    placeholder="800000"
-                  />
-                </div>
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Default Min Budget</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Default minimum budget for new buyers
+                    </td>
+                    <td className="p-4">
+                      <Input
+                        type="number"
+                        value={preferences.defaultBudgetRange.min}
+                        onChange={(e) =>
+                          handlePreferenceChange("defaultBudgetRange", {
+                            ...preferences.defaultBudgetRange,
+                            min: e.target.value,
+                          })
+                        }
+                        className="w-32"
+                        placeholder="400000"
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge variant="outline">
+                        $
+                        {parseInt(
+                          preferences.defaultBudgetRange.min,
+                        ).toLocaleString()}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Show Above Budget</Label>
-                  <p className="text-sm text-gray-600">
-                    Include properties slightly above buyer's budget
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.showAboveBudget}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("showAboveBudget", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Default Max Budget</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Default maximum budget for new buyers
+                    </td>
+                    <td className="p-4">
+                      <Input
+                        type="number"
+                        value={preferences.defaultBudgetRange.max}
+                        onChange={(e) =>
+                          handlePreferenceChange("defaultBudgetRange", {
+                            ...preferences.defaultBudgetRange,
+                            max: e.target.value,
+                          })
+                        }
+                        className="w-32"
+                        placeholder="800000"
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge variant="outline">
+                        $
+                        {parseInt(
+                          preferences.defaultBudgetRange.max,
+                        ).toLocaleString()}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="space-y-2">
-                <Label>Minimum Agent Rating</Label>
-                <Select
-                  value={preferences.minimumRating}
-                  onValueChange={(value) =>
-                    handlePreferenceChange("minimumRating", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3.0">3.0 stars</SelectItem>
-                    <SelectItem value="3.5">3.5 stars</SelectItem>
-                    <SelectItem value="4.0">4.0 stars</SelectItem>
-                    <SelectItem value="4.5">4.5 stars</SelectItem>
-                    <SelectItem value="5.0">5.0 stars only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Show Above Budget</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Include properties slightly above buyer's budget
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.showAboveBudget}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("showAboveBudget", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.showAboveBudget
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.showAboveBudget ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-          {/* Communication Preferences */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
-              <CardTitle className="flex items-center">
-                <Settings className="h-5 w-5 mr-2 text-purple-600" />
-                Communication Preferences
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Email Notifications</Label>
-                  <p className="text-sm text-gray-600">
-                    Send property matches via email
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.emailNotifications}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("emailNotifications", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Minimum Agent Rating</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Required minimum rating for agent recommendations
+                    </td>
+                    <td className="p-4">
+                      <Select
+                        value={preferences.minimumRating}
+                        onValueChange={(value) =>
+                          handlePreferenceChange("minimumRating", value)
+                        }
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="3.0">3.0 stars</SelectItem>
+                          <SelectItem value="3.5">3.5 stars</SelectItem>
+                          <SelectItem value="4.0">4.0 stars</SelectItem>
+                          <SelectItem value="4.5">4.5 stars</SelectItem>
+                          <SelectItem value="5.0">5.0 stars only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-4">
+                      <Badge variant="outline">
+                        {preferences.minimumRating} stars
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">SMS Notifications</Label>
-                  <p className="text-sm text-gray-600">
-                    Send urgent updates via SMS
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.smsNotifications}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("smsNotifications", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Email Notifications</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Send property matches via email
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.emailNotifications}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("emailNotifications", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.emailNotifications
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.emailNotifications
+                          ? "Enabled"
+                          : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Push Notifications</Label>
-                  <p className="text-sm text-gray-600">
-                    Mobile app notifications
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.pushNotifications}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("pushNotifications", checked)
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">SMS Notifications</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Send urgent updates via SMS
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.smsNotifications}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("smsNotifications", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.smsNotifications
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.smsNotifications ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-          {/* Advanced Settings */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
-              <CardTitle className="flex items-center">
-                <Home className="h-5 w-5 mr-2 text-orange-600" />
-                Advanced Matching
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Require Pre-Approval</Label>
-                  <p className="text-sm text-gray-600">
-                    Only show buyers pre-approved properties
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.requirePreApproval}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("requirePreApproval", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Push Notifications</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Mobile app notifications
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.pushNotifications}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("pushNotifications", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.pushNotifications
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.pushNotifications ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="font-medium">Verified Listings Only</Label>
-                  <p className="text-sm text-gray-600">
-                    Show only verified property listings
-                  </p>
-                </div>
-                <Switch
-                  checked={preferences.verifiedListingsOnly}
-                  onCheckedChange={(checked) =>
-                    handlePreferenceChange("verifiedListingsOnly", checked)
-                  }
-                />
-              </div>
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-medium">Require Pre-Approval</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Only show buyers pre-approved properties
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.requirePreApproval}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("requirePreApproval", checked)
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.requirePreApproval
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.requirePreApproval
+                          ? "Required"
+                          : "Optional"}
+                      </Badge>
+                    </td>
+                  </tr>
 
-              <div className="space-y-2">
-                <Label>Allowed Property Types</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {["apartment", "condo", "townhouse", "house", "studio"].map(
-                    (type) => (
-                      <div key={type} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={type}
-                          checked={preferences.allowedPropertyTypes.includes(
-                            type,
-                          )}
-                          onChange={(e) => {
-                            const newTypes = e.target.checked
-                              ? [...preferences.allowedPropertyTypes, type]
-                              : preferences.allowedPropertyTypes.filter(
-                                  (t) => t !== type,
-                                );
-                            handlePreferenceChange(
-                              "allowedPropertyTypes",
-                              newTypes,
-                            );
-                          }}
-                          className="rounded border-gray-300"
-                        />
-                        <Label htmlFor={type} className="capitalize text-sm">
-                          {type}
-                        </Label>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-4 font-medium">Verified Listings Only</td>
+                    <td className="p-4 text-sm text-gray-600">
+                      Show only verified property listings
+                    </td>
+                    <td className="p-4">
+                      <Switch
+                        checked={preferences.verifiedListingsOnly}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange(
+                            "verifiedListingsOnly",
+                            checked,
+                          )
+                        }
+                      />
+                    </td>
+                    <td className="p-4">
+                      <Badge
+                        className={
+                          preferences.verifiedListingsOnly
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {preferences.verifiedListingsOnly
+                          ? "Verified Only"
+                          : "All Listings"}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

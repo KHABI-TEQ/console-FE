@@ -54,6 +54,7 @@ import {
   CheckCircle,
   XCircle,
   TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
@@ -77,34 +78,63 @@ export function AgentManagement({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
 
-  const {
-    agents,
-    isLoading: agentsLoading,
-    fetchAgents,
-    refreshAgents,
-  } = useAgents();
-
-  const {
-    landlords,
-    isLoading: landlordsLoading,
-    fetchLandlords,
-    verifyLandlord,
-    refreshLandlords,
-  } = useLandlords();
+  const [agentsData, setAgentsData] = useState<any>(null);
+  const [landlordsData, setLandlordsData] = useState<any>(null);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [landlordsLoading, setLandlordsLoading] = useState(false);
 
   useEffect(() => {
     if (activeTab === "agents") {
-      fetchAgents();
+      fetchAgentsData();
     } else {
-      fetchLandlords();
+      fetchLandlordsData();
     }
-  }, [activeTab]);
+  }, [activeTab, statusFilter]);
+
+  const fetchAgentsData = async () => {
+    setAgentsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "50",
+        type: statusFilter === "all" ? "all" : statusFilter,
+      });
+
+      const response = await fetch(`/api/all-users?${params}&role=agent`);
+      const data = await response.json();
+      setAgentsData(data);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+    } finally {
+      setAgentsLoading(false);
+    }
+  };
+
+  const fetchLandlordsData = async () => {
+    setLandlordsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "50",
+        type: statusFilter === "all" ? "all" : statusFilter,
+        userType: "Landowners",
+      });
+
+      const response = await fetch(`/api/all-agents?${params}`);
+      const data = await response.json();
+      setLandlordsData(data);
+    } catch (error) {
+      console.error("Error fetching landlords:", error);
+    } finally {
+      setLandlordsLoading(false);
+    }
+  };
 
   const handleRefresh = () => {
     if (activeTab === "agents") {
-      refreshAgents();
+      fetchAgentsData();
     } else {
-      refreshLandlords();
+      fetchLandlordsData();
     }
   };
 
@@ -113,82 +143,32 @@ export function AgentManagement({
     setIsEditModalOpen(true);
   };
 
-  // Mock landlords data for demonstration
-  const mockLandlords = [
-    {
-      id: "1",
-      name: "Michael Thompson",
-      email: "michael.thompson@example.com",
-      phone: "+1 (555) 123-4567",
-      location: "Manhattan, NY",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Premium",
-      rating: 4.8,
-      properties: 12,
-      totalRevenue: 485000,
-      joined: "2023-02-15",
-      lastActive: "1 hour ago",
-      verificationStatus: "verified",
-      bankDetails: {
-        accountNumber: "****1234",
-        bankName: "Chase Bank",
-        verified: true,
-      },
-    },
-    {
-      id: "2",
-      name: "Sarah Williams",
-      email: "sarah.williams@example.com",
-      phone: "+1 (555) 234-5678",
-      location: "Brooklyn, NY",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Standard",
-      rating: 4.6,
-      properties: 8,
-      totalRevenue: 320000,
-      joined: "2023-05-20",
-      lastActive: "2 days ago",
-      verificationStatus: "pending",
-      bankDetails: {
-        accountNumber: "****5678",
-        bankName: "Bank of America",
-        verified: false,
-      },
-    },
-  ];
-
   // Filter functions
-  const filteredAgents = agents.filter((agent) => {
-    const matchesSearch =
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || agent.status.toLowerCase() === statusFilter;
-    const matchesTier =
-      tierFilter === "all" || agent.tier.toLowerCase() === tierFilter;
-    return matchesSearch && matchesStatus && matchesTier;
-  });
+  const filteredAgents =
+    agentsData?.users?.filter((agent: any) => {
+      const fullName =
+        `${agent.firstName || ""} ${agent.lastName || ""}`.trim();
+      const matchesSearch =
+        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.email.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    }) || [];
 
-  const filteredLandlords = mockLandlords.filter((landlord) => {
-    const matchesSearch =
-      landlord.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      landlord.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || landlord.status.toLowerCase() === statusFilter;
-    const matchesVerification =
-      verificationFilter === "all" ||
-      landlord.verificationStatus === verificationFilter;
-    return matchesSearch && matchesStatus && matchesVerification;
-  });
+  const filteredLandlords =
+    landlordsData?.agents?.data?.filter((landlord: any) => {
+      const fullName =
+        `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim();
+      const matchesSearch =
+        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        landlord.email.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    }) || [];
 
   // Stats for agents
   const agentStats = [
     {
       title: "Total Agents",
-      value: agents.length.toString(),
+      value: agentsData?.total?.toString() || "0",
       change: "+8.2%",
       trend: "up" as const,
       icon: Users,
@@ -196,17 +176,21 @@ export function AgentManagement({
     },
     {
       title: "Active Agents",
-      value: agents.filter((a) => a.status === "Active").length.toString(),
+      value:
+        agentsData?.users
+          ?.filter((a: any) => a.accountStatus === "active" && !a.isInActive)
+          .length?.toString() || "0",
       change: "+5.1%",
       trend: "up" as const,
       icon: UserCheck,
       color: "green" as const,
     },
     {
-      title: "Inactive/Banned",
-      value: agents
-        .filter((a) => a.status === "Inactive" || a.status === "Banned")
-        .length.toString(),
+      title: "Inactive/Flagged",
+      value:
+        agentsData?.users
+          ?.filter((a: any) => a.isInActive || a.isFlagged)
+          .length?.toString() || "0",
       change: "-12.5%",
       trend: "down" as const,
       icon: Clock,
@@ -217,7 +201,11 @@ export function AgentManagement({
       value:
         "$" +
         (
-          agents.reduce((sum, agent) => sum + agent.commission, 0) / 1000
+          agentsData?.users?.reduce(
+            (sum: number, agent: any) =>
+              sum + (agent.agentData?.commission || 0),
+            0,
+          ) / 1000 || 0
         ).toFixed(0) +
         "K",
       change: "+18.7%",
@@ -231,40 +219,33 @@ export function AgentManagement({
   const landlordStats = [
     {
       title: "Total Landlords",
-      value: mockLandlords.length.toString(),
+      value: landlordsData?.agents?.totalAgents?.toString() || "0",
       change: "+15.2%",
       trend: "up" as const,
       icon: Home,
       color: "blue" as const,
     },
     {
-      title: "Verified Landlords",
-      value: mockLandlords
-        .filter((l) => l.verificationStatus === "verified")
-        .length.toString(),
+      title: "Active Landlords",
+      value: landlordsData?.agents?.totalActiveAgents?.toString() || "0",
       change: "+8.1%",
       trend: "up" as const,
       icon: Shield,
       color: "green" as const,
     },
     {
-      title: "Total Properties",
-      value: mockLandlords.reduce((sum, l) => sum + l.properties, 0).toString(),
+      title: "Inactive Landlords",
+      value: landlordsData?.agents?.totalInactiveAgents?.toString() || "0",
       change: "+22.3%",
       trend: "up" as const,
       icon: Building,
       color: "purple" as const,
     },
     {
-      title: "Total Revenue",
-      value:
-        "$" +
-        (
-          mockLandlords.reduce((sum, l) => sum + l.totalRevenue, 0) / 1000000
-        ).toFixed(1) +
-        "M",
+      title: "Flagged Landlords",
+      value: landlordsData?.agents?.totalFlaggedAgents?.toString() || "0",
       change: "+18.7%",
-      trend: "up" as const,
+      trend: "down" as const,
       icon: DollarSign,
       color: "orange" as const,
     },
@@ -385,7 +366,7 @@ export function AgentManagement({
         <TableBody>
           {filteredAgents.map((agent, index) => (
             <TableRow
-              key={agent.id}
+              key={agent.id || agent._id}
               className={`hover:bg-gray-50 transition-colors ${
                 index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
               }`}
@@ -393,23 +374,29 @@ export function AgentManagement({
               <TableCell className="py-4">
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={agent.avatar} alt={agent.name} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
-                      {agent.name
+                      {((agent.firstName || "") + " " + (agent.lastName || ""))
+                        .trim()
                         .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                        .map((n: string) => n[0])
+                        .join("") || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-gray-900">{agent.name}</p>
+                    <p className="font-medium text-gray-900">
+                      {(
+                        (agent.firstName || "") +
+                        " " +
+                        (agent.lastName || "")
+                      ).trim() || "Unknown User"}
+                    </p>
                     <div className="flex items-center space-x-1 mt-1">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
                             className={`h-3 w-3 ${
-                              i < Math.floor(agent.rating)
+                              i < Math.floor(agent.agentData?.rating || 0)
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300"
                             }`}
@@ -417,9 +404,24 @@ export function AgentManagement({
                         ))}
                       </div>
                       <span className="text-sm text-gray-600 ml-1">
-                        {agent.rating}
+                        {agent.agentData?.rating || "N/A"}
                       </span>
                     </div>
+                    {agent.agentData && (
+                      <div className="flex items-center space-x-1 mt-1">
+                        {agent.agentData.specialties?.map(
+                          (specialty: string, i: number) => (
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {specialty}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </TableCell>
@@ -431,54 +433,91 @@ export function AgentManagement({
                   </div>
                   <div className="flex items-center text-sm">
                     <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{agent.phone}</span>
+                    <span>{agent.phoneNumber || "N/A"}</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <MapPin className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{agent.location}</span>
+                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                    <span>
+                      Joined {new Date(agent.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <BarChart3 className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium">{agent.sales} sales</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-green-500" />
-                    <span className="font-medium">
-                      {formatCurrency(agent.commission)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500">This year</p>
+                  {agent.agentData ? (
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <BarChart3 className="h-4 w-4 text-blue-500" />
+                        <span className="font-medium">
+                          {agent.agentData.sales || 0} sales
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <span className="font-medium">
+                          {formatCurrency(agent.agentData.commission || 0)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">This year</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">No agent data</p>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-2">
-                  {getStatusBadge(agent.status)}
-                  {getTierBadge(agent.tier)}
+                  {agent.accountStatus === "active" && !agent.isInActive ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gray-100 text-gray-800">
+                      Inactive
+                    </Badge>
+                  )}
+                  {agent.isFlagged && (
+                    <Badge className="bg-red-100 text-red-800">Flagged</Badge>
+                  )}
+                  {agent.agentData?.tier && (
+                    <Badge className="bg-purple-100 text-purple-800">
+                      {agent.agentData.tier}
+                    </Badge>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1">
                   <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>Joined {agent.joined}</span>
+                    <CheckCircle
+                      className={`h-4 w-4 mr-2 ${agent.isAccountVerified ? "text-green-500" : "text-gray-400"}`}
+                    />
+                    <span>
+                      {agent.isAccountVerified ? "Verified" : "Unverified"}
+                    </span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-green-600">{agent.lastActive}</span>
+                    <Shield
+                      className={`h-4 w-4 mr-2 ${agent.accountApproved ? "text-green-500" : "text-orange-500"}`}
+                    />
+                    <span>
+                      {agent.accountApproved ? "Approved" : "Pending"}
+                    </span>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <ActionButtons
                   entityType="agent"
-                  entityId={agent.id.toString()}
-                  entityName={agent.name}
+                  entityId={agent.id || agent._id}
+                  entityName={(
+                    (agent.firstName || "") +
+                    " " +
+                    (agent.lastName || "")
+                  ).trim()}
                   email={agent.email}
-                  phone={agent.phone}
+                  phone={agent.phoneNumber}
                   showContact={true}
                   showMore={true}
                   onRefresh={handleRefresh}
@@ -536,7 +575,7 @@ export function AgentManagement({
         <TableBody>
           {filteredLandlords.map((landlord, index) => (
             <TableRow
-              key={landlord.id}
+              key={landlord.id || landlord._id}
               className={`hover:bg-gray-50 transition-colors ${
                 index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
               }`}
@@ -544,108 +583,135 @@ export function AgentManagement({
               <TableCell className="py-4">
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={landlord.avatar} alt={landlord.name} />
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white font-medium">
-                      {landlord.name
+                      {(
+                        (landlord.firstName || "") +
+                        " " +
+                        (landlord.lastName || "")
+                      )
+                        .trim()
                         .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                        .map((n: string) => n[0])
+                        .join("") || "L"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-gray-900">{landlord.name}</p>
+                    <p className="font-medium text-gray-900">
+                      {(
+                        (landlord.firstName || "") +
+                        " " +
+                        (landlord.lastName || "")
+                      ).trim() || "Unknown Landlord"}
+                    </p>
                     <div className="flex items-center space-x-1 mt-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.floor(landlord.rating)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-gray-600 ml-1">
-                        {landlord.rating}
-                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {landlord.userType || "Landowner"}
+                      </Badge>
+                      {landlord.accountId && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-blue-50 text-blue-700"
+                        >
+                          ID: {landlord.accountId}
+                        </Badge>
+                      )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="mt-1 text-xs bg-green-50 text-green-700"
-                    >
-                      {landlord.tier}
-                    </Badge>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium">{landlord.email}</p>
-                  <p className="text-gray-600">{landlord.phone}</p>
-                  <p className="text-gray-600 flex items-center">
-                    <Building className="h-3 w-3 mr-1" />
-                    {landlord.location}
-                  </p>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="font-medium truncate">
+                      {landlord.email}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="text-gray-600">
+                      {landlord.phoneNumber || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="text-gray-600">
+                      Joined {new Date(landlord.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1">
                   <div className="flex items-center text-sm">
                     <Home className="h-4 w-4 text-blue-500 mr-2" />
-                    <span className="font-medium">
-                      {landlord.properties} properties
-                    </span>
+                    <span className="font-medium">Properties: N/A</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <DollarSign className="h-4 w-4 text-green-500 mr-2" />
                     <span className="font-medium text-green-600">
-                      {formatCurrency(landlord.totalRevenue)}
+                      Revenue: N/A
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">This year</p>
+                  <p className="text-xs text-gray-500">Data not available</p>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-2">
-                  {getStatusBadge(landlord.status)}
-                  {getVerificationBadge(landlord.verificationStatus)}
+                  {landlord.accountStatus === "active" &&
+                  !landlord.isInActive ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gray-100 text-gray-800">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Inactive
+                    </Badge>
+                  )}
+                  {landlord.isFlagged && (
+                    <Badge className="bg-red-100 text-red-800">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Flagged
+                    </Badge>
+                  )}
+                  {landlord.isAccountVerified ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-yellow-100 text-yellow-800">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending
+                    </Badge>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium">{landlord.bankDetails.bankName}</p>
-                  <p className="text-gray-600">
-                    {landlord.bankDetails.accountNumber}
-                  </p>
+                  <p className="font-medium">Bank Details</p>
+                  <p className="text-gray-600">Not Available</p>
                   <div className="flex items-center">
-                    {landlord.bankDetails.verified ? (
-                      <CheckCircle className="h-3 w-3 text-green-500 mr-1" />
-                    ) : (
-                      <XCircle className="h-3 w-3 text-red-500 mr-1" />
-                    )}
-                    <span
-                      className={`text-xs ${
-                        landlord.bankDetails.verified
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {landlord.bankDetails.verified
-                        ? "Verified"
-                        : "Unverified"}
-                    </span>
+                    <XCircle className="h-3 w-3 text-red-500 mr-1" />
+                    <span className="text-xs text-red-600">Unverified</span>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <ActionButtons
                   entityType="landlord"
-                  entityId={landlord.id}
-                  entityName={landlord.name}
+                  entityId={landlord.id || landlord._id}
+                  entityName={(
+                    (landlord.firstName || "") +
+                    " " +
+                    (landlord.lastName || "")
+                  ).trim()}
                   email={landlord.email}
-                  phone={landlord.phone}
+                  phone={landlord.phoneNumber}
                   showContact={true}
-                  showApproval={landlord.verificationStatus === "pending"}
+                  showApproval={!landlord.accountApproved}
                   showMore={true}
                   onRefresh={handleRefresh}
                 />
@@ -657,10 +723,7 @@ export function AgentManagement({
     );
   };
 
-  if (
-    isLoading &&
-    (activeTab === "agents" ? agents.length === 0 : mockLandlords.length === 0)
-  ) {
+  if (isLoading && (activeTab === "agents" ? !agentsData : !landlordsData)) {
     return <LoadingPlaceholder type="page" />;
   }
 
@@ -711,11 +774,11 @@ export function AgentManagement({
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="agents" className="flex items-center">
             <Users className="h-4 w-4 mr-2" />
-            Agents ({agents.length})
+            Agents ({agentsData?.total || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
-            Landlords ({mockLandlords.length})
+            Landlords ({landlordsData?.agents?.totalAgents || 0})
           </TabsTrigger>
         </TabsList>
 
