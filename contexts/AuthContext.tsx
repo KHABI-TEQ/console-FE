@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         response.admin?.token ||
         response.admin?.accessToken ||
         response.token ||
-        response.accessToken;
+        (response as any).accessToken;
 
       if (token) {
         document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
@@ -133,7 +133,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: "error",
         title: "Login failed",
-        message: error instanceof Error ? error.message : "Unexpected error occurred",
+        message:
+          error instanceof Error ? error.message : "Unexpected error occurred",
       });
 
       throw error; // ✅ allow mutation to catch it
@@ -141,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
-
 
   const logout = async () => {
     try {
