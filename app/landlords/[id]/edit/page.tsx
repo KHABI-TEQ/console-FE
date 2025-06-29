@@ -91,8 +91,6 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
       });
     }
   }, [landlordResponse]);
-    },
-  });
 
   const handleInputChange = (field: string, value: any) => {
     if (field.startsWith("bankDetails.")) {
