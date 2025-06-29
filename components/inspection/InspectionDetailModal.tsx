@@ -202,6 +202,71 @@ export function InspectionDetailModal({
     }).format(amount);
   };
 
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "pending_transaction":
+        return "Pending Transaction Approval";
+      case "transaction_failed":
+        return "Transaction Failed";
+      case "pending_inspection":
+        return "Inspection Scheduled";
+      case "inspection_approved":
+        return "Inspection Approved";
+      case "inspection_rescheduled":
+        return "Inspection Rescheduled";
+      case "inspection_rejected_by_seller":
+      case "inspection_rejected_by_buyer":
+        return "Inspection Rejected";
+      case "negotiation_countered":
+        return "Negotiation In Progress";
+      case "negotiation_accepted":
+        return "Negotiation Accepted";
+      case "negotiation_rejected":
+        return "Negotiation Rejected";
+      case "negotiation_cancelled":
+        return "Negotiation Cancelled";
+      case "completed":
+        return "Inspection Completed";
+      case "cancelled":
+        return "Inspection Cancelled";
+      default:
+        return "No Actions Available";
+    }
+  };
+
+  const getStatusDescription = (status: string) => {
+    switch (status) {
+      case "pending_transaction":
+        return "Transaction is pending approval. You can approve or reject this transaction.";
+      case "transaction_failed":
+        return "The transaction has failed and cannot proceed.";
+      case "pending_inspection":
+        return "Inspection is scheduled and awaiting confirmation.";
+      case "inspection_approved":
+        return "This inspection has been approved and can proceed.";
+      case "inspection_rescheduled":
+        return "The inspection has been rescheduled to a new date.";
+      case "inspection_rejected_by_seller":
+        return "The seller has rejected this inspection request.";
+      case "inspection_rejected_by_buyer":
+        return "The buyer has rejected this inspection request.";
+      case "negotiation_countered":
+        return "Price negotiation is ongoing between parties.";
+      case "negotiation_accepted":
+        return "Both parties have agreed on the negotiated price.";
+      case "negotiation_rejected":
+        return "The price negotiation has been rejected.";
+      case "negotiation_cancelled":
+        return "The negotiation process has been cancelled.";
+      case "completed":
+        return "This inspection has been successfully completed.";
+      case "cancelled":
+        return "This inspection has been cancelled.";
+      default:
+        return "This inspection is in a state that doesn't require administrative action at this time.";
+    }
+  };
+
   if (isLoading) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
@@ -234,10 +299,8 @@ export function InspectionDetailModal({
     );
   }
 
-  const canApprove = inspection.status === "pending_inspection";
-  const canReject = ["pending_inspection", "negotiation_countered"].includes(
-    inspection.status,
-  );
+  const canApprove = inspection.status === "pending_transaction";
+  const canReject = inspection.status === "pending_transaction";
 
   const propertyFeatures = [
     {
@@ -869,11 +932,10 @@ export function InspectionDetailModal({
                 <CardContent className="text-center p-8">
                   <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-600 mb-2">
-                    No Actions Available
+                    {getStatusMessage(inspection.status)}
                   </h3>
                   <p className="text-gray-500">
-                    This inspection is in a state that doesn&apos;t require
-                    administrative action at this time.
+                    {getStatusDescription(inspection.status)}
                   </p>
                 </CardContent>
               </Card>
