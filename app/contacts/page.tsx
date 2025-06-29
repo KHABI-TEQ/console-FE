@@ -89,6 +89,10 @@ export default function ContactsPage() {
       }),
   });
 
+  const handleRefresh = () => {
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -331,7 +335,7 @@ export default function ContactsPage() {
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium text-lg">
                   {contact.name
                     .split(" ")
-                    .map((n) => n[0])
+                    .map((n: string) => n[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
@@ -476,16 +480,10 @@ export default function ContactsPage() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <ActionButtons
-              entityType="contact"
-              entityId={contact.id.toString()}
-              entityName={contact.name}
-              email={contact.email}
-              phone={contact.phone}
-              showContact={true}
-              variant="dropdown"
-              onRefresh={handleRefresh}
-            />
+            <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+              <RefreshCw className="h-4 w-4 mr-2" onClick={handleRefresh} />
+              Refresh
+            </Button>
             <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
               <UserPlus className="h-4 w-4 mr-2" />
               Add Contact
