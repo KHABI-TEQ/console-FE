@@ -99,6 +99,10 @@ class ApiService {
     return this.get(`/inspections/${id}`);
   }
 
+  async getSingleInspection(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/inspections/${id}`);
+  }
+
   async updateInspectionStatus(
     id: string,
     status: string,

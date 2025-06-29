@@ -2887,6 +2887,9 @@ video {
 .data-\[state\=checked\]\:text-primary-foreground[data-state="checked"] {
   color: hsl(var(--primary-foreground));
 }
+.data-\[state\=open\]\:text-muted-foreground[data-state="open"] {
+  color: hsl(var(--muted-foreground));
+}
 .data-\[disabled\]\:opacity-50[data-disabled] {
   opacity: 0.5;
 }
