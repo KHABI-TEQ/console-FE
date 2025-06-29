@@ -721,18 +721,6 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
             </Card>
           </div>
         </div>
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={deleteModal.isOpen}
-          onClose={() => setDeleteModal({ isOpen: false, isLoading: false })}
-          onConfirm={handleDeleteBrief}
-          title="Delete Brief"
-          description={`Are you sure you want to delete "${brief.title}"? This action cannot be undone and will remove all associated data including attachments and comments.`}
-          confirmText="Delete Brief"
-          variant="danger"
-          isLoading={deleteModal.isLoading}
-        />
       </div>
     </AdminLayout>
   );
