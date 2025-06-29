@@ -55,10 +55,13 @@ import {
   XCircle,
   TrendingUp,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentManagementProps {
@@ -78,6 +81,9 @@ export function AgentManagement({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [agentsPage, setAgentsPage] = useState(1);
+  const [landlordsPage, setLandlordsPage] = useState(1);
+  const limit = 10;
 
   const [agentsData, setAgentsData] = useState<any>(null);
   const [landlordsData, setLandlordsData] = useState<any>(null);
@@ -90,15 +96,16 @@ export function AgentManagement({
     } else {
       fetchLandlordsData();
     }
-  }, [activeTab, statusFilter, searchQuery]);
+  }, [activeTab, statusFilter, searchQuery, agentsPage, landlordsPage]);
 
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
     try {
       const params = {
-        page: "1",
-        limit: "50",
+        page: agentsPage.toString(),
+        limit: limit.toString(),
         ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter !== "all" && { status: statusFilter }),
       };
 
       const data = await apiService.getAgents(params);
@@ -114,9 +121,10 @@ export function AgentManagement({
     setLandlordsLoading(true);
     try {
       const params = {
-        page: "1",
-        limit: "50",
+        page: landlordsPage.toString(),
+        limit: limit.toString(),
         ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter !== "all" && { status: statusFilter }),
       };
 
       const data = await apiService.getLandowners(params);
@@ -130,9 +138,29 @@ export function AgentManagement({
 
   const handleRefresh = () => {
     if (activeTab === "agents") {
+      setAgentsPage(1);
       fetchAgentsData();
     } else {
+      setLandlordsPage(1);
       fetchLandlordsData();
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (activeTab === "agents") {
+      setAgentsPage(1);
+    } else {
+      setLandlordsPage(1);
+    }
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    if (activeTab === "agents") {
+      setAgentsPage(1);
+    } else {
+      setLandlordsPage(1);
     }
   };
 
@@ -240,9 +268,9 @@ export function AgentManagement({
 
   // Utility functions
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -815,12 +843,15 @@ export function AgentManagement({
                     <Input
                       placeholder="Search agents by name, email, location..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10 h-11"
                     />
                   </div>
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={handleStatusFilterChange}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -867,6 +898,12 @@ export function AgentManagement({
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">{renderAgentsTable()}</div>
+              <Pagination
+                currentPage={agentsPage}
+                totalItems={agentsData?.total || 0}
+                itemsPerPage={limit}
+                onPageChange={setAgentsPage}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -920,12 +957,15 @@ export function AgentManagement({
                     <Input
                       placeholder="Search landlords by name, email..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10 h-11"
                     />
                   </div>
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={handleStatusFilterChange}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -976,6 +1016,12 @@ export function AgentManagement({
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">{renderLandlordsTable()}</div>
+              <Pagination
+                currentPage={landlordsPage}
+                totalItems={landlordsData?.total || 0}
+                itemsPerPage={limit}
+                onPageChange={setLandlordsPage}
+              />
             </CardContent>
           </Card>
         </TabsContent>

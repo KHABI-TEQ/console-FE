@@ -57,6 +57,7 @@ import {
   Twitter,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
 
@@ -67,6 +68,8 @@ export default function ContactsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
   const handleRefresh = () => {
     setIsLoading(true);
@@ -224,9 +227,9 @@ export default function ContactsPage() {
   });
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -783,6 +786,12 @@ export default function ContactsPage() {
                             </TableBody>
                           </Table>
                         </div>
+                        <Pagination
+                          currentPage={page}
+                          totalItems={1247}
+                          itemsPerPage={limit}
+                          onPageChange={setPage}
+                        />
                       </Card>
                     )}
                   </div>
