@@ -74,8 +74,9 @@ export default function InspectionsPage() {
   const [filters, setFilters] = useState<InspectionFilters>({});
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [selectedInspection, setSelectedInspection] =
-    useState<IInspectionBookingPopulated | null>(null);
+  const [selectedInspectionId, setSelectedInspectionId] = useState<
+    string | null
+  >(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const limit = 10;
 
@@ -86,8 +87,7 @@ export default function InspectionsPage() {
     refetch,
   } = useQuery({
     queryKey: ["inspections", filters, page],
-    queryFn: () => fetch("/api/inspections").then((res) => res.json()),
-    select: (data) => data as InspectionListResponse,
+    queryFn: () => apiService.getInspections({ ...filters, page, limit }),
   });
 
   const handleFilterChange = (key: keyof InspectionFilters, value: string) => {
@@ -108,7 +108,7 @@ export default function InspectionsPage() {
   };
 
   const handleViewInspection = (inspection: IInspectionBookingPopulated) => {
-    setSelectedInspection(inspection);
+    setSelectedInspectionId(inspection._id);
     setIsDetailOpen(true);
   };
 
@@ -128,7 +128,7 @@ export default function InspectionsPage() {
   };
 
   const inspectionsData = inspectionsResponse?.data || [];
-  const totalCount = inspectionsResponse?.meta?.total || 0;
+  const totalCount = inspectionsResponse?.total || 0;
 
   const statsData = [
     {
@@ -688,16 +688,14 @@ export default function InspectionsPage() {
           </CardContent>
         </Card>
 
-        {selectedInspection && (
-          <InspectionDetailModal
-            inspection={selectedInspection}
-            isOpen={isDetailOpen}
-            onClose={() => {
-              setIsDetailOpen(false);
-              setSelectedInspection(null);
-            }}
-          />
-        )}
+        <InspectionDetailModal
+          inspectionId={selectedInspectionId}
+          isOpen={isDetailOpen}
+          onClose={() => {
+            setIsDetailOpen(false);
+            setSelectedInspectionId(null);
+          }}
+        />
       </div>
     </AdminLayout>
   );
