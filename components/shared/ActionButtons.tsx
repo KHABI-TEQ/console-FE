@@ -35,6 +35,7 @@ interface ActionButtonsProps {
   showView?: boolean;
   showEdit?: boolean;
   showDelete?: boolean;
+  showVerification?: boolean;
   size?: "sm" | "default";
   variant?: "inline" | "dropdown";
   onRefresh?: () => void;
