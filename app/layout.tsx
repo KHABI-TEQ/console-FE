@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastContainer } from "@/components/ui/toast-container";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider } from "@/contexts/AppContext";
@@ -28,6 +29,7 @@ export default function RootLayout({
             <AuthProvider>
               <TooltipProvider>
                 {children}
+                <ToastContainer />
                 <Toaster />
                 <Sonner />
               </TooltipProvider>
