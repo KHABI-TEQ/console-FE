@@ -95,6 +95,10 @@ import {
   ArrowRight,
   RefreshCw,
   DollarSign,
+} from "lucide-react";
+
+export default function SettingsPage() {
+  const [settings, setSettings] = useState({
     // General Settings
     companyName: "PropertyAdmin Pro",
     companyEmail: "admin@propertyadmin.com",
