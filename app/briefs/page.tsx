@@ -84,12 +84,6 @@ export default function BriefsPage() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    briefId: string | null;
-    briefTitle: string;
-  }>({ isOpen: false, briefId: null, briefTitle: "" });
-  const [isDeleting, setIsDeleting] = useState(false);
   const limit = 12;
 
   const filters: BriefFilters = {
