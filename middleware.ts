@@ -4,8 +4,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Auth route redirects
+  if (pathname === "/login") {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+  if (pathname === "/forgot-password") {
+    return NextResponse.redirect(new URL("/auth/forgot-password", request.url));
+  }
+
   // Public paths that don't require authentication
-  const publicPaths = ["/login", "/forgot-password"];
+  const publicPaths = ["/auth/login", "/auth/forgot-password"];
 
   // Check if the current path is public
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
@@ -13,14 +21,14 @@ export function middleware(request: NextRequest) {
   // Mock authentication check - in a real app, check JWT token or session
   const isAuthenticated = request.cookies.get("auth-token")?.value;
 
-  // If user is authenticated and tries to access auth pages, redirect to admin
+  // If user is authenticated and tries to access auth pages, redirect to dashboard
   if (isAuthenticated && isPublicPath) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // If user is not authenticated and tries to access protected pages, redirect to login
   if (!isAuthenticated && !isPublicPath && pathname !== "/") {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   return NextResponse.next();
