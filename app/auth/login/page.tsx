@@ -45,8 +45,6 @@ export default function LoginPage() {
     onSuccess: (data, variables) => {
       login(variables.email, variables.password);
     },
-    successMessage: "Successfully signed in!",
-    errorMessage: "Login failed. Please check your credentials.",
   });
 
   const handleSubmit = async (values: LoginFormValues) => {
