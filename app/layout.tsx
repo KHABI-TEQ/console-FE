@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ToastContainer } from "@/components/ui/toast-container";
+import { ToastNotifications } from "@/components/shared/ToastNotifications";
+import { RequestLoaderProvider } from "@/components/ui/request-loader";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider } from "@/contexts/AppContext";
@@ -27,12 +27,13 @@ export default function RootLayout({
         <QueryProvider>
           <AppProvider>
             <AuthProvider>
-              <TooltipProvider>
-                {children}
-                <ToastContainer />
-                <Toaster />
-                <Sonner />
-              </TooltipProvider>
+              <RequestLoaderProvider>
+                <TooltipProvider>
+                  {children}
+                  <ToastNotifications />
+                  <Toaster />
+                </TooltipProvider>
+              </RequestLoaderProvider>
             </AuthProvider>
           </AppProvider>
         </QueryProvider>
