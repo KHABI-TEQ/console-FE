@@ -47,6 +47,7 @@ import {
   Camera,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { Pagination } from "@/components/shared/Pagination";
 import {
   EmptyState,
   PropertiesEmptyState,
@@ -519,6 +520,12 @@ export default function PropertiesPage() {
               </div>
             )}
           </CardContent>
+          <Pagination
+            currentPage={page}
+            totalItems={totalCount}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+          />
         </Card>
       </div>
     </AdminLayout>
