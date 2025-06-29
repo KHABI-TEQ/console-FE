@@ -19,6 +19,7 @@ export function useActionButtons({
 }: UseActionButtonsProps) {
   const router = useRouter();
   const { addNotification } = useApp();
+  const { confirmAction } = useConfirmation();
 
   const handleView = (id: string) => {
     router.push(`/${entityType}s/${id}` as any);
