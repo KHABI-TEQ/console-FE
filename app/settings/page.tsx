@@ -95,6 +95,7 @@ import {
   ArrowRight,
   RefreshCw,
   DollarSign,
+  Unlock,
 } from "lucide-react";
 
 export default function SettingsPage() {
