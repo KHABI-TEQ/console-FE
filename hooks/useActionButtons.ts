@@ -29,35 +29,36 @@ export function useActionButtons({
     router.push(`/${entityType}s/${id}/edit` as any);
   };
 
-  const handleDelete = async (id: string, name?: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${name ? `"${name}"` : `this ${entityType}`}? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
+  const handleDelete = (id: string, name?: string) => {
+    confirmAction({
+      title: `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      description: `Are you sure you want to delete ${name ? `"${name}"` : `this ${entityType}`}? This action cannot be undone and will remove all associated data.`,
+      confirmText: `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          // Simulate API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+          addNotification({
+            type: "success",
+            title: "Deleted successfully",
+            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been deleted.`,
+          });
 
-      addNotification({
-        type: "success",
-        title: "Deleted successfully",
-        message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been deleted.`,
-      });
-
-      if (onRefresh) {
-        onRefresh();
-      }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Delete failed",
-        message: `Failed to delete ${entityType}. Please try again.`,
-      });
-    }
+          if (onRefresh) {
+            onRefresh();
+          }
+        } catch (error) {
+          addNotification({
+            type: "error",
+            title: "Delete failed",
+            message: `Failed to delete ${entityType}. Please try again.`,
+          });
+        }
+      },
+    });
   };
 
   const handleContact = (email?: string, phone?: string) => {
