@@ -96,9 +96,11 @@ import {
   RefreshCw,
   DollarSign,
   Unlock,
+  Code,
 } from "lucide-react";
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState("general");
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [settings, setSettings] = useState({
     // General Settings
