@@ -47,6 +47,7 @@ import {
   Camera,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
 import {
   EmptyState,
