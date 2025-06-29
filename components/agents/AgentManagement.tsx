@@ -54,6 +54,7 @@ import {
   CheckCircle,
   XCircle,
   TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
@@ -620,7 +621,7 @@ export function AgentManagement({
         <TableBody>
           {filteredLandlords.map((landlord, index) => (
             <TableRow
-              key={landlord.id}
+              key={landlord.id || landlord._id}
               className={`hover:bg-gray-50 transition-colors ${
                 index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
               }`}
@@ -628,108 +629,135 @@ export function AgentManagement({
               <TableCell className="py-4">
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={landlord.avatar} alt={landlord.name} />
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white font-medium">
-                      {landlord.name
+                      {(
+                        (landlord.firstName || "") +
+                        " " +
+                        (landlord.lastName || "")
+                      )
+                        .trim()
                         .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                        .map((n: string) => n[0])
+                        .join("") || "L"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-gray-900">{landlord.name}</p>
+                    <p className="font-medium text-gray-900">
+                      {(
+                        (landlord.firstName || "") +
+                        " " +
+                        (landlord.lastName || "")
+                      ).trim() || "Unknown Landlord"}
+                    </p>
                     <div className="flex items-center space-x-1 mt-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.floor(landlord.rating)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-gray-600 ml-1">
-                        {landlord.rating}
-                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {landlord.userType || "Landowner"}
+                      </Badge>
+                      {landlord.accountId && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-blue-50 text-blue-700"
+                        >
+                          ID: {landlord.accountId}
+                        </Badge>
+                      )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="mt-1 text-xs bg-green-50 text-green-700"
-                    >
-                      {landlord.tier}
-                    </Badge>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium">{landlord.email}</p>
-                  <p className="text-gray-600">{landlord.phone}</p>
-                  <p className="text-gray-600 flex items-center">
-                    <Building className="h-3 w-3 mr-1" />
-                    {landlord.location}
-                  </p>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="font-medium truncate">
+                      {landlord.email}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="text-gray-600">
+                      {landlord.phoneNumber || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="text-gray-600">
+                      Joined {new Date(landlord.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1">
                   <div className="flex items-center text-sm">
                     <Home className="h-4 w-4 text-blue-500 mr-2" />
-                    <span className="font-medium">
-                      {landlord.properties} properties
-                    </span>
+                    <span className="font-medium">Properties: N/A</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <DollarSign className="h-4 w-4 text-green-500 mr-2" />
                     <span className="font-medium text-green-600">
-                      {formatCurrency(landlord.totalRevenue)}
+                      Revenue: N/A
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">This year</p>
+                  <p className="text-xs text-gray-500">Data not available</p>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-2">
-                  {getStatusBadge(landlord.status)}
-                  {getVerificationBadge(landlord.verificationStatus)}
+                  {landlord.accountStatus === "active" &&
+                  !landlord.isInActive ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gray-100 text-gray-800">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Inactive
+                    </Badge>
+                  )}
+                  {landlord.isFlagged && (
+                    <Badge className="bg-red-100 text-red-800">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Flagged
+                    </Badge>
+                  )}
+                  {landlord.isAccountVerified ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-yellow-100 text-yellow-800">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending
+                    </Badge>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium">{landlord.bankDetails.bankName}</p>
-                  <p className="text-gray-600">
-                    {landlord.bankDetails.accountNumber}
-                  </p>
+                  <p className="font-medium">Bank Details</p>
+                  <p className="text-gray-600">Not Available</p>
                   <div className="flex items-center">
-                    {landlord.bankDetails.verified ? (
-                      <CheckCircle className="h-3 w-3 text-green-500 mr-1" />
-                    ) : (
-                      <XCircle className="h-3 w-3 text-red-500 mr-1" />
-                    )}
-                    <span
-                      className={`text-xs ${
-                        landlord.bankDetails.verified
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {landlord.bankDetails.verified
-                        ? "Verified"
-                        : "Unverified"}
-                    </span>
+                    <XCircle className="h-3 w-3 text-red-500 mr-1" />
+                    <span className="text-xs text-red-600">Unverified</span>
                   </div>
                 </div>
               </TableCell>
               <TableCell className="py-4">
                 <ActionButtons
                   entityType="landlord"
-                  entityId={landlord.id}
-                  entityName={landlord.name}
+                  entityId={landlord.id || landlord._id}
+                  entityName={(
+                    (landlord.firstName || "") +
+                    " " +
+                    (landlord.lastName || "")
+                  ).trim()}
                   email={landlord.email}
-                  phone={landlord.phone}
+                  phone={landlord.phoneNumber}
                   showContact={true}
-                  showApproval={landlord.verificationStatus === "pending"}
+                  showApproval={!landlord.accountApproved}
                   showMore={true}
                   onRefresh={handleRefresh}
                 />
