@@ -84,7 +84,7 @@ export default async function EditBriefPage({ params }: EditBriefPageProps) {
 
   // Mock data for demonstration
   const mockBrief = {
-    _id: params.id,
+    _id: briefId,
     title: "Luxury Apartment Marketing Strategy",
     description:
       "Comprehensive marketing plan for high-end residential properties in Victoria Island",
@@ -156,11 +156,11 @@ export default async function EditBriefPage({ params }: EditBriefPageProps) {
   const handleSubmit = async (values: BriefFormValues) => {
     setIsSubmitting(true);
     try {
-      await apiService.updateBrief(params.id, {
+      await apiService.updateBrief(briefId, {
         ...values,
         updatedAt: new Date().toISOString(),
       });
-      router.push(`/briefs/${params.id}`);
+      router.push(`/briefs/${briefId}`);
     } catch (error) {
       console.error("Failed to update brief:", error);
     } finally {
