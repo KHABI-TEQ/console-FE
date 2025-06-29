@@ -762,7 +762,7 @@ export function AgentManagement({
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
-            Landlords ({landlordsData?.agents?.totalAgents || 0})
+            Landlords ({landlordsData?.total || 0})
           </TabsTrigger>
         </TabsList>
 
