@@ -79,7 +79,7 @@ export default function DeveloperPreferencesPage() {
     },
     {
       title: "Total Investment",
-      value: "$142M",
+      value: "₦142M",
       change: "+22.1%",
       trend: "up" as const,
       icon: DollarSign,
@@ -152,7 +152,7 @@ export default function DeveloperPreferencesPage() {
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-2">
-                <Label>Minimum Project Value ($)</Label>
+                <Label>Minimum Project Value (₦)</Label>
                 <Input
                   type="number"
                   value={preferences.minimumProjectValue}
@@ -251,7 +251,7 @@ export default function DeveloperPreferencesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Auto-Approval Threshold ($)</Label>
+                <Label>Auto-Approval Threshold (₦)</Label>
                 <Input
                   type="number"
                   value={preferences.autoApprovalThreshold}

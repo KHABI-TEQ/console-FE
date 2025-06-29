@@ -317,9 +317,9 @@ export default function PropertyDetailPage() {
               { age: "45-54", percentage: 27 },
             ],
             income: [
-              { range: "$200K-$500K", percentage: 45 },
-              { range: "$500K-$1M", percentage: 35 },
-              { range: "$1M+", percentage: 20 },
+              { range: "₦200K-₦500K", percentage: 45 },
+              { range: "₦500K-₦1M", percentage: 35 },
+              { range: "₦1M+", percentage: 20 },
             ],
           },
         },
@@ -686,7 +686,7 @@ export default function PropertyDetailPage() {
                         )}
                     </div>
                     <p className="text-gray-600">
-                      ${Math.round(property.price / property.sqft)}/sq ft
+                      ₦{Math.round(property.price / property.sqft)}/sq ft
                     </p>
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
