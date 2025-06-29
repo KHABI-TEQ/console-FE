@@ -98,29 +98,36 @@ export function useActionButtons({
     }
   };
 
-  const handleReject = async (id: string, name?: string) => {
-    const reason = prompt("Please provide a reason for rejection (optional):");
+  const handleReject = (id: string, name?: string) => {
+    confirmAction({
+      title: `Reject ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      description: `Are you sure you want to reject ${name ? `"${name}"` : `this ${entityType}`}? This action can be undone later.`,
+      confirmText: `Reject ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      cancelText: "Cancel",
+      variant: "warning",
+      onConfirm: async () => {
+        try {
+          // Simulate API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+          addNotification({
+            type: "success",
+            title: "Rejected successfully",
+            message: `${name || entityType} has been rejected.`,
+          });
 
-      addNotification({
-        type: "success",
-        title: "Rejected successfully",
-        message: `${name || entityType} has been rejected.`,
-      });
-
-      if (onRefresh) {
-        onRefresh();
-      }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Rejection failed",
-        message: `Failed to reject ${entityType}. Please try again.`,
-      });
-    }
+          if (onRefresh) {
+            onRefresh();
+          }
+        } catch (error) {
+          addNotification({
+            type: "error",
+            title: "Rejection failed",
+            message: `Failed to reject ${entityType}. Please try again.`,
+          });
+        }
+      },
+    });
   };
 
   return {
