@@ -121,9 +121,9 @@ export default function InspectionsPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount);
   };
 
@@ -672,17 +672,12 @@ export default function InspectionsPage() {
                   ))}
                 </div>
 
-                {/* Pagination Info */}
-                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
-                  <div className="text-sm text-gray-700">
-                    Showing{" "}
-                    <span className="font-medium">
-                      {inspectionsData.length}
-                    </span>{" "}
-                    of <span className="font-medium">{totalCount}</span> total
-                    inspections
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={page}
+                  totalItems={totalCount}
+                  itemsPerPage={limit}
+                  onPageChange={setPage}
+                />
               </>
             )}
           </CardContent>
