@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -17,14 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   FileText,
   ClipboardList,
@@ -46,28 +39,61 @@ import {
   Shield,
   Users,
   UserCheck,
+  Grid3X3,
+  List,
+  Share2,
+  MoreHorizontal,
+  TrendingUp,
+  Target,
+  MapPin,
+  Briefcase,
+  PenTool,
+  Archive,
+  Activity,
 } from "lucide-react";
+import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
 
 interface BriefFilters {
   search?: string;
   status?: string;
   type?: string;
+  priority?: string;
+  assignedTo?: string;
   page?: number;
   limit?: number;
 }
 
 export default function BriefsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    briefId: string | null;
+    briefTitle: string;
+  }>({ isOpen: false, briefId: null, briefTitle: "" });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const limit = 12;
 
   const filters: BriefFilters = {
     ...(searchQuery && { search: searchQuery }),
     ...(statusFilter !== "all" && { status: statusFilter }),
     ...(typeFilter !== "all" && { type: typeFilter }),
+    ...(priorityFilter !== "all" && { priority: priorityFilter }),
     page,
     limit,
   };
@@ -82,8 +108,112 @@ export default function BriefsPage() {
     queryFn: () => apiService.getBriefs(filters),
   });
 
-  const briefs = briefsResponse?.data || [];
-  const totalCount = briefsResponse?.total || 0;
+  // Mock data for demonstration
+  const mockBriefs = [
+    {
+      _id: "1",
+      title: "Luxury Apartment Marketing Strategy",
+      description:
+        "Comprehensive marketing plan for high-end residential properties in Victoria Island",
+      type: "Marketing",
+      status: "active",
+      priority: "high",
+      property: {
+        type: "Residential",
+        location: "Victoria Island, Lagos",
+        price: 450000000,
+        images: [
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+        ],
+      },
+      assignedTo: {
+        name: "Sarah Johnson",
+        avatar: "/placeholder.svg",
+        role: "Marketing Manager",
+      },
+      agent: {
+        name: "Khabi Tek",
+        company: "Khabi Teq Realty",
+      },
+      createdAt: "2025-01-15T10:30:00Z",
+      dueDate: "2025-02-15T10:30:00Z",
+      progress: 75,
+      tags: ["Premium", "Marketing", "Social Media"],
+      isApproved: false,
+      approvedBy: null,
+      attachments: 8,
+      comments: 12,
+    },
+    {
+      _id: "2",
+      title: "Property Inspection Checklist",
+      description: "Detailed inspection guidelines for commercial properties",
+      type: "Inspection",
+      status: "pending",
+      priority: "medium",
+      property: {
+        type: "Commercial",
+        location: "Lekki Phase 1, Lagos",
+        price: 1200000000,
+        images: [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
+        ],
+      },
+      assignedTo: {
+        name: "Mike Wilson",
+        avatar: "/placeholder.svg",
+        role: "Inspector",
+      },
+      agent: {
+        name: "John Doe",
+        company: "Prime Properties",
+      },
+      createdAt: "2025-01-10T14:20:00Z",
+      dueDate: "2025-01-25T14:20:00Z",
+      progress: 45,
+      tags: ["Inspection", "Commercial", "Guidelines"],
+      isApproved: true,
+      approvedBy: "Admin User",
+      attachments: 5,
+      comments: 8,
+    },
+    {
+      _id: "3",
+      title: "Sales Process Documentation",
+      description: "Step-by-step sales process for new property developments",
+      type: "Sales",
+      status: "completed",
+      priority: "low",
+      property: {
+        type: "Development",
+        location: "Ikeja GRA, Lagos",
+        price: 850000000,
+        images: [
+          "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
+        ],
+      },
+      assignedTo: {
+        name: "Emma Davis",
+        avatar: "/placeholder.svg",
+        role: "Sales Manager",
+      },
+      agent: {
+        name: "Jane Smith",
+        company: "Elite Realty",
+      },
+      createdAt: "2025-01-05T09:15:00Z",
+      dueDate: "2025-01-20T09:15:00Z",
+      progress: 100,
+      tags: ["Sales", "Process", "Development"],
+      isApproved: true,
+      approvedBy: "Admin User",
+      attachments: 3,
+      comments: 15,
+    },
+  ];
+
+  const briefs = mockBriefs;
+  const totalCount = briefs.length;
 
   const stats = [
     {
@@ -103,10 +233,8 @@ export default function BriefsPage() {
       color: "green" as const,
     },
     {
-      title: "Pending Review",
-      value: briefs
-        .filter((b: any) => b.status === "pending")
-        .length.toString(),
+      title: "Pending Approval",
+      value: briefs.filter((b: any) => !b.isApproved).length.toString(),
       change: "-8.2%",
       trend: "down" as const,
       icon: Clock,
@@ -119,25 +247,33 @@ export default function BriefsPage() {
         .length.toString(),
       change: "+25.1%",
       trend: "up" as const,
-      icon: Star,
+      icon: CheckCircle,
       color: "purple" as const,
     },
   ];
 
-  const filteredBriefs = briefs;
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case "in progress":
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case "completed":
-        return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-      case "on hold":
-        return <Badge className="bg-yellow-100 text-yellow-800">On Hold</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>;
+      case "on_hold":
+        return <Badge className="bg-gray-100 text-gray-800">On Hold</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -146,30 +282,363 @@ export default function BriefsPage() {
       case "high":
         return <Badge className="bg-red-100 text-red-800">High</Badge>;
       case "medium":
-        return <Badge className="bg-orange-100 text-orange-800">Medium</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>;
       case "low":
-        return <Badge className="bg-blue-100 text-blue-800">Low</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Low</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
     }
   };
+
+  const handleDeleteBrief = (briefId: string, briefTitle: string) => {
+    setDeleteModal({
+      isOpen: true,
+      briefId,
+      briefTitle,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.briefId) return;
+
+    setIsDeleting(true);
+    try {
+      await apiService.deleteBrief(deleteModal.briefId);
+      refetch();
+      setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" });
+    } catch (error) {
+      console.error("Failed to delete brief:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleApproveBrief = async (briefId: string) => {
+    try {
+      // Add approve brief API call
+      await apiService.patch(`/briefs/${briefId}/approve`);
+      refetch();
+    } catch (error) {
+      console.error("Failed to approve brief:", error);
+    }
+  };
+
+  const BriefCard = ({ brief }: { brief: any }) => (
+    <Card className="group hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300">
+      <div className="relative overflow-hidden rounded-t-lg">
+        <img
+          src={brief.property.images[0] || "/placeholder.svg"}
+          alt={brief.title}
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+        />
+        <div className="absolute top-3 left-3 flex items-center space-x-2">
+          {getStatusBadge(brief.status)}
+          {getPriorityBadge(brief.priority)}
+        </div>
+        <div className="absolute top-3 right-3 flex items-center space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => router.push(`/briefs/${brief._id}`)}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/briefs/${brief._id}/edit`)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Brief
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {!brief.isApproved && (
+                <DropdownMenuItem onClick={() => handleApproveBrief(brief._id)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Approve Brief
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => handleDeleteBrief(brief._id, brief.title)}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {brief.isApproved && (
+          <div className="absolute bottom-3 left-3">
+            <Badge className="bg-green-100 text-green-800">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Approved
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              {brief.title}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+              {brief.description}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center">
+                <Building className="h-4 w-4 mr-1" />
+                <span>{brief.property.type}</span>
+              </div>
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span className="truncate">{brief.property.location}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-gray-900">
+                {formatCurrency(brief.property.price)}
+              </p>
+              <p className="text-xs text-gray-500">
+                Due: {new Date(brief.dueDate).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={brief.assignedTo.avatar} />
+                <AvatarFallback className="text-xs">
+                  {brief.assignedTo.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-gray-600">
+                {brief.assignedTo.name}
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center space-x-3">
+                <span>{brief.attachments} files</span>
+                <span>{brief.comments} comments</span>
+              </div>
+              <div className="w-16 bg-gray-200 rounded-full h-1">
+                <div
+                  className="bg-blue-600 h-1 rounded-full"
+                  style={{ width: `${brief.progress}%` }}
+                ></div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {brief.tags.slice(0, 3).map((tag: string, idx: number) => (
+                <Badge key={idx} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {brief.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{brief.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const BriefListItem = ({ brief }: { brief: any }) => (
+    <Card className="hover:shadow-md transition-all duration-200">
+      <CardContent className="p-4">
+        <div className="flex items-start space-x-4">
+          <img
+            src={brief.property.images[0] || "/placeholder.svg"}
+            alt={brief.title}
+            className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
+          />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                  {brief.title}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">
+                  {brief.description}
+                </p>
+              </div>
+              <div className="text-right ml-4">
+                <p className="text-lg font-bold text-gray-900">
+                  {formatCurrency(brief.property.price)}
+                </p>
+                <div className="flex items-center space-x-2 mt-1">
+                  {getStatusBadge(brief.status)}
+                  {getPriorityBadge(brief.priority)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <Building className="h-4 w-4 mr-1" />
+                  <span>{brief.property.type}</span>
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span>{brief.property.location}</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>
+                    Due: {new Date(brief.dueDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <Avatar className="h-5 w-5 mr-1">
+                    <AvatarImage src={brief.assignedTo.avatar} />
+                    <AvatarFallback className="text-xs">
+                      {brief.assignedTo.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span>{brief.assignedTo.name}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/briefs/${brief._id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => router.push(`/briefs/${brief._id}/edit`)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Brief
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {!brief.isApproved && (
+                      <DropdownMenuItem
+                        onClick={() => handleApproveBrief(brief._id)}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve Brief
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteBrief(brief._id, brief.title)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <Card className="max-w-md mx-auto border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-900">
+                    Error Loading Data
+                  </h3>
+                  <p className="text-red-700 text-sm">
+                    Failed to load briefs. Please try again.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => refetch()}
+                className="w-full mt-4 bg-red-600 hover:bg-red-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
         <PageHeader
           title="Brief Management"
-          description="Create, manage, and track property briefs, documentation, and project workflows"
+          description="Manage property briefs, assignments, and approval workflow"
         >
           <Button variant="outline" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button variant="outline" className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="w-full sm:w-auto"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button
+            onClick={() => router.push("/briefs/new")}
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Brief
           </Button>
@@ -191,12 +660,12 @@ export default function BriefsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="md:col-span-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search briefs by title, description, property..."
+                    placeholder="Search briefs by title, description, or property..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-11"
@@ -210,9 +679,10 @@ export default function BriefsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="in progress">In Progress</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="on hold">On Hold</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -224,569 +694,111 @@ export default function BriefsPage() {
                   <SelectItem value="marketing">Marketing</SelectItem>
                   <SelectItem value="inspection">Inspection</SelectItem>
                   <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="legal">Legal</SelectItem>
+                  <SelectItem value="documentation">Documentation</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Briefs Sections */}
-        <Tabs defaultValue="admin" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="admin" className="flex items-center space-x-2">
-              <Shield className="h-4 w-4" />
-              <span>Admin Briefs</span>
-            </TabsTrigger>
-            <TabsTrigger value="agent" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>Agent Briefs</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="landlord"
-              className="flex items-center space-x-2"
-            >
-              <UserCheck className="h-4 w-4" />
-              <span>Landlord Briefs</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="admin" className="mt-6">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Shield className="h-5 w-5 mr-2 text-blue-600" />
-                    <div>
-                      <span className="text-lg font-medium">Admin Briefs</span>
-                      <p className="text-sm text-gray-600 font-normal">
-                        Internal administrative briefs and documentation
-                      </p>
-                    </div>
-                  </div>
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Admin Brief
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold text-gray-900">
-                          Brief
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Department
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Type & Status
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Assigned To
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Progress
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Timeline
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[
-                        {
-                          id: 1,
-                          title: "Q1 Performance Review Guidelines",
-                          description:
-                            "Comprehensive guidelines for quarterly performance reviews",
-                          type: "Policy",
-                          status: "Active",
-                          priority: "High",
-                          department: "HR",
-                          assignedTo: "Admin Team",
-                          createdDate: "2024-01-15",
-                          dueDate: "2024-02-15",
-                          progress: 85,
-                          attachments: 5,
-                          comments: 8,
-                        },
-                        {
-                          id: 2,
-                          title: "System Security Audit",
-                          description:
-                            "Annual security audit and compliance documentation",
-                          type: "Audit",
-                          status: "In Progress",
-                          priority: "High",
-                          department: "IT",
-                          assignedTo: "Security Team",
-                          createdDate: "2024-01-10",
-                          dueDate: "2024-03-01",
-                          progress: 45,
-                          attachments: 12,
-                          comments: 15,
-                        },
-                      ].map((brief, index) => (
-                        <TableRow
-                          key={brief.id}
-                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
-                        >
-                          <TableCell className="py-4">
-                            <div className="space-y-1">
-                              <p className="font-medium text-gray-900">
-                                {brief.title}
-                              </p>
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {brief.description}
-                              </p>
-                              <div className="flex items-center space-x-3 text-xs text-gray-500">
-                                <span className="flex items-center">
-                                  <FileText className="h-3 w-3 mr-1" />
-                                  {brief.attachments} files
-                                </span>
-                                <span>{brief.comments} comments</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <Badge
-                              variant="outline"
-                              className="text-blue-700 border-blue-200"
-                            >
-                              {brief.department}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <Badge variant="outline" className="text-xs">
-                                {brief.type}
-                              </Badge>
-                              <div>{getStatusBadge(brief.status)}</div>
-                              <div>{getPriorityBadge(brief.priority)}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">
-                                {brief.assignedTo}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">
-                                  {brief.progress}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-blue-600 h-2 rounded-full transition-all"
-                                  style={{ width: `${brief.progress}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-1 text-sm">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Created: {brief.createdDate}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Due: {brief.dueDate}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-blue-50 hover:border-blue-300"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-green-50 hover:border-green-300"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-red-50 hover:border-red-300"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+        {/* Briefs */}
+        <Card className="border border-gray-200 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Briefcase className="h-5 w-5 mr-2 text-gray-600" />
+                <div>
+                  <span className="text-lg font-medium">Active Briefs</span>
+                  <p className="text-sm text-gray-600 font-normal">
+                    {totalCount} briefs found
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="agent" className="mt-6">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-green-600" />
-                    <div>
-                      <span className="text-lg font-medium">Agent Briefs</span>
-                      <p className="text-sm text-gray-600 font-normal">
-                        Briefs and instructions for real estate agents
-                      </p>
-                    </div>
-                  </div>
-                  <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Agent Brief
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  {briefs.length} showing
+                </Badge>
+                <div className="flex border rounded-lg">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="rounded-r-none"
+                  >
+                    <Grid3X3 className="h-4 w-4" />
                   </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold text-gray-900">
-                          Brief
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Property
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Type & Status
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Agent
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Progress
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Timeline
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredBriefs.map((brief, index) => (
-                        <TableRow
-                          key={brief.id}
-                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
-                        >
-                          <TableCell className="py-4">
-                            <div className="space-y-1">
-                              <p className="font-medium text-gray-900">
-                                {brief.title}
-                              </p>
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {brief.description}
-                              </p>
-                              <div className="flex items-center space-x-3 text-xs text-gray-500">
-                                <span className="flex items-center">
-                                  <FileText className="h-3 w-3 mr-1" />
-                                  {brief.attachments} files
-                                </span>
-                                <span>{brief.comments} comments</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <Building className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">
-                                {brief.property}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <Badge variant="outline" className="text-xs">
-                                {brief.type}
-                              </Badge>
-                              <div>{getStatusBadge(brief.status)}</div>
-                              <div>{getPriorityBadge(brief.priority)}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">
-                                {brief.assignedTo}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">
-                                  {brief.progress}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-green-600 h-2 rounded-full transition-all"
-                                  style={{ width: `${brief.progress}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-1 text-sm">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Created: {brief.createdDate}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Due: {brief.dueDate}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-blue-50 hover:border-blue-300"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-green-50 hover:border-green-300"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-red-50 hover:border-red-300"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="landlord" className="mt-6">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <UserCheck className="h-5 w-5 mr-2 text-orange-600" />
-                    <div>
-                      <span className="text-lg font-medium">
-                        Landlord Briefs
-                      </span>
-                      <p className="text-sm text-gray-600 font-normal">
-                        Communication and documentation for landlords
-                      </p>
-                    </div>
-                  </div>
-                  <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Landlord Brief
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="rounded-l-none"
+                  >
+                    <List className="h-4 w-4" />
                   </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold text-gray-900">
-                          Brief
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Property
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Type & Status
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Landlord
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Progress
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Timeline
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-900">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[
-                        {
-                          id: 1,
-                          title: "Property Maintenance Guidelines",
-                          description:
-                            "Annual maintenance requirements and scheduling",
-                          type: "Maintenance",
-                          status: "Active",
-                          priority: "Medium",
-                          property: "Downtown Luxury Complex",
-                          assignedTo: "Premium Properties LLC",
-                          createdDate: "2024-01-12",
-                          dueDate: "2024-02-28",
-                          progress: 65,
-                          attachments: 7,
-                          comments: 12,
-                        },
-                        {
-                          id: 2,
-                          title: "Lease Renewal Process",
-                          description:
-                            "Updated lease renewal procedures and documentation",
-                          type: "Legal",
-                          status: "Pending",
-                          priority: "High",
-                          property: "Garden View Apartments",
-                          assignedTo: "Metro Holdings Inc",
-                          createdDate: "2024-01-18",
-                          dueDate: "2024-02-20",
-                          progress: 30,
-                          attachments: 4,
-                          comments: 8,
-                        },
-                      ].map((brief, index) => (
-                        <TableRow
-                          key={brief.id}
-                          className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
-                        >
-                          <TableCell className="py-4">
-                            <div className="space-y-1">
-                              <p className="font-medium text-gray-900">
-                                {brief.title}
-                              </p>
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {brief.description}
-                              </p>
-                              <div className="flex items-center space-x-3 text-xs text-gray-500">
-                                <span className="flex items-center">
-                                  <FileText className="h-3 w-3 mr-1" />
-                                  {brief.attachments} files
-                                </span>
-                                <span>{brief.comments} comments</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <Building className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">
-                                {brief.property}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <Badge variant="outline" className="text-xs">
-                                {brief.type}
-                              </Badge>
-                              <div>{getStatusBadge(brief.status)}</div>
-                              <div>{getPriorityBadge(brief.priority)}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <UserCheck className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium">
-                                {brief.assignedTo}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">
-                                  {brief.progress}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-orange-600 h-2 rounded-full transition-all"
-                                  style={{ width: `${brief.progress}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="space-y-1 text-sm">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Created: {brief.createdDate}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>Due: {brief.dueDate}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-blue-50 hover:border-blue-300"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-green-50 hover:border-green-300"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-red-50 hover:border-red-300"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {isLoading ? (
+              <LoadingPlaceholder type="grid" count={6} />
+            ) : briefs.length === 0 ? (
+              <EmptyState
+                icon={Briefcase}
+                title="No briefs found"
+                description="No briefs match your current filters. Try adjusting your search criteria."
+                secondaryActionLabel="Clear Filters"
+                onSecondaryAction={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  setTypeFilter("all");
+                  setPriorityFilter("all");
+                }}
+              />
+            ) : (
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                }
+              >
+                {briefs.map((brief: any) =>
+                  viewMode === "grid" ? (
+                    <BriefCard key={brief._id} brief={brief} />
+                  ) : (
+                    <BriefListItem key={brief._id} brief={brief} />
+                  ),
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={deleteModal.isOpen}
+          onClose={() =>
+            setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" })
+          }
+          onConfirm={confirmDelete}
+          title="Delete Brief"
+          description={`Are you sure you want to delete "${deleteModal.briefTitle}"? This action cannot be undone.`}
+          confirmText="Delete Brief"
+          variant="danger"
+          isLoading={isDeleting}
+        />
       </div>
     </AdminLayout>
   );
