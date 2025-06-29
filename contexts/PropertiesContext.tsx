@@ -87,7 +87,7 @@ export function PropertiesProvider({
         if (response.success) {
           setProperties(response.data || []);
           if (response.pagination) {
-            setPagination(response.pagination);
+            setPagination(response.pagination as any);
           }
         } else {
           addNotification({
