@@ -840,12 +840,15 @@ export function AgentManagement({
                     <Input
                       placeholder="Search agents by name, email, location..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10 h-11"
                     />
                   </div>
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={handleStatusFilterChange}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -892,6 +895,86 @@ export function AgentManagement({
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">{renderAgentsTable()}</div>
+              {/* Agents Pagination */}
+              {agentsData?.total > limit && (
+                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(agentsPage - 1) * limit + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(agentsPage * limit, agentsData?.total || 0)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {agentsData?.total || 0}
+                      </span>{" "}
+                      total agents
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setAgentsPage(Math.max(1, agentsPage - 1))
+                        }
+                        disabled={agentsPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center space-x-1">
+                        {Array.from(
+                          {
+                            length: Math.min(
+                              5,
+                              Math.ceil((agentsData?.total || 0) / limit),
+                            ),
+                          },
+                          (_, i) => {
+                            const pageNum = i + 1;
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={
+                                  agentsPage === pageNum ? "default" : "outline"
+                                }
+                                size="sm"
+                                onClick={() => setAgentsPage(pageNum)}
+                                className="w-8 h-8 p-0"
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          },
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setAgentsPage(
+                            Math.min(
+                              Math.ceil((agentsData?.total || 0) / limit),
+                              agentsPage + 1,
+                            ),
+                          )
+                        }
+                        disabled={
+                          agentsPage >=
+                          Math.ceil((agentsData?.total || 0) / limit)
+                        }
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -945,12 +1028,15 @@ export function AgentManagement({
                     <Input
                       placeholder="Search landlords by name, email..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10 h-11"
                     />
                   </div>
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={handleStatusFilterChange}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -1001,6 +1087,91 @@ export function AgentManagement({
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">{renderLandlordsTable()}</div>
+              {/* Landlords Pagination */}
+              {landlordsData?.total > limit && (
+                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(landlordsPage - 1) * limit + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(
+                          landlordsPage * limit,
+                          landlordsData?.total || 0,
+                        )}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {landlordsData?.total || 0}
+                      </span>{" "}
+                      total landlords
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setLandlordsPage(Math.max(1, landlordsPage - 1))
+                        }
+                        disabled={landlordsPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center space-x-1">
+                        {Array.from(
+                          {
+                            length: Math.min(
+                              5,
+                              Math.ceil((landlordsData?.total || 0) / limit),
+                            ),
+                          },
+                          (_, i) => {
+                            const pageNum = i + 1;
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={
+                                  landlordsPage === pageNum
+                                    ? "default"
+                                    : "outline"
+                                }
+                                size="sm"
+                                onClick={() => setLandlordsPage(pageNum)}
+                                className="w-8 h-8 p-0"
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          },
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setLandlordsPage(
+                            Math.min(
+                              Math.ceil((landlordsData?.total || 0) / limit),
+                              landlordsPage + 1,
+                            ),
+                          )
+                        }
+                        disabled={
+                          landlordsPage >=
+                          Math.ceil((landlordsData?.total || 0) / limit)
+                        }
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
