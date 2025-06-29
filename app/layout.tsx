@@ -34,13 +34,16 @@ export default function RootLayout({
         <QueryProvider>
           <AppProvider>
             <AuthProvider>
-              <RequestLoaderProvider>
-                <TooltipProvider>
-                  {children}
-                  <ToastNotifications />
-                  <Toaster />
-                </TooltipProvider>
-              </RequestLoaderProvider>
+              <ConfirmationProvider>
+                <RequestLoaderProvider>
+                  <TooltipProvider>
+                    {children}
+                    <ToastNotifications />
+                    <Toaster />
+                    <GlobalConfirmationModal />
+                  </TooltipProvider>
+                </RequestLoaderProvider>
+              </ConfirmationProvider>
             </AuthProvider>
           </AppProvider>
         </QueryProvider>
