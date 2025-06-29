@@ -135,8 +135,14 @@ export function InspectionDetailModal({
     error,
   } = useQuery({
     queryKey: ["inspection", inspectionId],
-    queryFn: () =>
-      inspectionId ? apiService.getSingleInspection(inspectionId) : null,
+    queryFn: async () => {
+      if (!inspectionId) return null;
+      const response = await apiService.getInspection(inspectionId);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch inspection");
+      }
+      return response;
+    },
     enabled: !!inspectionId && isOpen,
   });
 
