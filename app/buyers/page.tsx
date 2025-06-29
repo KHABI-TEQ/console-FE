@@ -47,7 +47,8 @@ import {
   Star,
   Home,
   CreditCard,
-  AlertTriangle,
+} from "lucide-react";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState } from "@/components/shared/EmptyState";
