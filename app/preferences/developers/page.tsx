@@ -251,7 +251,7 @@ export default function DeveloperPreferencesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Auto-Approval Threshold ($)</Label>
+                <Label>Auto-Approval Threshold (₦)</Label>
                 <Input
                   type="number"
                   value={preferences.autoApprovalThreshold}
