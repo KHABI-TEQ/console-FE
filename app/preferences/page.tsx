@@ -308,7 +308,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {parseInt(
                               buyerPreferences.defaultBudgetMin,
                             ).toLocaleString()}
@@ -338,7 +338,7 @@ export default function PreferencesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            $
+                            ₦
                             {parseInt(
                               buyerPreferences.defaultBudgetMax,
                             ).toLocaleString()}
