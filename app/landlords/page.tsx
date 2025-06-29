@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { AgentsLandlordsSkeleton } from "@/components/skeletons/PageSkeletons";
 
 export default function LandlordsPage() {
   const router = useRouter();
@@ -15,10 +15,7 @@ export default function LandlordsPage() {
 
   return (
     <AdminLayout>
-      <LoadingPlaceholder
-        type="page"
-        title="Redirecting to Agent Management..."
-      />
+      <AgentsLandlordsSkeleton />
     </AdminLayout>
   );
 }
