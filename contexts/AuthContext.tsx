@@ -19,7 +19,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, response?: any) => Promise<void>;
+  login: (email: string, password: string, response?: any) => Promise<any>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -84,41 +84,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string, response?: any) => {
+  const login = async (email: string, password: string): Promise<any> => {
     try {
       setIsLoading(true);
 
-      // If response is not provided, the API call was already made in the login page
-      if (response) {
-        // Extract token from response - check multiple possible locations
-        const token =
-          response.admin?.token ||
-          response.admin?.accessToken ||
-          response.token ||
-          response.accessToken;
+      const response = await apiService.login({ email, password });
 
-        if (token) {
-          // Set auth cookie with the actual token
-          document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
-        }
-
-        // Set user data from response - check multiple possible locations
-        const userData =
-          response.data?.user || response.admin?.admin || response.admin;
-
-        setUser({
-          id: userData.id || userData._id || "admin-1",
-          name:
-            userData.name ||
-            `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
-            "Admin User",
-          email: userData.email || email,
-          role: userData.role || "admin",
-          avatar: userData.avatar || "/placeholder.svg",
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-        });
+      if (!response.success) {
+        throw new Error(response.message || "Login failed");
       }
+
+      const token =
+        response.admin?.token ||
+        response.admin?.accessToken ||
+        response.token ||
+        response.accessToken;
+
+      if (token) {
+        document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+      }
+
+      const userData =
+        response.data?.user || response.admin?.admin || response.admin;
+
+      setUser({
+        id: userData.id || userData._id || "admin-1",
+        name:
+          userData.name ||
+          `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
+          "Admin User",
+        email: userData.email || email,
+        role: userData.role || "admin",
+        avatar: userData.avatar || "/placeholder.svg",
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
 
       router.push("/dashboard");
 
@@ -127,16 +127,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Welcome back!",
         message: "You have successfully signed in to your account.",
       });
+
+      return response; // ✅ allow consumer to use response
     } catch (error) {
       addNotification({
         type: "error",
-        title: "Error",
-        message: "Login failed",
+        title: "Login failed",
+        message: error instanceof Error ? error.message : "Unexpected error occurred",
       });
+
+      throw error; // ✅ allow mutation to catch it
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const logout = async () => {
     try {
