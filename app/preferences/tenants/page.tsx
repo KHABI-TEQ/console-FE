@@ -85,7 +85,7 @@ export default function TenantPreferencesPage() {
     },
     {
       title: "Avg Monthly Rent",
-      value: "$2,850",
+      value: "₦2,850",
       change: "+5.7%",
       trend: "up" as const,
       icon: DollarSign,

@@ -79,7 +79,7 @@ export default function DeveloperPreferencesPage() {
     },
     {
       title: "Total Investment",
-      value: "$142M",
+      value: "₦142M",
       change: "+22.1%",
       trend: "up" as const,
       icon: DollarSign,
