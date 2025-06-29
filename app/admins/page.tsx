@@ -554,7 +554,19 @@ export default function AdminsPage() {
               setIsEditModalOpen(false);
               setSelectedAdmin(null);
             }}
-            adminData={selectedAdmin || undefined}
+            adminData={
+              selectedAdmin
+                ? {
+                    id: selectedAdmin._id || selectedAdmin.id || "",
+                    email: selectedAdmin.email,
+                    firstName: selectedAdmin.firstName,
+                    lastName: selectedAdmin.lastName,
+                    phoneNumber: selectedAdmin.phoneNumber || "",
+                    address: "",
+                    role: selectedAdmin.role,
+                  }
+                : undefined
+            }
             onSuccess={() => refetch()}
           />
 
