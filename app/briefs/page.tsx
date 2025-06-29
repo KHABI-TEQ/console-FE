@@ -49,10 +49,28 @@ import {
 } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 
+interface BriefFilters {
+  search?: string;
+  status?: string;
+  type?: string;
+  page?: number;
+  limit?: number;
+}
+
 export default function BriefsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  const filters: BriefFilters = {
+    ...(searchQuery && { search: searchQuery }),
+    ...(statusFilter !== "all" && { status: statusFilter }),
+    ...(typeFilter !== "all" && { type: typeFilter }),
+    page,
+    limit,
+  };
 
   const {
     data: briefsResponse,
