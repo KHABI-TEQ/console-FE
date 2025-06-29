@@ -149,13 +149,21 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const deleteAgent = useCallback(
     async (id: string) => {
       try {
-        await apiService.deleteAgent(id);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Agent deleted successfully",
-        });
-        fetchAgents();
+        const response = await apiService.deleteAgent(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Agent deleted successfully",
+          });
+          fetchAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to delete agent",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
