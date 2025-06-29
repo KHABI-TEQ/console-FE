@@ -40,10 +40,7 @@ interface BriefDetailPageProps {
 
 export default function BriefDetailPage({ params }: BriefDetailPageProps) {
   const router = useRouter();
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    isLoading: false,
-  });
+  const { confirmAction } = useConfirmation();
   const [isApproving, setIsApproving] = useState(false);
 
   const {
