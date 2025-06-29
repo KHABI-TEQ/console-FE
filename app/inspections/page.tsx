@@ -127,7 +127,7 @@ export default function InspectionsPage() {
   };
 
   const inspectionsData = inspectionsResponse?.data || [];
-  const totalCount = inspectionsResponse?.meta?.total || 0;
+  const totalCount = inspectionsResponse?.total || 0;
 
   const statsData = [
     {
