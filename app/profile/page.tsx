@@ -162,7 +162,7 @@ export default function ProfilePage() {
 
       // Update user context if available
       if (user && data?.data) {
-        const userData = data.data || {};
+        const userData = (data.data as any) || {};
         updateUser({
           name: `${userData.firstName || profileForm.firstName} ${userData.lastName || profileForm.lastName}`,
           email: userData.email || profileForm.email,
