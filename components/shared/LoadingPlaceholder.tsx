@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 
 interface LoadingPlaceholderProps {
-  type?: "table" | "card" | "stats" | "form" | "page";
+  type?: "table" | "card" | "stats" | "form" | "page" | "grid";
   count?: number;
   showSpinner?: boolean;
   title?: string;
