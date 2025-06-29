@@ -103,20 +103,31 @@ export default function AdminsPage() {
   } = useQuery({
     queryKey: ["admins", currentPage, pageLimit],
     queryFn: async () => {
+      console.log("Fetching admins with params:", {
+        page: currentPage,
+        limit: pageLimit,
+      });
+
       const response = await apiService.get("/admins", {
         page: currentPage,
         limit: pageLimit,
       });
 
-      console.log("API Response:", response);
+      console.log("Raw API Response:", response);
+      console.log("Response.success:", response.success);
+      console.log("Response.admins:", response.admins);
+      console.log("Response.data:", response.data);
 
       if (!response.success) {
+        console.error("API call failed:", response.error);
         throw new Error(response.error || "Failed to fetch admins");
       }
 
       // Return the response as-is since it already has the correct structure
       return response;
     },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   if (isLoading) {
