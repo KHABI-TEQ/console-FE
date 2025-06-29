@@ -219,16 +219,22 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
     }
   };
 
-  const handleDeleteBrief = async () => {
-    setDeleteModal({ isOpen: true, isLoading: true });
-    try {
-      await apiService.deleteBrief(params.id);
-      router.push("/briefs");
-    } catch (error) {
-      console.error("Failed to delete brief:", error);
-    } finally {
-      setDeleteModal({ isOpen: false, isLoading: false });
-    }
+  const handleDeleteBrief = () => {
+    confirmAction({
+      title: "Delete Brief",
+      description: `Are you sure you want to delete "${brief.title}"? This action cannot be undone and will remove all associated data including attachments and comments.`,
+      confirmText: "Delete Brief",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await apiService.deleteBrief(params.id);
+          router.push("/briefs");
+        } catch (error) {
+          console.error("Failed to delete brief:", error);
+        }
+      },
+    });
   };
 
   const handleApproveBrief = async () => {
