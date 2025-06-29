@@ -47,8 +47,8 @@ import {
   Star,
   Home,
   CreditCard,
-  AlertTriangle,
 } from "lucide-react";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
@@ -86,6 +86,14 @@ export default function BuyersPage() {
 
   const buyers = buyersResponse?.data || [];
   const totalCount = buyersResponse?.total || 0;
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <ListPageSkeleton title="Buyer Management" />
+      </AdminLayout>
+    );
+  }
 
   const stats = [
     {

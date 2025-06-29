@@ -55,6 +55,7 @@ import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,6 +115,14 @@ export default function BriefsPage() {
       return response;
     },
   });
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <ListPageSkeleton title="Brief Management" />
+      </AdminLayout>
+    );
+  }
 
   // Mock data for demonstration
   const mockBriefs = [
