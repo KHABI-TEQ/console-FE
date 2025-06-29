@@ -59,13 +59,15 @@ import {
 } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
+import { useInspections } from "@/contexts/InspectionsContext";
+
 
 interface InspectionDetailModalProps {
   inspectionId: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
-
+ 
 const statusColors = {
   pending_transaction:
     "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200",
@@ -103,21 +105,6 @@ const stageColors = {
   LOI: "bg-gradient-to-r from-green-100 to-teal-100 text-green-800 border-green-200",
 };
 
-async function approveInspection(id: string) {
-  const response = await apiService.approveInspection(id);
-  if (!response.success) {
-    throw new Error(response.error || "Failed to approve inspection");
-  }
-  return response;
-}
-
-async function rejectInspection(id: string, reason: string) {
-  const response = await apiService.rejectInspection(id, reason);
-  if (!response.success) {
-    throw new Error(response.error || "Failed to reject inspection");
-  }
-  return response;
-}
 
 export function InspectionDetailModal({
   inspectionId,
@@ -128,6 +115,7 @@ export function InspectionDetailModal({
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { updateInspectionStatus } = useInspections();
 
   const {
     data: inspectionResponse,
@@ -149,13 +137,14 @@ export function InspectionDetailModal({
   const inspection = inspectionResponse?.data;
 
   const approveMutation = useMutation({
-    mutationFn: () => approveInspection(inspectionId!),
-    onSuccess: (data) => {
+    mutationFn: () => updateInspectionStatus(inspectionId!, 'approve'),
+    onSuccess: () => {
       toast({
         title: "Success",
-        description: data.message,
+        description: "Inspection approved successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["inspections"] });
+      queryClient.invalidateQueries({ queryKey: ["inspection", inspectionId] });
       onClose();
     },
     onError: () => {
@@ -168,13 +157,14 @@ export function InspectionDetailModal({
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => rejectInspection(inspectionId!, rejectReason),
-    onSuccess: (data) => {
+    mutationFn: () => updateInspectionStatus(inspectionId!, 'reject'),
+    onSuccess: () => {
       toast({
         title: "Success",
-        description: data.message,
+        description: "Inspection rejected successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["inspections"] });
+      queryClient.invalidateQueries({ queryKey: ["inspection", inspectionId] });
       setRejectReason("");
       onClose();
     },
@@ -813,7 +803,7 @@ export function InspectionDetailModal({
                             </div>
                             <div>
                               <h3 className="font-semibold text-green-900">
-                                Approve Inspection
+                                Approve Inspection Transaction
                               </h3>
                               <p className="text-sm text-green-700">
                                 Grant permission to proceed
@@ -824,7 +814,7 @@ export function InspectionDetailModal({
                             <AlertDialogTrigger asChild>
                               <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve Inspection
+                                Approve Inspection Transaction
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -835,7 +825,7 @@ export function InspectionDetailModal({
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   Are you sure you want to approve this
-                                  inspection? This action will notify both the
+                                  inspection transaction? This action will notify both the
                                   buyer and seller and allow the inspection to
                                   proceed as scheduled.
                                 </AlertDialogDescription>

@@ -170,17 +170,12 @@ export default function ForgotPasswordPage() {
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
           <CardHeader className="space-y-6 text-center pb-6">
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-12 h-12 flex items-center justify-center">
+              <div className="w-42 h-20 flex items-center justify-center">
                 <img
-                  src="/khabi-teq-logo.svg"
+                  src="https://www.khabiteqrealty.com/_next/static/media/khabi-teq.5f752ece.svg"
                   alt="Property Management"
-                  className="h-10 w-10 object-contain"
+                  className="object-contain"
                 />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Property Admin
-                </h1>
               </div>
             </div>
 
@@ -264,16 +259,6 @@ export default function ForgotPasswordPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to sign in
                 </Button>
-              </a>
-            </div>
-
-            <div className="text-center text-sm text-gray-600">
-              Need immediate help?{" "}
-              <a
-                href="/contacts"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Contact support
               </a>
             </div>
           </CardContent>

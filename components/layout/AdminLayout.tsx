@@ -265,21 +265,14 @@ function SidebarContent({
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 flex items-center justify-center">
+            <div className="w-42 h-10 flex items-center justify-center">
               <img
                 src="/khabi-teq-logo.svg"
                 alt="Property Management"
-                className="h-8 w-8 object-contain"
+                className="object-contain"
               />
             </div>
-            {!isCollapsed && (
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Property Admin
-                </h1>
-                <p className="text-xs text-gray-500">Management System</p>
-              </div>
-            )}
+            
           </div>
           {onToggleCollapse && (
             <Button
@@ -470,62 +463,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <Sun className="h-5 w-5" />
                 </Button>
-
-                {/* Notifications */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative p-2">
-                      <Bell className="h-5 w-5" />
-                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
-                        <span className="text-xs font-medium text-white">
-                          3
-                        </span>
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80">
-                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="max-h-96 overflow-y-auto">
-                      <DropdownMenuItem>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium">
-                            New inspection request
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Modern Downtown Apartment
-                          </p>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium">
-                            Agent approval pending
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Sarah Johnson waiting for approval
-                          </p>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium">
-                            Property listing updated
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Luxury Penthouse price changed
-                          </p>
-                        </div>
-                      </DropdownMenuItem>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-center">
-                      <span className="text-sm text-blue-600">
-                        View all notifications
-                      </span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
 
                 {/* Profile dropdown - Desktop only */}
                 <div className="hidden sm:block">

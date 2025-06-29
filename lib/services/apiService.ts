@@ -33,8 +33,11 @@ class ApiService {
       const authToken = document.cookie
         .split("; ")
         .find((row) => row.startsWith("auth-token="));
+
       return authToken ? authToken.split("=")[1] : null;
     }
+
+    
     return null;
   }
 
@@ -78,16 +81,17 @@ class ApiService {
       } catch (parseError) {
         data = {};
       }
-
+      
       if (!response.ok) {
         // Handle auth errors
+
         if (response.status === 401 || response.status === 403) {
           // Clear auth token and redirect to login
           if (typeof document !== "undefined") {
             document.cookie = "auth-token=; path=/; max-age=0";
-            if (window.location.pathname !== "/auth/login") {
-              window.location.href = "/auth/login";
-            }
+            // if (window.location.pathname !== "/auth/login") {
+            //   window.location.href = "/auth/login";
+            // }
           }
         }
 
@@ -225,6 +229,10 @@ class ApiService {
     password: string,
   ): Promise<ApiResponse<any>> {
     return this.post("/reset-password", { token, password }, false);
+  }
+
+  async getProfile(): Promise<ApiResponse<any>> {
+    return this.get("/profile");
   }
 
   async logout(): Promise<ApiResponse<any>> {

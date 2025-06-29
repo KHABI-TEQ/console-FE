@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useApp } from "@/contexts/AppContext";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -31,9 +29,7 @@ interface LoginFormValues {
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
   const { login } = useAuth();
-  const { addNotification } = useApp();
 
   const initialValues: LoginFormValues = {
     email: "",
@@ -43,53 +39,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-
-    try {
-      await login(values.email, values.password);
-
-      addNotification({
-        type: "success",
-        title: "Welcome back!",
-        message: "You have successfully signed in to your account.",
-      });
-
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Login error:", error);
-
-      let errorMessage = "Invalid email or password. Please try again.";
-
-      if (error instanceof Error) {
-        if (
-          error.message.includes("fetch") ||
-          error.message.includes("Network")
-        ) {
-          errorMessage =
-            "Unable to connect to server. Please check your connection and try again.";
-        } else if (
-          error.message.includes("401") ||
-          error.message.includes("Unauthorized")
-        ) {
-          errorMessage =
-            "Invalid email or password. Please check your credentials.";
-        } else if (
-          error.message.includes("403") ||
-          error.message.includes("Forbidden")
-        ) {
-          errorMessage = "Access denied. Please contact your administrator.";
-        } else if (error.message.includes("500")) {
-          errorMessage = "Server error. Please try again later.";
-        }
-      }
-
-      addNotification({
-        type: "error",
-        title: "Sign in failed",
-        message: errorMessage,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await login(values.email, values.password);
+    setIsSubmitting(false);
   };
 
   return (
@@ -108,21 +59,15 @@ export default function LoginPage() {
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
           <CardHeader className="space-y-6 text-center pb-6">
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-12 h-12 flex items-center justify-center">
+              <div className="w-42 h-20 flex items-center justify-center">
                 <img
-                  src="/khabi-teq-logo.svg"
+                  src="https://www.khabiteqrealty.com/_next/static/media/khabi-teq.5f752ece.svg"
                   alt="Property Management"
-                  className="h-10 w-10 object-contain"
+                  className="object-contain"
                 />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Property Admin
-                </h1>
-                <p className="text-gray-500 text-sm">Management System</p>
-              </div>
             </div>
-            <div>
+            <div className="py-3">
               <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
               <p className="text-gray-600">Sign in to access your dashboard</p>
             </div>
@@ -245,16 +190,6 @@ export default function LoginPage() {
                 </Form>
               )}
             </Formik>
-
-            <div className="text-center text-sm text-gray-600">
-              Need access?{" "}
-              <a
-                href="/contacts"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Contact administrator
-              </a>
-            </div>
           </CardContent>
         </Card>
       </div>
