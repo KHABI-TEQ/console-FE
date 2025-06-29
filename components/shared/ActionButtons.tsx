@@ -32,6 +32,9 @@ interface ActionButtonsProps {
   showApproval?: boolean;
   showContact?: boolean;
   showMore?: boolean;
+  showView?: boolean;
+  showEdit?: boolean;
+  showDelete?: boolean;
   size?: "sm" | "default";
   variant?: "inline" | "dropdown";
   onRefresh?: () => void;
