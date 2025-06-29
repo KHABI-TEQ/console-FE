@@ -94,14 +94,13 @@ export function AgentManagement({
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: "1",
         limit: "50",
-        type: statusFilter === "all" ? "all" : statusFilter,
-      });
+        ...(searchQuery && { search: searchQuery }),
+      };
 
-      const response = await fetch(`/api/all-users?${params}&role=agent`);
-      const data = await response.json();
+      const data = await apiService.getAgents(params);
       setAgentsData(data);
     } catch (error) {
       console.error("Error fetching agents:", error);
@@ -113,15 +112,13 @@ export function AgentManagement({
   const fetchLandlordsData = async () => {
     setLandlordsLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: "1",
         limit: "50",
-        type: statusFilter === "all" ? "all" : statusFilter,
-        userType: "Landowners",
-      });
+        ...(searchQuery && { search: searchQuery }),
+      };
 
-      const response = await fetch(`/api/all-agents?${params}`);
-      const data = await response.json();
+      const data = await apiService.getLandowners(params);
       setLandlordsData(data);
     } catch (error) {
       console.error("Error fetching landlords:", error);
