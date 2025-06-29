@@ -70,7 +70,14 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+
+      // Handle empty responses
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        data = {};
+      }
 
       if (!response.ok) {
         // Handle auth errors
@@ -78,35 +85,61 @@ class ApiService {
           // Clear auth token and redirect to login
           if (typeof document !== "undefined") {
             document.cookie = "auth-token=; path=/; max-age=0";
-            window.location.href = "/auth/login";
+            if (window.location.pathname !== "/auth/login") {
+              window.location.href = "/auth/login";
+            }
           }
         }
 
         // Return error response instead of throwing
         return {
           success: false,
-          error: data.message || `HTTP error! status: ${response.status}`,
+          error:
+            data.message ||
+            data.error ||
+            `HTTP error! status: ${response.status}`,
           message:
-            data.message || `Request failed with status ${response.status}`,
+            data.message ||
+            data.error ||
+            `Request failed with status ${response.status}`,
         };
       }
 
-      // Return successful response
-      return {
+      // Handle different response formats
+      const normalizedData = {
         ...data,
         success: true,
+        // Ensure data field exists for consistency
+        data: data.data || data.result || data,
+        // Handle pagination metadata
+        total: data.total || data.count || data.pagination?.total,
+        page: data.page || data.pagination?.page,
+        limit: data.limit || data.pagination?.limit,
+        totalPages: data.totalPages || data.pagination?.totalPages,
       };
+
+      return normalizedData;
     } catch (error) {
       console.error(`API Error (${endpoint}):`, error);
+
+      // Check if it's a network error
+      const isNetworkError =
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("NetworkError") ||
+          error.message.includes("Failed to fetch"));
 
       // Return error response instead of throwing
       return {
         success: false,
-        error:
-          error instanceof Error
+        error: isNetworkError
+          ? "Network connection failed. Please check your internet connection."
+          : error instanceof Error
             ? error.message
             : "An unexpected error occurred",
-        message: "Network or parsing error occurred",
+        message: isNetworkError
+          ? "Unable to connect to the server"
+          : "Network or parsing error occurred",
       };
     }
   }
