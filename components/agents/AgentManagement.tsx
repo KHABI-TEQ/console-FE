@@ -178,17 +178,11 @@ export function AgentManagement({
       color: "orange" as const,
     },
     {
-      title: "Total Commissions",
+      title: "Verified Agents",
       value:
-        "$" +
-        (
-          agentsData?.users?.reduce(
-            (sum: number, agent: any) =>
-              sum + (agent.agentData?.commission || 0),
-            0,
-          ) / 1000 || 0
-        ).toFixed(0) +
-        "K",
+        agentsData?.users
+          ?.filter((a: any) => a.isAccountVerified)
+          .length?.toString() || "0",
       change: "+18.7%",
       trend: "up" as const,
       icon: DollarSign,
@@ -200,7 +194,7 @@ export function AgentManagement({
   const landlordStats = [
     {
       title: "Total Landlords",
-      value: landlordsData?.agents?.totalAgents?.toString() || "0",
+      value: landlordsData?.total?.toString() || "0",
       change: "+15.2%",
       trend: "up" as const,
       icon: Home,
@@ -208,15 +202,21 @@ export function AgentManagement({
     },
     {
       title: "Active Landlords",
-      value: landlordsData?.agents?.totalActiveAgents?.toString() || "0",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.accountStatus === "active" && !l.isInActive)
+          .length?.toString() || "0",
       change: "+8.1%",
       trend: "up" as const,
       icon: Shield,
       color: "green" as const,
     },
     {
-      title: "Inactive Landlords",
-      value: landlordsData?.agents?.totalInactiveAgents?.toString() || "0",
+      title: "Verified Landlords",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.isAccountVerified)
+          .length?.toString() || "0",
       change: "+22.3%",
       trend: "up" as const,
       icon: Building,
@@ -224,10 +224,13 @@ export function AgentManagement({
     },
     {
       title: "Flagged Landlords",
-      value: landlordsData?.agents?.totalFlaggedAgents?.toString() || "0",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.isFlagged)
+          .length?.toString() || "0",
       change: "+18.7%",
       trend: "down" as const,
-      icon: DollarSign,
+      icon: AlertTriangle,
       color: "orange" as const,
     },
   ];
