@@ -103,25 +103,31 @@ export default function AdminsPage() {
   } = useQuery({
     queryKey: ["admins", currentPage, pageLimit],
     queryFn: async () => {
+      console.log("Fetching admins with params:", {
+        page: currentPage,
+        limit: pageLimit,
+      });
+
       const response = await apiService.get("/admins", {
         page: currentPage,
         limit: pageLimit,
       });
 
+      console.log("Raw API Response:", response);
+      console.log("Response.success:", response.success);
+      console.log("Response.admins:", response.admins);
+      console.log("Response.data:", response.data);
+
       if (!response.success) {
+        console.error("API call failed:", response.error);
         throw new Error(response.error || "Failed to fetch admins");
       }
 
-      // Return the structure expected by the component
-      const apiResponse = response as any;
-      return {
-        admins: apiResponse.data || apiResponse.admins || [],
-        total: apiResponse.total || 0,
-        page: apiResponse.page || currentPage,
-        limit: apiResponse.limit || pageLimit,
-        success: apiResponse.success,
-      };
+      // Return the response as-is since it already has the correct structure
+      return response;
     },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   if (isLoading) {
@@ -150,9 +156,23 @@ export default function AdminsPage() {
     );
   }
 
-  const admins = Array.isArray(adminsData?.admins) ? adminsData.admins : [];
-  const totalAdmins = adminsData?.total || 0;
-  const totalPages = Math.ceil(totalAdmins / pageLimit);
+  // Handle multiple possible response structures
+  const admins = Array.isArray(adminsData?.admins)
+    ? adminsData.admins
+    : Array.isArray(adminsData?.data)
+      ? adminsData.data
+      : [];
+
+  const totalAdmins = adminsData?.pagination?.total || adminsData?.total || 0;
+  const totalPages =
+    adminsData?.pagination?.totalPages || Math.ceil(totalAdmins / pageLimit);
+
+  console.log("Processed data:", {
+    admins,
+    totalAdmins,
+    totalPages,
+    adminsData,
+  });
 
   const handleOpenEdit = (admin: Admin) => {
     setSelectedAdmin(admin);
@@ -365,6 +385,20 @@ export default function AdminsPage() {
             </CardContent>
           </Card>
 
+          {/* Debug Info - Remove this after fixing */}
+          {adminsData && (
+            <Card className="border border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="text-blue-800">Debug Info</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs overflow-auto">
+                  {JSON.stringify(adminsData, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Admins Table */}
           <Card className="border shadow-sm">
             <CardHeader className="bg-gray-50/50 border-b">
@@ -406,94 +440,108 @@ export default function AdminsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAdmins.map((admin: Admin) => (
-                      <TableRow
-                        key={admin._id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <TableCell className="py-4">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src="/placeholder.svg" />
-                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
-                                {admin.firstName[0]}
-                                {admin.lastName[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {admin.firstName} {admin.lastName}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {admin.email}
-                              </p>
-                            </div>
+                    {filteredAdmins.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          <div className="text-gray-500">
+                            {admins.length === 0
+                              ? "No admins found in the system."
+                              : "No admins match your current filters."}
                           </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="space-y-1">
-                            <p className="text-sm text-gray-900">
-                              {admin.email}
-                            </p>
-                            {admin.phoneNumber && (
-                              <p className="text-sm text-gray-500">
-                                {admin.phoneNumber}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="space-y-2">
-                            {getRoleBadge(admin.role)}
-                            {getStatusBadge(admin)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <p className="text-sm">
-                            {formatDate(admin.createdAt)}
-                          </p>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleOpenEdit(admin)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleOpenChangePassword(admin)}
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                Change Password
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleOpenDisableModal(admin)}
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                {admin.isAccountVerified
-                                  ? "Disable"
-                                  : "Enable"}{" "}
-                                Account
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteAdmin(admin)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredAdmins.map((admin: Admin) => (
+                        <TableRow
+                          key={admin._id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src="/placeholder.svg" />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
+                                  {admin.firstName[0]}
+                                  {admin.lastName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {admin.firstName} {admin.lastName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {admin.email}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-900">
+                                {admin.email}
+                              </p>
+                              {admin.phoneNumber && (
+                                <p className="text-sm text-gray-500">
+                                  {admin.phoneNumber}
+                                </p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              {getRoleBadge(admin.role)}
+                              {getStatusBadge(admin)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <p className="text-sm">
+                              {formatDate(admin.createdAt)}
+                            </p>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenEdit(admin)}
+                                >
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleOpenChangePassword(admin)
+                                  }
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Change Password
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenDisableModal(admin)}
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  {admin.isAccountVerified
+                                    ? "Disable"
+                                    : "Enable"}{" "}
+                                  Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteAdmin(admin)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
