@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -55,7 +56,7 @@ export default function AgentsPage() {
   const stats = [
     {
       title: "Total Agents",
-      value: "156",
+      value: agents.length.toString(),
       change: "+8.2%",
       trend: "up" as const,
       icon: Users,
@@ -63,15 +64,17 @@ export default function AgentsPage() {
     },
     {
       title: "Active Agents",
-      value: "142",
+      value: agents.filter((a) => a.status === "Active").length.toString(),
       change: "+5.1%",
       trend: "up" as const,
       icon: UserCheck,
       color: "green" as const,
     },
     {
-      title: "Pending Approval",
-      value: "8",
+      title: "Inactive/Banned",
+      value: agents
+        .filter((a) => a.status === "Inactive" || a.status === "Banned")
+        .length.toString(),
       change: "-12.5%",
       trend: "down" as const,
       icon: Clock,
@@ -79,7 +82,12 @@ export default function AgentsPage() {
     },
     {
       title: "Total Commissions",
-      value: "$2.4M",
+      value:
+        "$" +
+        (
+          agents.reduce((sum, agent) => sum + agent.commission, 0) / 1000
+        ).toFixed(0) +
+        "K",
       change: "+18.7%",
       trend: "up" as const,
       icon: DollarSign,
@@ -127,14 +135,46 @@ export default function AgentsPage() {
       phone: "+1 (555) 345-6789",
       location: "Arts District",
       avatar: "/placeholder.svg",
-      status: "Pending",
+      status: "Inactive",
       tier: "Basic",
       rating: 4.5,
       sales: 12,
       commission: 95000,
       joined: "2024-01-05",
-      lastActive: "3 days ago",
+      lastActive: "2 weeks ago",
       specialties: ["Condos", "Investment Properties"],
+    },
+    {
+      id: 4,
+      name: "Robert Brown",
+      email: "robert.brown@example.com",
+      phone: "+1 (555) 456-7890",
+      location: "Financial District",
+      avatar: "/placeholder.svg",
+      status: "Banned",
+      tier: "Standard",
+      rating: 3.2,
+      sales: 8,
+      commission: 45000,
+      joined: "2023-08-20",
+      lastActive: "1 month ago",
+      specialties: ["Commercial", "Office Spaces"],
+    },
+    {
+      id: 5,
+      name: "Jessica Chen",
+      email: "jessica.chen@example.com",
+      phone: "+1 (555) 567-8901",
+      location: "Uptown",
+      avatar: "/placeholder.svg",
+      status: "Pending",
+      tier: "Basic",
+      rating: 4.3,
+      sales: 3,
+      commission: 18000,
+      joined: "2024-01-20",
+      lastActive: "5 hours ago",
+      specialties: ["Residential", "New Construction"],
     },
   ];
 
@@ -162,10 +202,12 @@ export default function AgentsPage() {
     switch (status.toLowerCase()) {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case "pending":
-        return <Badge className="bg-orange-100 text-orange-800">Pending</Badge>;
       case "inactive":
         return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
+      case "pending":
+        return <Badge className="bg-orange-100 text-orange-800">Pending</Badge>;
+      case "banned":
+        return <Badge className="bg-red-100 text-red-800">Banned</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -245,8 +287,9 @@ export default function AgentsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="banned">Banned</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={tierFilter} onValueChange={setTierFilter}>
@@ -421,13 +464,15 @@ export default function AgentsPage() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-blue-50 hover:border-blue-300"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <Link href={`/agents/${agent.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="hover:bg-blue-50 hover:border-blue-300"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
                           <Button
                             variant="outline"
                             size="sm"
