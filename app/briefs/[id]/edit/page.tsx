@@ -63,10 +63,11 @@ interface BriefFormValues {
 }
 
 interface EditBriefPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function EditBriefPage({ params }: EditBriefPageProps) {
+export default async function EditBriefPage({ params }: EditBriefPageProps) {
+  const { id: briefId } = await params;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTag, setNewTag] = useState("");
@@ -77,8 +78,8 @@ export default function EditBriefPage({ params }: EditBriefPageProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["brief", params.id],
-    queryFn: () => apiService.getBrief(params.id),
+    queryKey: ["brief", briefId],
+    queryFn: () => apiService.getBrief(briefId),
   });
 
   // Mock data for demonstration

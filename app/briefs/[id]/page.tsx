@@ -35,10 +35,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface BriefDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function BriefDetailPage({ params }: BriefDetailPageProps) {
+export default async function BriefDetailPage({
+  params,
+}: BriefDetailPageProps) {
+  const { id: briefId } = await params;
   const router = useRouter();
   const { confirmAction } = useConfirmation();
   const [isApproving, setIsApproving] = useState(false);
@@ -48,15 +51,14 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
     isLoading: false,
   });
 
-
   const {
     data: briefResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["brief", params.id],
-    queryFn: () => apiService.getBrief(params.id),
+    queryKey: ["brief", briefId],
+    queryFn: () => apiService.getBrief(briefId),
   });
 
   // Mock data for demonstration
