@@ -148,7 +148,7 @@ export default function AdminsPage() {
     );
   }
 
-  const admins = adminsData?.admins || [];
+  const admins = Array.isArray(adminsData?.admins) ? adminsData.admins : [];
   const totalAdmins = adminsData?.total || 0;
   const totalPages = Math.ceil(totalAdmins / pageLimit);
 
