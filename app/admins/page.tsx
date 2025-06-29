@@ -49,6 +49,8 @@ import { AdminProvider } from "@/contexts/AdminContext";
 import { AddAdminModal } from "@/components/modals/AddAdminModal";
 import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { EditAdminModal } from "@/components/modals/EditAdminModal";
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+import { DisableAdminModal } from "@/components/modals/DisableAdminModal";
 
 function AdminPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +58,11 @@ function AdminPageContent() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
+  const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
   const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
+  const [selectedAdmin, setSelectedAdmin] = useState<any | null>(null);
 
   const { admins, isLoading, fetchAdmins, deleteAdmin, changeAdminStatus } =
     useAdmin();
@@ -70,8 +76,24 @@ function AdminPageContent() {
   }
 
   const handleOpenEdit = (adminId: string) => {
+    const admin = admins.find((a) => a.id === adminId);
+    setSelectedAdmin(admin);
     setEditingAdminId(adminId);
     setIsEditModalOpen(true);
+  };
+
+  const handleOpenChangePassword = (adminId: string) => {
+    const admin = admins.find((a) => a.id === adminId);
+    setSelectedAdmin(admin);
+    setEditingAdminId(adminId);
+    setIsChangePasswordModalOpen(true);
+  };
+
+  const handleOpenDisableModal = (adminId: string) => {
+    const admin = admins.find((a) => a.id === adminId);
+    setSelectedAdmin(admin);
+    setEditingAdminId(adminId);
+    setIsDisableModalOpen(true);
   };
 
   const handleStatusChange = async (adminId: string, status: string) => {
@@ -170,10 +192,6 @@ function AdminPageContent() {
           title="Admin Management"
           description="Manage system administrators, roles, and permissions"
         >
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
           <Button variant="outline" className="w-full sm:w-auto">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -372,18 +390,19 @@ function AdminPageContent() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleStatusChange(
-                                    admin.id,
-                                    admin.status === "active"
-                                      ? "inactive"
-                                      : "active",
-                                  )
+                                  handleOpenChangePassword(admin.id)
                                 }
                               >
                                 <Shield className="mr-2 h-4 w-4" />
+                                Change Password
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleOpenDisableModal(admin.id)}
+                              >
+                                <Shield className="mr-2 h-4 w-4" />
                                 {admin.status === "active"
-                                  ? "Deactivate"
-                                  : "Activate"}
+                                  ? "Disable Account"
+                                  : "Enable Account"}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDeleteAdmin(admin.id)}
@@ -415,8 +434,33 @@ function AdminPageContent() {
           onClose={() => {
             setIsEditModalOpen(false);
             setEditingAdminId(null);
+            setSelectedAdmin(null);
+          }}
+          adminData={selectedAdmin}
+          onSuccess={() => fetchAdmins()}
+        />
+
+        <ChangePasswordModal
+          isOpen={isChangePasswordModalOpen}
+          onClose={() => {
+            setIsChangePasswordModalOpen(false);
+            setEditingAdminId(null);
+            setSelectedAdmin(null);
           }}
           adminId={editingAdminId}
+          adminName={selectedAdmin?.name}
+        />
+
+        <DisableAdminModal
+          isOpen={isDisableModalOpen}
+          onClose={() => {
+            setIsDisableModalOpen(false);
+            setEditingAdminId(null);
+            setSelectedAdmin(null);
+          }}
+          adminId={editingAdminId}
+          adminName={selectedAdmin?.name}
+          currentStatus={selectedAdmin?.status}
         />
       </div>
     </AdminLayout>
