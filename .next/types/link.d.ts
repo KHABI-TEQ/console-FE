@@ -42,6 +42,9 @@ declare namespace __next_route_internal_types__ {
     | `/briefs`
     | `/contacts`
     | `/preferences`
+    | `/preferences/buyers`
+    | `/preferences/tenants`
+    | `/preferences/developers`
     | `/buyer-preferences`
     | `/admins`
     | `/landlords`
