@@ -9,22 +9,14 @@ interface Landlord {
   name: string;
   email: string;
   phone: string;
-  location: string;
+  properties: number;
+  totalValue: number;
+  monthlyRevenue: number;
   avatar: string;
   status: string;
-  tier: string;
-  rating: number;
-  properties: number;
-  totalRevenue: number;
   joined: string;
   lastActive: string;
-  specialties: string[];
-  verificationStatus: string;
-  bankDetails: {
-    accountNumber: string;
-    bankName: string;
-    verified: boolean;
-  };
+  location: string;
 }
 
 interface LandlordsContextType {
@@ -44,7 +36,6 @@ interface LandlordsContextType {
   createLandlord: (landlordData: any) => Promise<void>;
   updateLandlord: (id: string, landlordData: any) => Promise<void>;
   deleteLandlord: (id: string) => Promise<void>;
-  verifyLandlord: (id: string, status: string) => Promise<void>;
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
   setSelectedLandlord: (landlord: Landlord | null) => void;
@@ -73,17 +64,24 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
     async (newFilters?: any) => {
       setIsLoading(true);
       try {
-        // This would be a specific landlord endpoint
-        const response = await apiService.get("/landlords", {
+        const response = await apiService.getLandowners({
           ...filters,
           ...newFilters,
           page: pagination.page,
           limit: pagination.limit,
         });
 
-        setLandlords(response.data || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.success) {
+          setLandlords(response.data || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch landlords",
+          });
         }
       } catch (error) {
         addNotification({
@@ -101,8 +99,17 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
   const getLandlord = useCallback(
     async (id: string): Promise<Landlord | null> => {
       try {
-        const response = await apiService.get(`/landlords/${id}`);
-        return response.data;
+        const response = await apiService.getLandowner(id);
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch landlord details",
+          });
+          return null;
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -118,13 +125,21 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
   const createLandlord = useCallback(
     async (landlordData: any) => {
       try {
-        await apiService.post("/landlords", landlordData);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Landlord created successfully",
-        });
-        fetchLandlords();
+        const response = await apiService.createLandowner(landlordData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Landlord created successfully",
+          });
+          fetchLandlords();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to create landlord",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -139,13 +154,21 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
   const updateLandlord = useCallback(
     async (id: string, landlordData: any) => {
       try {
-        await apiService.put(`/landlords/${id}`, landlordData);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Landlord updated successfully",
-        });
-        fetchLandlords();
+        const response = await apiService.updateLandowner(id, landlordData);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Landlord updated successfully",
+          });
+          fetchLandlords();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to update landlord",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
@@ -160,39 +183,26 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
   const deleteLandlord = useCallback(
     async (id: string) => {
       try {
-        await apiService.delete(`/landlords/${id}`);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: "Landlord deleted successfully",
-        });
-        fetchLandlords();
+        const response = await apiService.deleteLandowner(id);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || "Landlord deleted successfully",
+          });
+          fetchLandlords();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to delete landlord",
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
           title: "Error",
           message: "Failed to delete landlord",
-        });
-      }
-    },
-    [addNotification, fetchLandlords],
-  );
-
-  const verifyLandlord = useCallback(
-    async (id: string, status: string) => {
-      try {
-        await apiService.patch(`/landlords/${id}/verify`, { status });
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: `Landlord ${status} successfully`,
-        });
-        fetchLandlords();
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: `Failed to ${status} landlord`,
         });
       }
     },
@@ -219,7 +229,6 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
     createLandlord,
     updateLandlord,
     deleteLandlord,
-    verifyLandlord,
     setFilters,
     setPage,
     setSelectedLandlord,
