@@ -61,13 +61,12 @@ import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
 import { useInspections } from "@/contexts/InspectionsContext";
 
-
 interface InspectionDetailModalProps {
   inspectionId: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
- 
+
 const statusColors = {
   pending_transaction:
     "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200",
@@ -105,7 +104,6 @@ const stageColors = {
   LOI: "bg-gradient-to-r from-green-100 to-teal-100 text-green-800 border-green-200",
 };
 
-
 export function InspectionDetailModal({
   inspectionId,
   isOpen,
@@ -137,7 +135,7 @@ export function InspectionDetailModal({
   const inspection = inspectionResponse?.data;
 
   const approveMutation = useMutation({
-    mutationFn: () => updateInspectionStatus(inspectionId!, 'approve'),
+    mutationFn: () => updateInspectionStatus(inspectionId!, "approve"),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -157,7 +155,7 @@ export function InspectionDetailModal({
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => updateInspectionStatus(inspectionId!, 'reject'),
+    mutationFn: () => updateInspectionStatus(inspectionId!, "reject"),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -333,7 +331,9 @@ export function InspectionDetailModal({
                 variant="outline"
                 className={cn(
                   "text-xs sm:text-sm",
-                  statusColors[inspection.status] || "bg-gray-100",
+                  statusColors[
+                    inspection.status as keyof typeof statusColors
+                  ] || "bg-gray-100",
                 )}
               >
                 {inspection.status.replace(/_/g, " ")}
@@ -342,7 +342,8 @@ export function InspectionDetailModal({
                 variant="secondary"
                 className={cn(
                   "text-xs sm:text-sm",
-                  stageColors[inspection.stage] || "bg-gray-100",
+                  stageColors[inspection.stage as keyof typeof stageColors] ||
+                    "bg-gray-100",
                 )}
               >
                 {inspection.stage}
@@ -584,15 +585,17 @@ export function InspectionDetailModal({
                 <div>
                   <h4 className="font-semibold mb-3">Property Features</h4>
                   <div className="flex flex-wrap gap-2">
-                    {inspection.propertyId.features?.map((feature, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {feature}
-                      </Badge>
-                    ))}
+                    {inspection.propertyId.features?.map(
+                      (feature: string, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {feature}
+                        </Badge>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -603,7 +606,7 @@ export function InspectionDetailModal({
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {inspection.propertyId.pictures
                           .slice(1)
-                          .map((image, index) => (
+                          .map((image: string, index: number) => (
                             <img
                               key={index}
                               src={image}
@@ -825,9 +828,9 @@ export function InspectionDetailModal({
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   Are you sure you want to approve this
-                                  inspection transaction? This action will notify both the
-                                  buyer and seller and allow the inspection to
-                                  proceed as scheduled.
+                                  inspection transaction? This action will
+                                  notify both the buyer and seller and allow the
+                                  inspection to proceed as scheduled.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
