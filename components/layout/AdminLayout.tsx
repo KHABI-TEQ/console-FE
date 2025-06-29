@@ -58,32 +58,32 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    href: "/admin",
+    href: "/dashboard",
     label: "Dashboard Overview",
     icon: LayoutGrid,
     disabled: false,
   },
   {
-    href: "/admin/properties",
+    href: "/properties",
     label: "Property Management",
     icon: Building,
     disabled: false,
     badge: "245",
     children: [
       {
-        href: "/admin/properties/listings",
+        href: "/properties/listings",
         label: "All Listings",
         icon: Archive,
         disabled: false,
       },
       {
-        href: "/admin/properties/featured",
+        href: "/properties/featured",
         label: "Featured Properties",
         icon: BarChart3,
         disabled: false,
       },
       {
-        href: "/admin/properties/pending",
+        href: "/properties/pending",
         label: "Pending Approval",
         icon: Clock,
         disabled: false,
@@ -92,27 +92,27 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/admin/agents",
+    href: "/agents",
     label: "Agent Management",
     icon: Users,
     disabled: false,
     badge: "56",
     children: [
       {
-        href: "/admin/agents/active",
+        href: "/agents/active",
         label: "Active Agents",
         icon: UserCheck,
         disabled: false,
       },
       {
-        href: "/admin/agents/pending",
+        href: "/agents/pending",
         label: "Pending Approval",
         icon: Clock,
         disabled: false,
         badge: "8",
       },
       {
-        href: "/admin/agents/performance",
+        href: "/agents/performance",
         label: "Performance",
         icon: BarChart3,
         disabled: false,
@@ -120,27 +120,55 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/admin/inspections",
+    href: "/buyers",
+    label: "Buyer Management",
+    icon: UserCheck,
+    disabled: false,
+    badge: "180",
+    children: [
+      {
+        href: "/buyers/active",
+        label: "Active Buyers",
+        icon: UserCheck,
+        disabled: false,
+      },
+      {
+        href: "/buyers/leads",
+        label: "New Leads",
+        icon: TrendingUp,
+        disabled: false,
+        badge: "24",
+      },
+      {
+        href: "/buyers/preferences",
+        label: "Preferences",
+        icon: Settings,
+        disabled: false,
+      },
+    ],
+  },
+  {
+    href: "/inspections",
     label: "Inspection Management",
     icon: Search,
     disabled: false,
     badge: "23",
     children: [
       {
-        href: "/admin/inspections/pending",
+        href: "/inspections/pending",
         label: "Pending Inspections",
         icon: Clock,
         disabled: false,
         badge: "15",
       },
       {
-        href: "/admin/inspections/scheduled",
+        href: "/inspections/scheduled",
         label: "Scheduled",
         icon: Calendar,
         disabled: false,
       },
       {
-        href: "/admin/inspections/completed",
+        href: "/inspections/completed",
         label: "Completed",
         icon: UserCheck,
         disabled: false,
@@ -148,19 +176,19 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/admin/briefs",
+    href: "/briefs",
     label: "Briefs Management",
     icon: FileText,
     disabled: false,
     children: [
       {
-        href: "/admin/briefs/active",
+        href: "/briefs/active",
         label: "Active Briefs",
         icon: ClipboardList,
         disabled: false,
       },
       {
-        href: "/admin/briefs/templates",
+        href: "/briefs/templates",
         label: "Templates",
         icon: Archive,
         disabled: false,
@@ -168,38 +196,32 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/admin/contacts",
+    href: "/contacts",
     label: "Contact Management",
     icon: MessageSquare,
     disabled: false,
     badge: "142",
   },
   {
-    href: "/admin/preferences",
-    label: "Preference Management",
-    icon: Settings,
-    disabled: false,
-  },
-  {
-    href: "/admin/analytics",
+    href: "/analytics",
     label: "Analytics & Reports",
     icon: BarChart3,
     disabled: false,
     children: [
       {
-        href: "/admin/analytics/overview",
+        href: "/analytics/overview",
         label: "Overview",
         icon: BarChart3,
         disabled: false,
       },
       {
-        href: "/admin/analytics/revenue",
+        href: "/analytics/revenue",
         label: "Revenue",
         icon: CreditCard,
         disabled: false,
       },
       {
-        href: "/admin/analytics/performance",
+        href: "/analytics/performance",
         label: "Performance",
         icon: TrendingUp,
         disabled: false,
@@ -207,25 +229,25 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/admin/settings",
+    href: "/settings",
     label: "System Settings",
     icon: Settings,
     disabled: false,
     children: [
       {
-        href: "/admin/settings/general",
+        href: "/settings/general",
         label: "General",
         icon: Settings,
         disabled: false,
       },
       {
-        href: "/admin/settings/users",
+        href: "/settings/users",
         label: "User Management",
         icon: Users,
         disabled: false,
       },
       {
-        href: "/admin/settings/security",
+        href: "/settings/security",
         label: "Security",
         icon: Shield,
         disabled: false,
