@@ -143,52 +143,6 @@ export function AgentManagement({
     setIsEditModalOpen(true);
   };
 
-  // Mock landlords data for demonstration
-  const mockLandlords = [
-    {
-      id: "1",
-      name: "Michael Thompson",
-      email: "michael.thompson@example.com",
-      phone: "+1 (555) 123-4567",
-      location: "Manhattan, NY",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Premium",
-      rating: 4.8,
-      properties: 12,
-      totalRevenue: 485000,
-      joined: "2023-02-15",
-      lastActive: "1 hour ago",
-      verificationStatus: "verified",
-      bankDetails: {
-        accountNumber: "****1234",
-        bankName: "Chase Bank",
-        verified: true,
-      },
-    },
-    {
-      id: "2",
-      name: "Sarah Williams",
-      email: "sarah.williams@example.com",
-      phone: "+1 (555) 234-5678",
-      location: "Brooklyn, NY",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      tier: "Standard",
-      rating: 4.6,
-      properties: 8,
-      totalRevenue: 320000,
-      joined: "2023-05-20",
-      lastActive: "2 days ago",
-      verificationStatus: "pending",
-      bankDetails: {
-        accountNumber: "****5678",
-        bankName: "Bank of America",
-        verified: false,
-      },
-    },
-  ];
-
   // Filter functions
   const filteredAgents =
     agentsData?.users?.filter((agent: any) => {
@@ -769,10 +723,7 @@ export function AgentManagement({
     );
   };
 
-  if (
-    isLoading &&
-    (activeTab === "agents" ? agents.length === 0 : mockLandlords.length === 0)
-  ) {
+  if (isLoading && (activeTab === "agents" ? !agentsData : !landlordsData)) {
     return <LoadingPlaceholder type="page" />;
   }
 
