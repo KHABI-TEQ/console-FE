@@ -77,6 +77,7 @@ interface BriefFilters {
 
 export default function BriefsPage() {
   const router = useRouter();
+  const { confirmAction } = useConfirmation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
