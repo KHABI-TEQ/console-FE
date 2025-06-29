@@ -366,7 +366,7 @@ export default async function BriefDetailPage({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/briefs/${params.id}/edit`)}
+              onClick={() => router.push(`/briefs/${briefId}/edit`)}
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit
