@@ -124,68 +124,7 @@ export default function BriefsPage() {
     },
   ];
 
-  const briefs = [
-    {
-      id: 1,
-      title: "Downtown Apartment Marketing Brief",
-      description:
-        "Comprehensive marketing strategy for luxury apartment complex",
-      type: "Marketing",
-      status: "Active",
-      priority: "High",
-      property: "Modern Downtown Apartment",
-      assignedTo: "Sarah Johnson",
-      createdDate: "2024-01-15",
-      dueDate: "2024-02-15",
-      progress: 75,
-      attachments: 8,
-      comments: 12,
-    },
-    {
-      id: 2,
-      title: "Luxury Home Inspection Report",
-      description: "Detailed inspection requirements and documentation",
-      type: "Inspection",
-      status: "In Progress",
-      priority: "Medium",
-      property: "Luxury Family Home",
-      assignedTo: "Mike Wilson",
-      createdDate: "2024-01-10",
-      dueDate: "2024-01-25",
-      progress: 45,
-      attachments: 5,
-      comments: 8,
-    },
-    {
-      id: 3,
-      title: "Studio Loft Sales Strategy",
-      description: "Sales approach and pricing strategy for studio units",
-      type: "Sales",
-      status: "Completed",
-      priority: "Low",
-      property: "Cozy Studio Loft",
-      assignedTo: "Emma Davis",
-      createdDate: "2024-01-05",
-      dueDate: "2024-01-20",
-      progress: 100,
-      attachments: 3,
-      comments: 15,
-    },
-  ];
-
-  const filteredBriefs = briefs.filter((brief) => {
-    const matchesSearch =
-      brief.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brief.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brief.property.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      brief.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesType =
-      typeFilter === "all" ||
-      brief.type.toLowerCase() === typeFilter.toLowerCase();
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  const filteredBriefs = briefs;
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
