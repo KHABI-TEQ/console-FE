@@ -77,7 +77,7 @@ export default function BuyerPreferencesPage() {
     },
     {
       title: "Avg Budget",
-      value: "$685K",
+      value: "₦685K",
       change: "+12.5%",
       trend: "up" as const,
       icon: DollarSign,
