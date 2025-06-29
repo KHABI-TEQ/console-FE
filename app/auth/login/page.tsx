@@ -55,10 +55,37 @@ export default function LoginPage() {
 
       router.push("/dashboard");
     } catch (error) {
+      console.error("Login error:", error);
+
+      let errorMessage = "Invalid email or password. Please try again.";
+
+      if (error instanceof Error) {
+        if (
+          error.message.includes("fetch") ||
+          error.message.includes("Network")
+        ) {
+          errorMessage =
+            "Unable to connect to server. Please check your connection and try again.";
+        } else if (
+          error.message.includes("401") ||
+          error.message.includes("Unauthorized")
+        ) {
+          errorMessage =
+            "Invalid email or password. Please check your credentials.";
+        } else if (
+          error.message.includes("403") ||
+          error.message.includes("Forbidden")
+        ) {
+          errorMessage = "Access denied. Please contact your administrator.";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Server error. Please try again later.";
+        }
+      }
+
       addNotification({
         type: "error",
         title: "Sign in failed",
-        message: "Invalid email or password. Please try again.",
+        message: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
