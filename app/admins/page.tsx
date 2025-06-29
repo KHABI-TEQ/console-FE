@@ -112,15 +112,8 @@ export default function AdminsPage() {
         throw new Error(response.error || "Failed to fetch admins");
       }
 
-      // Return the structure expected by the component
-      const apiResponse = response as any;
-      return {
-        admins: apiResponse.data || apiResponse.admins || [],
-        total: apiResponse.total || 0,
-        page: apiResponse.page || currentPage,
-        limit: apiResponse.limit || pageLimit,
-        success: apiResponse.success,
-      };
+      // Return the response as-is since it already has the correct structure
+      return response;
     },
   });
 
