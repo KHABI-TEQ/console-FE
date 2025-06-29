@@ -98,6 +98,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [settings, setSettings] = useState({
     // General Settings
     companyName: "PropertyAdmin Pro",
