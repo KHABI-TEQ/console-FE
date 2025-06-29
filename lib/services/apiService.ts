@@ -12,7 +12,8 @@ export interface ApiResponse<T = any> {
   pagination?: T;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T> {
+export interface PaginatedResponse<T>
+  extends Omit<ApiResponse<T>, "pagination"> {
   pagination: {
     page: number;
     limit: number;
@@ -40,7 +41,6 @@ class ApiService {
       return authToken ? authToken.split("=")[1] : null;
     }
 
-    
     return null;
   }
 
@@ -84,7 +84,7 @@ class ApiService {
       } catch (parseError) {
         data = {};
       }
-      
+
       if (!response.ok) {
         // Handle auth errors
 

@@ -43,7 +43,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await apiService.get("/admins");
       if (response.success) {
-        setAdmins(response.data || []);
+        setAdmins((response.data as Admin[]) || []);
       } else {
         addNotification({
           type: "error",
