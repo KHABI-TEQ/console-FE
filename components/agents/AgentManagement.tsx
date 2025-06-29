@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,9 @@ interface AgentManagementProps {
 export function AgentManagement({
   defaultTab = "agents",
 }: AgentManagementProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get("tab") as "agents" | "landlords" | null;
+  const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
