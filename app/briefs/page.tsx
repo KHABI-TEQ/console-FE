@@ -302,26 +302,21 @@ export default function BriefsPage() {
   };
 
   const handleDeleteBrief = (briefId: string, briefTitle: string) => {
-    setDeleteModal({
-      isOpen: true,
-      briefId,
-      briefTitle,
+    confirmAction({
+      title: "Delete Brief",
+      description: `Are you sure you want to delete "${briefTitle}"? This action cannot be undone and will remove all associated data including attachments and comments.`,
+      confirmText: "Delete Brief",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await apiService.deleteBrief(briefId);
+          refetch();
+        } catch (error) {
+          console.error("Failed to delete brief:", error);
+        }
+      },
     });
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteModal.briefId) return;
-
-    setIsDeleting(true);
-    try {
-      await apiService.deleteBrief(deleteModal.briefId);
-      refetch();
-      setDeleteModal({ isOpen: false, briefId: null, briefTitle: "" });
-    } catch (error) {
-      console.error("Failed to delete brief:", error);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   const handleApproveBrief = async (briefId: string) => {
