@@ -116,6 +116,14 @@ export default function BriefsPage() {
     },
   });
 
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <ListPageSkeleton title="Brief Management" />
+      </AdminLayout>
+    );
+  }
+
   // Mock data for demonstration
   const mockBriefs = [
     {
