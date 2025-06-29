@@ -441,93 +441,96 @@ export default function AdminsPage() {
                       </TableRow>
                     ) : (
                       filteredAdmins.map((admin: Admin) => (
-                      <TableRow
-                        key={admin._id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <TableCell className="py-4">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src="/placeholder.svg" />
-                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
-                                {admin.firstName[0]}
-                                {admin.lastName[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {admin.firstName} {admin.lastName}
-                              </p>
-                              <p className="text-sm text-gray-500">
+                        <TableRow
+                          key={admin._id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <TableCell className="py-4">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src="/placeholder.svg" />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
+                                  {admin.firstName[0]}
+                                  {admin.lastName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {admin.firstName} {admin.lastName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {admin.email}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-900">
                                 {admin.email}
                               </p>
+                              {admin.phoneNumber && (
+                                <p className="text-sm text-gray-500">
+                                  {admin.phoneNumber}
+                                </p>
+                              )}
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="space-y-1">
-                            <p className="text-sm text-gray-900">
-                              {admin.email}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="space-y-2">
+                              {getRoleBadge(admin.role)}
+                              {getStatusBadge(admin)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <p className="text-sm">
+                              {formatDate(admin.createdAt)}
                             </p>
-                            {admin.phoneNumber && (
-                              <p className="text-sm text-gray-500">
-                                {admin.phoneNumber}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="space-y-2">
-                            {getRoleBadge(admin.role)}
-                            {getStatusBadge(admin)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <p className="text-sm">
-                            {formatDate(admin.createdAt)}
-                          </p>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleOpenEdit(admin)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleOpenChangePassword(admin)}
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                Change Password
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleOpenDisableModal(admin)}
-                              >
-                                <Shield className="mr-2 h-4 w-4" />
-                                {admin.isAccountVerified
-                                  ? "Disable"
-                                  : "Enable"}{" "}
-                                Account
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteAdmin(admin)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenEdit(admin)}
+                                >
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleOpenChangePassword(admin)
+                                  }
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Change Password
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenDisableModal(admin)}
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  {admin.isAccountVerified
+                                    ? "Disable"
+                                    : "Enable"}{" "}
+                                  Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteAdmin(admin)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
