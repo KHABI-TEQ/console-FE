@@ -385,20 +385,6 @@ export default function AdminsPage() {
             </CardContent>
           </Card>
 
-          {/* Debug Info - Remove this after fixing */}
-          {adminsData && (
-            <Card className="border border-blue-200 bg-blue-50">
-              <CardHeader>
-                <CardTitle className="text-blue-800">Debug Info</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-xs overflow-auto">
-                  {JSON.stringify(adminsData, null, 2)}
-                </pre>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Admins Table */}
           <Card className="border shadow-sm">
             <CardHeader className="bg-gray-50/50 border-b">
