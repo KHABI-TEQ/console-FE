@@ -65,6 +65,10 @@ function AdminPageContent() {
     fetchAdmins();
   }, []);
 
+  if (isLoading) {
+    return <ListPageSkeleton title="Admin Management" />;
+  }
+
   const handleOpenEdit = (adminId: string) => {
     setEditingAdminId(adminId);
     setIsEditModalOpen(true);
