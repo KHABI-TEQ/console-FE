@@ -73,6 +73,15 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle auth errors
+        if (response.status === 401 || response.status === 403) {
+          // Clear auth token and redirect to login
+          if (typeof document !== "undefined") {
+            document.cookie = "auth-token=; path=/; max-age=0";
+            window.location.href = "/auth/login";
+          }
+        }
+
         throw new Error(
           data.message || `HTTP error! status: ${response.status}`,
         );
