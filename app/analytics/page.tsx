@@ -420,13 +420,13 @@ export default function AnalyticsPage() {
                       {
                         action: "Property Listed",
                         description:
-                          "Luxury Downtown Penthouse listed for $2.85M",
+                          "Luxury Downtown Penthouse listed for ₦2.85M",
                         time: "2 hours ago",
                         type: "listing",
                       },
                       {
                         action: "Sale Completed",
-                        description: "Modern Family Home sold for $1.25M",
+                        description: "Modern Family Home sold for ₦1.25M",
                         time: "5 hours ago",
                         type: "sale",
                       },
@@ -729,8 +729,8 @@ export default function AnalyticsPage() {
                     {[
                       {
                         metric: "Average Sale Price",
-                        value: "$875,000",
-                        target: "$850,000",
+                        value: "₦875,000",
+                        target: "₦850,000",
                         performance: 103,
                         trend: "up",
                       },
