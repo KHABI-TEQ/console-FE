@@ -37,6 +37,7 @@ declare namespace __next_route_internal_types__ {
     | `/auth/forgot-password`
     | `/auth/login`
     | `/briefs`
+    | `/briefs/new`
     | `/buyer-preferences`
     | `/buyers`
     | `/contacts`
