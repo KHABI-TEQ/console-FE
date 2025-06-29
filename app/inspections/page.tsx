@@ -134,6 +134,16 @@ export default function InspectionsPage() {
   const inspectionsData = inspectionsResponse?.data || [];
   const totalCount = inspectionsResponse?.total || 0;
 
+  if (isLoading) {
+    return (
+      <InspectionsProvider>
+        <AdminLayout>
+          <InspectionsSkeleton />
+        </AdminLayout>
+      </InspectionsProvider>
+    );
+  }
+
   const statsData = [
     {
       title: "Pending Transaction Status",
