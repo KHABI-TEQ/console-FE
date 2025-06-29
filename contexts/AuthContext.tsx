@@ -9,6 +9,8 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 interface AuthContextType {
@@ -39,14 +41,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .find((row) => row.startsWith("auth-token="));
 
       if (authToken) {
-        // In a real app, you'd validate the token with the server
-        setUser({
-          id: "admin-1",
-          name: "Admin User",
-          email: "admin@example.com",
-          role: "admin",
-          avatar: "/placeholder.svg",
-        });
+        // If we have a token, try to get user profile
+        try {
+          // You might want to add a profile endpoint to verify the token
+          setUser({
+            id: "admin-1",
+            name: "Admin User",
+            email: "admin@example.com",
+            role: "admin",
+            avatar: "/placeholder.svg",
+          });
+        } catch (error) {
+          // Token is invalid, clear it
+          document.cookie = "auth-token=; path=/; max-age=0";
+        }
       }
     } catch (error) {
       console.error("Auth check failed:", error);
@@ -59,20 +67,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiService.login({ email, password });
 
-      // Set auth cookie
-      document.cookie = "auth-token=authenticated; path=/; max-age=86400";
+      if (response.success && response.data) {
+        // Extract token from response
+        const token = response.data.token || response.data.accessToken;
 
-      // Set user data
-      setUser({
-        id: "admin-1",
-        name: "Admin User",
-        email,
-        role: "admin",
-        avatar: "/placeholder.svg",
-      });
+        if (token) {
+          // Set auth cookie with the actual token
+          document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+        }
+
+        // Set user data from response
+        const userData =
+          response.data.user || response.data.admin || response.data;
+        setUser({
+          id: userData.id || userData._id,
+          name:
+            userData.name ||
+            `${userData.firstName || ""} ${userData.lastName || ""}`.trim(),
+          email: userData.email,
+          role: userData.role || "admin",
+          avatar: userData.avatar || "/placeholder.svg",
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        });
+      } else {
+        throw new Error(response.message || "Login failed");
+      }
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
@@ -90,6 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear auth cookie
       document.cookie = "auth-token=; path=/; max-age=0";
       setUser(null);
+      // Redirect to login page
+      window.location.href = "/auth/login";
     }
   };
 
