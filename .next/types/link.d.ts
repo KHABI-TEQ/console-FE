@@ -30,15 +30,29 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/`
-    | `/forgot-password`
-    | `/login`
-    | `/admin`
-    | `/admin/inspections`
     | `/api/inspections`
+    | `/dashboard`
+    | `/inspections`
+    | `/properties`
+    | `/properties/new`
+    | `/agents`
+    | `/buyers`
+    | `/login`
+    | `/forgot-password`
+    | `/briefs`
+    | `/contacts`
+    | `/preferences`
+    | `/preferences/buyers`
+    | `/preferences/tenants`
+    | `/preferences/developers`
+    | `/buyer-preferences`
+    | `/admins`
+    | `/landlords`
   type DynamicRoutes<T extends string = string> = 
     | `/api/inspections/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}/approve`
     | `/api/inspections/${SafeSlug<T>}/reject`
+    | `/agents/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
     | StaticRoutes

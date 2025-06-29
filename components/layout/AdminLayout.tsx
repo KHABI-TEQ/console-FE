@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApp } from "@/contexts/AppContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,179 +60,103 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    href: "/admin",
+    href: "/dashboard",
     label: "Dashboard Overview",
     icon: LayoutGrid,
     disabled: false,
   },
   {
-    href: "/admin/properties",
+    href: "/properties",
     label: "Property Management",
     icon: Building,
     disabled: false,
     badge: "245",
-    children: [
-      {
-        href: "/admin/properties/listings",
-        label: "All Listings",
-        icon: Archive,
-        disabled: false,
-      },
-      {
-        href: "/admin/properties/featured",
-        label: "Featured Properties",
-        icon: BarChart3,
-        disabled: false,
-      },
-      {
-        href: "/admin/properties/pending",
-        label: "Pending Approval",
-        icon: Clock,
-        disabled: false,
-        badge: "12",
-      },
-    ],
   },
   {
-    href: "/admin/agents",
+    href: "/agents",
     label: "Agent Management",
     icon: Users,
     disabled: false,
     badge: "56",
-    children: [
-      {
-        href: "/admin/agents/active",
-        label: "Active Agents",
-        icon: UserCheck,
-        disabled: false,
-      },
-      {
-        href: "/admin/agents/pending",
-        label: "Pending Approval",
-        icon: Clock,
-        disabled: false,
-        badge: "8",
-      },
-      {
-        href: "/admin/agents/performance",
-        label: "Performance",
-        icon: BarChart3,
-        disabled: false,
-      },
-    ],
   },
   {
-    href: "/admin/inspections",
+    href: "/landlords",
+    label: "Landlord Management",
+    icon: UserCheck,
+    disabled: false,
+    badge: "89",
+  },
+  {
+    href: "/buyers",
+    label: "Buyer Management",
+    icon: UserCheck,
+    disabled: false,
+    badge: "180",
+  },
+  {
+    href: "/inspections",
     label: "Inspection Management",
     icon: Search,
     disabled: false,
     badge: "23",
-    children: [
-      {
-        href: "/admin/inspections/pending",
-        label: "Pending Inspections",
-        icon: Clock,
-        disabled: false,
-        badge: "15",
-      },
-      {
-        href: "/admin/inspections/scheduled",
-        label: "Scheduled",
-        icon: Calendar,
-        disabled: false,
-      },
-      {
-        href: "/admin/inspections/completed",
-        label: "Completed",
-        icon: UserCheck,
-        disabled: false,
-      },
-    ],
   },
   {
-    href: "/admin/briefs",
+    href: "/briefs",
     label: "Briefs Management",
     icon: FileText,
     disabled: false,
-    children: [
-      {
-        href: "/admin/briefs/active",
-        label: "Active Briefs",
-        icon: ClipboardList,
-        disabled: false,
-      },
-      {
-        href: "/admin/briefs/templates",
-        label: "Templates",
-        icon: Archive,
-        disabled: false,
-      },
-    ],
   },
   {
-    href: "/admin/contacts",
+    href: "/contacts",
     label: "Contact Management",
     icon: MessageSquare,
     disabled: false,
     badge: "142",
   },
   {
-    href: "/admin/preferences",
+    href: "/preferences",
     label: "Preference Management",
     icon: Settings,
     disabled: false,
-  },
-  {
-    href: "/admin/analytics",
-    label: "Analytics & Reports",
-    icon: BarChart3,
-    disabled: false,
     children: [
       {
-        href: "/admin/analytics/overview",
-        label: "Overview",
-        icon: BarChart3,
+        href: "/preferences/buyers",
+        label: "Buyer Preferences",
+        icon: UserCheck,
         disabled: false,
       },
       {
-        href: "/admin/analytics/revenue",
-        label: "Revenue",
-        icon: CreditCard,
-        disabled: false,
-      },
-      {
-        href: "/admin/analytics/performance",
-        label: "Performance",
-        icon: TrendingUp,
-        disabled: false,
-      },
-    ],
-  },
-  {
-    href: "/admin/settings",
-    label: "System Settings",
-    icon: Settings,
-    disabled: false,
-    children: [
-      {
-        href: "/admin/settings/general",
-        label: "General",
-        icon: Settings,
-        disabled: false,
-      },
-      {
-        href: "/admin/settings/users",
-        label: "User Management",
+        href: "/preferences/tenants",
+        label: "Tenant Preferences",
         icon: Users,
         disabled: false,
       },
       {
-        href: "/admin/settings/security",
-        label: "Security",
-        icon: Shield,
+        href: "/preferences/developers",
+        label: "Developer Preferences",
+        icon: Building,
         disabled: false,
       },
     ],
+  },
+  {
+    href: "/admins",
+    label: "Admin Management",
+    icon: Shield,
+    disabled: false,
+    badge: "12",
+  },
+  {
+    href: "/analytics",
+    label: "Analytics & Reports",
+    icon: BarChart3,
+    disabled: false,
+  },
+  {
+    href: "/settings",
+    label: "System Settings",
+    icon: Settings,
+    disabled: false,
   },
 ];
 
@@ -335,15 +261,19 @@ function SidebarContent({
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Home className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img
+                src="/khabi-teq-logo.svg"
+                alt="Khabi Teq Realty"
+                className="h-8 w-8 object-contain"
+              />
             </div>
             {!isCollapsed && (
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  PropertyAdmin
+                <h1 className="text-xl font-bold text-gray-900">
+                  Khabi Teq Realty
                 </h1>
-                <p className="text-xs text-gray-500">Management System</p>
+                <p className="text-xs text-gray-500">Property Management</p>
               </div>
             )}
           </div>
@@ -376,17 +306,20 @@ function SidebarContent({
         {!isCollapsed ? (
           <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/api/placeholder/32/32" />
+              <AvatarImage src={user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
-                AU
+                {user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("") || "AU"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                Admin User
+                {user?.name || "Admin User"}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                admin@example.com
+                {user?.email || "admin@example.com"}
               </p>
             </div>
             <DropdownMenu>
@@ -411,7 +344,7 @@ function SidebarContent({
                   Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-red-600" onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
@@ -435,8 +368,9 @@ function SidebarContent({
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { user, logout } = useAuth();
+  const { sidebarCollapsed, setSidebarCollapsed } = useApp();
 
   useEffect(() => {
     setMounted(true);
