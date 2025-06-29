@@ -59,6 +59,7 @@ import {
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { apiService } from "@/lib/services/apiService";
 
 interface AgentManagementProps {
   defaultTab?: "agents" | "landlords";
@@ -89,19 +90,18 @@ export function AgentManagement({
     } else {
       fetchLandlordsData();
     }
-  }, [activeTab, statusFilter]);
+  }, [activeTab, statusFilter, searchQuery]);
 
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: "1",
         limit: "50",
-        type: statusFilter === "all" ? "all" : statusFilter,
-      });
+        ...(searchQuery && { search: searchQuery }),
+      };
 
-      const response = await fetch(`/api/all-users?${params}&role=agent`);
-      const data = await response.json();
+      const data = await apiService.getAgents(params);
       setAgentsData(data);
     } catch (error) {
       console.error("Error fetching agents:", error);
@@ -113,15 +113,13 @@ export function AgentManagement({
   const fetchLandlordsData = async () => {
     setLandlordsLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: "1",
         limit: "50",
-        type: statusFilter === "all" ? "all" : statusFilter,
-        userType: "Landowners",
-      });
+        ...(searchQuery && { search: searchQuery }),
+      };
 
-      const response = await fetch(`/api/all-agents?${params}`);
-      const data = await response.json();
+      const data = await apiService.getLandowners(params);
       setLandlordsData(data);
     } catch (error) {
       console.error("Error fetching landlords:", error);
@@ -144,25 +142,8 @@ export function AgentManagement({
   };
 
   // Filter functions
-  const filteredAgents =
-    agentsData?.users?.filter((agent: any) => {
-      const fullName =
-        `${agent.firstName || ""} ${agent.lastName || ""}`.trim();
-      const matchesSearch =
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.email.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    }) || [];
-
-  const filteredLandlords =
-    landlordsData?.agents?.data?.filter((landlord: any) => {
-      const fullName =
-        `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim();
-      const matchesSearch =
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        landlord.email.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    }) || [];
+  const filteredAgents = agentsData?.users || [];
+  const filteredLandlords = landlordsData?.users || [];
 
   // Stats for agents
   const agentStats = [
@@ -197,17 +178,11 @@ export function AgentManagement({
       color: "orange" as const,
     },
     {
-      title: "Total Commissions",
+      title: "Verified Agents",
       value:
-        "$" +
-        (
-          agentsData?.users?.reduce(
-            (sum: number, agent: any) =>
-              sum + (agent.agentData?.commission || 0),
-            0,
-          ) / 1000 || 0
-        ).toFixed(0) +
-        "K",
+        agentsData?.users
+          ?.filter((a: any) => a.isAccountVerified)
+          .length?.toString() || "0",
       change: "+18.7%",
       trend: "up" as const,
       icon: DollarSign,
@@ -219,7 +194,7 @@ export function AgentManagement({
   const landlordStats = [
     {
       title: "Total Landlords",
-      value: landlordsData?.agents?.totalAgents?.toString() || "0",
+      value: landlordsData?.total?.toString() || "0",
       change: "+15.2%",
       trend: "up" as const,
       icon: Home,
@@ -227,15 +202,21 @@ export function AgentManagement({
     },
     {
       title: "Active Landlords",
-      value: landlordsData?.agents?.totalActiveAgents?.toString() || "0",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.accountStatus === "active" && !l.isInActive)
+          .length?.toString() || "0",
       change: "+8.1%",
       trend: "up" as const,
       icon: Shield,
       color: "green" as const,
     },
     {
-      title: "Inactive Landlords",
-      value: landlordsData?.agents?.totalInactiveAgents?.toString() || "0",
+      title: "Verified Landlords",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.isAccountVerified)
+          .length?.toString() || "0",
       change: "+22.3%",
       trend: "up" as const,
       icon: Building,
@@ -243,10 +224,13 @@ export function AgentManagement({
     },
     {
       title: "Flagged Landlords",
-      value: landlordsData?.agents?.totalFlaggedAgents?.toString() || "0",
+      value:
+        landlordsData?.users
+          ?.filter((l: any) => l.isFlagged)
+          .length?.toString() || "0",
       change: "+18.7%",
       trend: "down" as const,
-      icon: DollarSign,
+      icon: AlertTriangle,
       color: "orange" as const,
     },
   ];
@@ -778,7 +762,7 @@ export function AgentManagement({
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
-            Landlords ({landlordsData?.agents?.totalAgents || 0})
+            Landlords ({landlordsData?.total || 0})
           </TabsTrigger>
         </TabsList>
 

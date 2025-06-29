@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -46,163 +47,148 @@ import {
   Star,
   Home,
   CreditCard,
+  AlertTriangle,
 } from "lucide-react";
+import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ActionButtons } from "@/components/shared/ActionButtons";
+import { apiService } from "@/lib/services/apiService";
+
+interface BuyerFilters {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
 
 export default function BuyersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [budgetFilter, setBudgetFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  const filters: BuyerFilters = {
+    ...(searchQuery && { search: searchQuery }),
+    ...(statusFilter !== "all" && { status: statusFilter }),
+    page,
+    limit,
+  };
+
+  const {
+    data: buyersResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["buyers", filters],
+    queryFn: () => apiService.getBuyers(filters),
+  });
+
+  const buyers = buyersResponse?.data || [];
+  const totalCount = buyersResponse?.total || 0;
 
   const stats = [
     {
       title: "Total Buyers",
-      value: "1,842",
-      change: "+15.3%",
+      value: totalCount.toString(),
+      change: "+15.2%",
       trend: "up" as const,
       icon: Users,
       color: "blue" as const,
     },
     {
       title: "Active Buyers",
-      value: "1,156",
-      change: "+12.1%",
+      value: buyers
+        .filter((b: any) => b.isAccountVerified && !b.isInActive)
+        .length.toString(),
+      change: "+8.1%",
       trend: "up" as const,
       icon: UserCheck,
       color: "green" as const,
     },
     {
-      title: "New Leads",
-      value: "89",
-      change: "+23.5%",
+      title: "Pending Verification",
+      value: buyers.filter((b: any) => !b.isAccountVerified).length.toString(),
+      change: "+22.3%",
       trend: "up" as const,
-      icon: TrendingUp,
+      icon: Clock,
       color: "orange" as const,
     },
     {
-      title: "Total Budget Pool",
-      value: "$142M",
-      change: "+8.7%",
+      title: "Premium Buyers",
+      value: buyers.filter((b: any) => b.isPremium).length.toString(),
+      change: "+18.7%",
       trend: "up" as const,
-      icon: DollarSign,
+      icon: Star,
       color: "purple" as const,
     },
   ];
 
-  const buyers = [
-    {
-      id: 1,
-      name: "John Smith",
-      email: "john.smith@example.com",
-      phone: "+1 (555) 123-4567",
-      location: "New York, NY",
-      avatar: "/placeholder.svg",
-      status: "Active",
-      budget: { min: 800000, max: 1200000 },
-      preferences: ["Modern", "2-3 Bedrooms", "Downtown"],
-      agent: "Sarah Johnson",
-      joined: "2024-01-15",
-      lastActivity: "2 hours ago",
-      savedProperties: 12,
-      viewedProperties: 45,
-      rating: 4.8,
-      preApproved: true,
-    },
-    {
-      id: 2,
-      name: "Lisa Chen",
-      email: "lisa.chen@example.com",
-      phone: "+1 (555) 234-5678",
-      location: "San Francisco, CA",
-      avatar: "/placeholder.svg",
-      status: "Looking",
-      budget: { min: 1500000, max: 2000000 },
-      preferences: ["Luxury", "Ocean View", "3+ Bedrooms"],
-      agent: "Mike Wilson",
-      joined: "2023-12-10",
-      lastActivity: "1 day ago",
-      savedProperties: 8,
-      viewedProperties: 23,
-      rating: 4.9,
-      preApproved: true,
-    },
-    {
-      id: 3,
-      name: "David Rodriguez",
-      email: "david.rodriguez@example.com",
-      phone: "+1 (555) 345-6789",
-      location: "Miami, FL",
-      avatar: "/placeholder.svg",
-      status: "Lead",
-      budget: { min: 400000, max: 600000 },
-      preferences: ["First-time Buyer", "Condo", "Near Transit"],
-      agent: "Emma Davis",
-      joined: "2024-01-20",
-      lastActivity: "3 days ago",
-      savedProperties: 3,
-      viewedProperties: 12,
-      rating: 4.6,
-      preApproved: false,
-    },
-  ];
-
-  const filteredBuyers = buyers.filter((buyer) => {
-    const matchesSearch =
-      buyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      buyer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      buyer.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || buyer.status.toLowerCase() === statusFilter;
-    const matchesBudget =
-      budgetFilter === "all" ||
-      (budgetFilter === "under-500k" && buyer.budget.max <= 500000) ||
-      (budgetFilter === "500k-1m" &&
-        buyer.budget.min >= 500000 &&
-        buyer.budget.max <= 1000000) ||
-      (budgetFilter === "1m-2m" &&
-        buyer.budget.min >= 1000000 &&
-        buyer.budget.max <= 2000000) ||
-      (budgetFilter === "over-2m" && buyer.budget.min >= 2000000);
-    return matchesSearch && matchesStatus && matchesBudget;
-  });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case "looking":
-        return <Badge className="bg-blue-100 text-blue-800">Looking</Badge>;
-      case "lead":
-        return <Badge className="bg-orange-100 text-orange-800">Lead</Badge>;
-      case "qualified":
-        return (
-          <Badge className="bg-purple-100 text-purple-800">Qualified</Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+  const getStatusBadge = (buyer: any) => {
+    if (buyer.isAccountVerified && !buyer.isInActive) {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+    } else if (!buyer.isAccountVerified) {
+      return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+    } else if (buyer.isInActive) {
+      return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
+    } else {
+      return <Badge className="bg-red-100 text-red-800">Suspended</Badge>;
     }
   };
+
+  const handleRefresh = () => {
+    refetch();
+  };
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <Card className="max-w-md mx-auto border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-900">
+                    Error Loading Data
+                  </h3>
+                  <p className="text-red-700 text-sm">
+                    Failed to load buyers. Please try again.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={handleRefresh}
+                className="w-full mt-4 bg-red-600 hover:bg-red-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
         <PageHeader
           title="Buyer Management"
-          description="Manage buyer relationships, track preferences, and optimize the buying experience"
+          description="Manage registered buyers, preferences, and activity"
         >
           <Button variant="outline" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
-            Export Data
+            Export
           </Button>
-          <Button variant="outline" className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            className="w-full sm:w-auto"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -228,12 +214,12 @@ export default function BuyersPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search buyers by name, email, location..."
+                    placeholder="Search buyers by name, email, or phone..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-11"
@@ -247,21 +233,9 @@ export default function BuyersPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="looking">Looking</SelectItem>
-                  <SelectItem value="lead">Lead</SelectItem>
-                  <SelectItem value="qualified">Qualified</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={budgetFilter} onValueChange={setBudgetFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Budget Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Budgets</SelectItem>
-                  <SelectItem value="under-500k">Under $500K</SelectItem>
-                  <SelectItem value="500k-1m">$500K - $1M</SelectItem>
-                  <SelectItem value="1m-2m">$1M - $2M</SelectItem>
-                  <SelectItem value="over-2m">Over $2M</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -275,197 +249,176 @@ export default function BuyersPage() {
               <div className="flex items-center">
                 <Users className="h-5 w-5 mr-2 text-gray-600" />
                 <div>
-                  <span className="text-lg font-medium">Active Buyers</span>
+                  <span className="text-lg font-medium">Registered Buyers</span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {filteredBuyers.length} buyers found
+                    {totalCount} buyers found
                   </p>
                 </div>
               </div>
               <Badge variant="secondary" className="text-sm px-3 py-1">
-                {filteredBuyers.length} showing
+                {buyers.length} showing
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900">
-                      Buyer
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Contact Info
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Budget & Status
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Preferences
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Activity
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Agent & Rating
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-900">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBuyers.map((buyer, index) => (
-                    <TableRow
-                      key={buyer.id}
-                      className={`hover:bg-gray-50 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                      }`}
-                    >
-                      <TableCell className="py-4">
-                        <div className="flex items-start space-x-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={buyer.avatar} alt={buyer.name} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
-                              {buyer.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {buyer.name}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              {buyer.preApproved && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs text-green-700 border-green-300"
-                                >
-                                  <CreditCard className="h-3 w-3 mr-1" />
-                                  Pre-approved
-                                </Badge>
-                              )}
+            {isLoading ? (
+              <LoadingPlaceholder type="table" count={10} />
+            ) : buyers.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="No buyers found"
+                description="No buyers match your current filters. Try adjusting your search criteria."
+                secondaryActionLabel="Clear Filters"
+                onSecondaryAction={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                }}
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold text-gray-900">
+                        Buyer
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Contact Info
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Status & Activity
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Preferences
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Registration
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {buyers.map((buyer: any, index: number) => (
+                      <TableRow
+                        key={buyer._id || buyer.id}
+                        className={`hover:bg-gray-50 transition-colors ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                        }`}
+                      >
+                        <TableCell className="py-4">
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
+                                {(
+                                  (buyer.firstName || "") +
+                                  " " +
+                                  (buyer.lastName || "")
+                                )
+                                  .trim()
+                                  .split(" ")
+                                  .map((n: string) => n[0])
+                                  .join("") || "B"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {(
+                                  (buyer.firstName || "") +
+                                  " " +
+                                  (buyer.lastName || "")
+                                ).trim() ||
+                                  buyer.fullName ||
+                                  "Unknown Buyer"}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                ID: {buyer.accountId || buyer._id}
+                              </p>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="truncate">{buyer.email}</span>
+                        </TableCell>
+
+                        <TableCell className="py-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm">
+                              <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="truncate">{buyer.email}</span>
+                            </div>
+                            {buyer.phoneNumber && (
+                              <div className="flex items-center text-sm">
+                                <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                                <span>{buyer.phoneNumber}</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center text-sm">
-                            <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                            <span>{buyer.phone}</span>
+                        </TableCell>
+
+                        <TableCell className="py-4">
+                          <div className="space-y-2">
+                            {getStatusBadge(buyer)}
+                            {buyer.isPremium && (
+                              <Badge className="bg-purple-100 text-purple-800">
+                                <Star className="h-3 w-3 mr-1" />
+                                Premium
+                              </Badge>
+                            )}
+                            {buyer.isFlagged && (
+                              <Badge className="bg-red-100 text-red-800">
+                                Flagged
+                              </Badge>
+                            )}
                           </div>
-                          <div className="flex items-center text-sm">
-                            <MapPin className="h-4 w-4 text-gray-400 mr-2" />
-                            <span>{buyer.location}</span>
+                        </TableCell>
+
+                        <TableCell className="py-4">
+                          <div className="text-sm text-gray-600">
+                            <p>Budget: N/A</p>
+                            <p>Location: N/A</p>
+                            <p>Type: N/A</p>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-2">
+                        </TableCell>
+
+                        <TableCell className="py-4">
                           <div className="text-sm">
                             <p className="font-medium">
-                              {formatCurrency(buyer.budget.min)} -{" "}
-                              {formatCurrency(buyer.budget.max)}
+                              {new Date(buyer.createdAt).toLocaleDateString()}
+                            </p>
+                            <p className="text-gray-500">
+                              {buyer.userType || "Buyer"}
                             </p>
                           </div>
-                          {getStatusBadge(buyer.status)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-1">
-                          {buyer.preferences.slice(0, 2).map((pref, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="outline"
-                              className="text-xs mr-1"
-                            >
-                              {pref}
-                            </Badge>
-                          ))}
-                          {buyer.preferences.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{buyer.preferences.length - 2} more
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Heart className="h-4 w-4 text-red-400 mr-2" />
-                            <span>{buyer.savedProperties} saved</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Eye className="h-4 w-4 text-blue-400 mr-2" />
-                            <span>{buyer.viewedProperties} viewed</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-green-600">
-                              {buyer.lastActivity}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium">{buyer.agent}</p>
-                          <div className="flex items-center space-x-1">
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-3 w-3 ${
-                                    i < Math.floor(buyer.rating)
-                                      ? "text-yellow-400 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm text-gray-600">
-                              {buyer.rating}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-blue-50 hover:border-blue-300"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-green-50 hover:border-green-300"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-purple-50 hover:border-purple-300"
-                          >
-                            <Home className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                        </TableCell>
+
+                        <TableCell className="py-4">
+                          <ActionButtons
+                            entityType="buyer"
+                            entityId={buyer._id || buyer.id}
+                            entityName={
+                              (
+                                (buyer.firstName || "") +
+                                " " +
+                                (buyer.lastName || "")
+                              ).trim() ||
+                              buyer.fullName ||
+                              "Buyer"
+                            }
+                            email={buyer.email}
+                            phone={buyer.phoneNumber}
+                            showContact={true}
+                            showEdit={true}
+                            showDelete={true}
+                            showVerification={!buyer.isAccountVerified}
+                            showMore={true}
+                            onRefresh={handleRefresh}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

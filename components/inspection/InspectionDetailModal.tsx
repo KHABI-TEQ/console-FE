@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import {
   MapPin,
   Calendar,
@@ -54,15 +55,13 @@ import {
   Info,
   Award,
   Target,
+  ImageIcon,
 } from "lucide-react";
-import {
-  IInspectionBookingPopulated,
-  InspectionActionResponse,
-} from "@/lib/types/inspection";
+import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
 
 interface InspectionDetailModalProps {
-  inspection: IInspectionBookingPopulated;
+  inspectionId: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -104,9 +103,7 @@ const stageColors = {
   LOI: "bg-gradient-to-r from-green-100 to-teal-100 text-green-800 border-green-200",
 };
 
-async function approveInspection(
-  id: string,
-): Promise<InspectionActionResponse> {
+async function approveInspection(id: string) {
   const response = await fetch(`/api/inspections/${id}/approve`, {
     method: "POST",
     headers: {
@@ -119,10 +116,7 @@ async function approveInspection(
   return response.json();
 }
 
-async function rejectInspection(
-  id: string,
-  reason: string,
-): Promise<InspectionActionResponse> {
+async function rejectInspection(id: string, reason: string) {
   const response = await fetch(`/api/inspections/${id}/reject`, {
     method: "POST",
     headers: {
@@ -137,7 +131,7 @@ async function rejectInspection(
 }
 
 export function InspectionDetailModal({
-  inspection,
+  inspectionId,
   isOpen,
   onClose,
 }: InspectionDetailModalProps) {
@@ -146,8 +140,21 @@ export function InspectionDetailModal({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const {
+    data: inspectionResponse,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["inspection", inspectionId],
+    queryFn: () =>
+      inspectionId ? apiService.getSingleInspection(inspectionId) : null,
+    enabled: !!inspectionId && isOpen,
+  });
+
+  const inspection = inspectionResponse?.data;
+
   const approveMutation = useMutation({
-    mutationFn: () => approveInspection(inspection._id),
+    mutationFn: () => approveInspection(inspectionId!),
     onSuccess: (data) => {
       toast({
         title: "Success",
@@ -166,7 +173,7 @@ export function InspectionDetailModal({
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => rejectInspection(inspection._id, rejectReason),
+    mutationFn: () => rejectInspection(inspectionId!, rejectReason),
     onSuccess: (data) => {
       toast({
         title: "Success",
@@ -194,11 +201,43 @@ export function InspectionDetailModal({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount);
   };
+
+  if (isLoading) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto">
+          <div className="flex items-center justify-center h-96">
+            <LoadingPlaceholder />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  if (error || !inspection) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Failed to Load Inspection
+              </h3>
+              <p className="text-gray-600">
+                Unable to fetch inspection details. Please try again.
+              </p>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   const canApprove = inspection.status === "pending_inspection";
   const canReject = ["pending_inspection", "negotiation_countered"].includes(
@@ -209,22 +248,22 @@ export function InspectionDetailModal({
     {
       icon: Bed,
       label: "Bedrooms",
-      value: inspection.propertyId.bedrooms,
+      value: inspection.propertyId.additionalFeatures?.noOfBedrooms || "N/A",
     },
     {
       icon: Bath,
       label: "Bathrooms",
-      value: inspection.propertyId.bathrooms,
+      value: inspection.propertyId.additionalFeatures?.noOfBathrooms || "N/A",
     },
     {
       icon: Square,
-      label: "Square Feet",
-      value: inspection.propertyId.sqft.toLocaleString(),
+      label: "Property Type",
+      value: inspection.propertyId.propertyType || "N/A",
     },
     {
       icon: Building,
-      label: "Property Type",
-      value: inspection.propertyId.propertyType,
+      label: "Brief Type",
+      value: inspection.propertyId.briefType || "N/A",
     },
   ];
 
@@ -242,10 +281,22 @@ export function InspectionDetailModal({
               </SheetDescription>
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0">
-              <Badge variant="outline" className="text-xs sm:text-sm">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs sm:text-sm",
+                  statusColors[inspection.status] || "bg-gray-100",
+                )}
+              >
                 {inspection.status.replace(/_/g, " ")}
               </Badge>
-              <Badge variant="secondary" className="text-xs sm:text-sm">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "text-xs sm:text-sm",
+                  stageColors[inspection.stage] || "bg-gray-100",
+                )}
+              >
                 {inspection.stage}
               </Badge>
             </div>
@@ -438,25 +489,34 @@ export function InspectionDetailModal({
             className="space-y-4 sm:space-y-6 mt-4 sm:mt-6"
           >
             <Card className="overflow-hidden">
-              <div className="relative">
-                <img
-                  src={inspection.propertyId.images[0]}
-                  alt={inspection.propertyId.title}
-                  className="w-full h-48 sm:h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl sm:text-2xl font-bold">
-                    {inspection.propertyId.title}
-                  </h3>
-                  <p className="flex items-center mt-1 opacity-90 text-sm sm:text-base">
-                    <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                    <span className="truncate">
-                      {inspection.propertyId.address}
-                    </span>
-                  </p>
+              {inspection.propertyId.pictures &&
+              inspection.propertyId.pictures.length > 0 ? (
+                <div className="relative">
+                  <img
+                    src={inspection.propertyId.pictures[0]}
+                    alt="Property"
+                    className="w-full h-48 sm:h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-xl sm:text-2xl font-bold">
+                      {inspection.propertyId.propertyType} Property
+                    </h3>
+                    <p className="flex items-center mt-1 opacity-90 text-sm sm:text-base">
+                      <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                      <span className="truncate">
+                        {inspection.propertyId.location.area},{" "}
+                        {inspection.propertyId.location.localGovernment},{" "}
+                        {inspection.propertyId.location.state}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="h-48 sm:h-64 bg-gray-100 flex items-center justify-center">
+                  <ImageIcon className="h-12 w-12 text-gray-400" />
+                </div>
+              )}
 
               <CardContent className="p-4 sm:p-6">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-6">
@@ -474,29 +534,38 @@ export function InspectionDetailModal({
                 <Separator className="my-6" />
 
                 <div>
-                  <h4 className="font-semibold mb-3">Property Description</h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    {inspection.propertyId.description}
-                  </p>
+                  <h4 className="font-semibold mb-3">Property Features</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {inspection.propertyId.features?.map((feature, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs"
+                      >
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
-                {inspection.propertyId.images.length > 1 && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-3">Additional Images</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {inspection.propertyId.images
-                        .slice(1)
-                        .map((image, index) => (
-                          <img
-                            key={index}
-                            src={image}
-                            alt={`Property view ${index + 2}`}
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
-                        ))}
+                {inspection.propertyId.pictures &&
+                  inspection.propertyId.pictures.length > 1 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold mb-3">Additional Images</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {inspection.propertyId.pictures
+                          .slice(1)
+                          .map((image, index) => (
+                            <img
+                              key={index}
+                              src={image}
+                              alt={`Property view ${index + 2}`}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -513,38 +582,31 @@ export function InspectionDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-start space-x-4">
-                    <img
-                      src={inspection.requestedBy.avatar}
-                      alt={inspection.requestedBy.name}
-                      className="h-20 w-20 rounded-xl shadow-md"
-                    />
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {inspection.requestedBy.name}
-                        </h3>
-                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                          Primary Buyer
-                        </Badge>
-                      </div>
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {inspection.requestedBy.fullName}
+                      </h3>
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                        Primary Buyer
+                      </Badge>
+                    </div>
 
-                      <div className="space-y-2">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm">
+                          {inspection.requestedBy.email}
+                        </span>
+                      </div>
+                      {inspection.requestedBy.phoneNumber && (
                         <div className="flex items-center space-x-2">
-                          <Mail className="h-4 w-4 text-gray-500" />
+                          <Phone className="h-4 w-4 text-gray-500" />
                           <span className="text-sm">
-                            {inspection.requestedBy.email}
+                            {inspection.requestedBy.phoneNumber}
                           </span>
                         </div>
-                        {inspection.requestedBy.phone && (
-                          <div className="flex items-center space-x-2">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">
-                              {inspection.requestedBy.phone}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -560,37 +622,22 @@ export function InspectionDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-start space-x-4">
-                    <img
-                      src={inspection.owner.avatar}
-                      alt={inspection.owner.name}
-                      className="h-20 w-20 rounded-xl shadow-md"
-                    />
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {inspection.owner.name}
-                        </h3>
-                        <Badge className="bg-green-100 text-green-800 border-green-200">
-                          Property Owner
-                        </Badge>
-                      </div>
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {inspection.owner.firstName} {inspection.owner.lastName}
+                      </h3>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        Property Owner / {inspection.owner.role}
+                      </Badge>
+                    </div>
 
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Mail className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm">
-                            {inspection.owner.email}
-                          </span>
-                        </div>
-                        {inspection.owner.phone && (
-                          <div className="flex items-center space-x-2">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">
-                              {inspection.owner.phone}
-                            </span>
-                          </div>
-                        )}
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm">
+                          {inspection.owner.email}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -608,38 +655,39 @@ export function InspectionDetailModal({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                    <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Transaction Amount</p>
-                    <p className="text-2xl font-bold text-green-700">
-                      {formatCurrency(inspection.transaction.amount)}
+                {inspection.transaction ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                      <FileText className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">
+                        Transaction Receipt
+                      </p>
+                      <a
+                        href={inspection.transaction.transactionReceipt}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-700 font-semibold hover:underline"
+                      >
+                        View Receipt
+                      </a>
+                    </div>
+
+                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
+                      <Activity className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Transaction Date</p>
+                      <p className="text-lg font-semibold">
+                        {formatDate(inspection.transaction.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-8 bg-gray-50 rounded-xl">
+                    <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600">
+                      No transaction information available
                     </p>
                   </div>
-
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
-                    <CreditCard className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Payment Method</p>
-                    <p className="text-lg font-semibold">
-                      {inspection.transaction.paymentMethod}
-                    </p>
-                  </div>
-
-                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-xl">
-                    <Activity className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Status</p>
-                    <Badge
-                      variant={
-                        inspection.transaction.status === "completed"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className="text-sm"
-                    >
-                      {inspection.transaction.status}
-                    </Badge>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -818,19 +866,6 @@ export function InspectionDetailModal({
                         </div>
                       )}
                     </div>
-
-                    {!canApprove && !canReject && (
-                      <div className="text-center p-8 bg-gray-50 rounded-xl">
-                        <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                        <h3 className="font-semibold text-gray-600 mb-2">
-                          No Actions Available
-                        </h3>
-                        <p className="text-gray-500">
-                          This inspection is in a state that doesn&apos;t
-                          require administrative action at this time.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
