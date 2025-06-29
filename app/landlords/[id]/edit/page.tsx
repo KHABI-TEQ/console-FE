@@ -204,7 +204,7 @@ export default async function LandlordEditPage({
           <div className="flex space-x-2">
             <Button
               variant="outline"
-              onClick={() => router.push(`/landlords/${params.id}`)}
+              onClick={() => router.push(`/landlords/${landlordId}`)}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel

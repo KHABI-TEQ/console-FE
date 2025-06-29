@@ -70,7 +70,7 @@ export default async function LandlordDetailPage({
 
   // Mock data for demonstration - replace with actual API data when available
   const mockLandlord = {
-    _id: params.id,
+    _id: landlordId,
     firstName: "John",
     lastName: "Smith",
     email: "john.smith@example.com",
