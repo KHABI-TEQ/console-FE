@@ -152,7 +152,7 @@ export default function DeveloperPreferencesPage() {
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-2">
-                <Label>Minimum Project Value ($)</Label>
+                <Label>Minimum Project Value (₦)</Label>
                 <Input
                   type="number"
                   value={preferences.minimumProjectValue}

@@ -346,7 +346,7 @@ export default function TenantPreferencesPage() {
 
               {preferences.allowPetDeposit && (
                 <div className="space-y-2">
-                  <Label>Pet Deposit Amount ($)</Label>
+                  <Label>Pet Deposit Amount (₦)</Label>
                   <Input
                     type="number"
                     value={preferences.petDepositAmount}
@@ -359,7 +359,7 @@ export default function TenantPreferencesPage() {
               )}
 
               <div className="space-y-2">
-                <Label>Application Fee ($)</Label>
+                <Label>Application Fee (₦)</Label>
                 <Input
                   type="number"
                   value={preferences.applicationFee}
