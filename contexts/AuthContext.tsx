@@ -52,7 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiService.getProfile();
 
       if (response.success) {
-        const userData = response.data?.user || response.admin?.admin || response.admin;
+        const userData =
+          response.data?.user || response.admin?.admin || response.admin;
 
         setUser({
           id: userData.id || userData._id || "admin-1",
@@ -67,7 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           lastName: userData.lastName,
         });
       } else {
-        console.error("Profile fetch failed:", response.error || response.message);
+        console.error(
+          "Profile fetch failed:",
+          response.error || response.message,
+        );
         document.cookie = "auth-token=; path=/; max-age=0";
         // Optionally setUser(null) or redirect to login
       }
@@ -80,67 +84,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-
-
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
 
-      const response = await apiService.login({ email, password });
+      // Extract token from response - check multiple possible locations
+      const token =
+        response.admin?.token ||
+        response.admin?.accessToken ||
+        response.token ||
+        response.accessToken;
 
-      if (response.success) {
-        // Extract token from response - check multiple possible locations
-        const token =
-          response.admin?.token ||
-          response.admin?.accessToken ||
-          response.token ||
-          response.accessToken;
-
-        if (token) {
-          // Set auth cookie with the actual token
-          document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
-        }
-
-        // Set user data from response - check multiple possible locations
-        const userData = response.data?.user ||
-          response.admin?.admin ||
-          response.admin;
-
-        router.push("/dashboard");
-
-        setUser({
-          id: userData.id || userData._id || "admin-1",
-          name:
-            userData.name ||
-            `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
-            "Admin User",
-          email: userData.email || email,
-          role: userData.role || "admin",
-          avatar: userData.avatar || "/placeholder.svg",
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-        });
-
-        addNotification({
-          type: "success",
-          title: "Welcome back!",
-          message: "You have successfully signed in to your account.",
-        });
-
-      } else {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: response.error || response.message || "Login failed",
-        });
-
+      if (token) {
+        // Set auth cookie with the actual token
+        document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
       }
+
+      // Set user data from response - check multiple possible locations
+      const userData =
+        response.data?.user || response.admin?.admin || response.admin;
+
+      router.push("/dashboard");
+
+      setUser({
+        id: userData.id || userData._id || "admin-1",
+        name:
+          userData.name ||
+          `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
+          "Admin User",
+        email: userData.email || email,
+        role: userData.role || "admin",
+        avatar: userData.avatar || "/placeholder.svg",
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
+
+      addNotification({
+        type: "success",
+        title: "Welcome back!",
+        message: "You have successfully signed in to your account.",
+      });
     } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Login failed",
-        });
+      addNotification({
+        type: "error",
+        title: "Error",
+        message: "Login failed",
+      });
     } finally {
       setIsLoading(false);
     }
