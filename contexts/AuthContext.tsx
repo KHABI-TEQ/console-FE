@@ -19,7 +19,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, response?: any) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -84,40 +84,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, response?: any) => {
     try {
       setIsLoading(true);
 
-      // Extract token from response - check multiple possible locations
-      const token =
-        response.admin?.token ||
-        response.admin?.accessToken ||
-        response.token ||
-        response.accessToken;
+      // If response is not provided, the API call was already made in the login page
+      if (response) {
+        // Extract token from response - check multiple possible locations
+        const token =
+          response.admin?.token ||
+          response.admin?.accessToken ||
+          response.token ||
+          response.accessToken;
 
-      if (token) {
-        // Set auth cookie with the actual token
-        document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+        if (token) {
+          // Set auth cookie with the actual token
+          document.cookie = `auth-token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+        }
+
+        // Set user data from response - check multiple possible locations
+        const userData =
+          response.data?.user || response.admin?.admin || response.admin;
+
+        setUser({
+          id: userData.id || userData._id || "admin-1",
+          name:
+            userData.name ||
+            `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
+            "Admin User",
+          email: userData.email || email,
+          role: userData.role || "admin",
+          avatar: userData.avatar || "/placeholder.svg",
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        });
       }
 
-      // Set user data from response - check multiple possible locations
-      const userData =
-        response.data?.user || response.admin?.admin || response.admin;
-
       router.push("/dashboard");
-
-      setUser({
-        id: userData.id || userData._id || "admin-1",
-        name:
-          userData.name ||
-          `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
-          "Admin User",
-        email: userData.email || email,
-        role: userData.role || "admin",
-        avatar: userData.avatar || "/placeholder.svg",
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-      });
 
       addNotification({
         type: "success",

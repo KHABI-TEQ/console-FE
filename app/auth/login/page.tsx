@@ -43,7 +43,7 @@ export default function LoginPage() {
       return await apiService.login(credentials);
     },
     onSuccess: (data, variables) => {
-      login(variables.email, variables.password);
+      login(variables.email, variables.password, data);
     },
   });
 
