@@ -1017,6 +1017,9 @@ video {
 .w-full {
   width: 100%;
 }
+.w-px {
+  width: 1px;
+}
 .min-w-0 {
   min-width: 0px;
 }
@@ -1262,6 +1265,9 @@ video {
 }
 .whitespace-nowrap {
   white-space: nowrap;
+}
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
 }
 .rounded {
   border-radius: 0.25rem;
@@ -2007,6 +2013,9 @@ video {
 }
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.font-sans {
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 .text-2xl {
   font-size: 1.5rem;
