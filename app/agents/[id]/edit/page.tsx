@@ -40,6 +40,7 @@ interface AgentEditPageProps {
 }
 
 export default function AgentEditPage({ params }: AgentEditPageProps) {
+  const agentId = params.id;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newSpecialty, setNewSpecialty] = useState("");
@@ -69,8 +70,8 @@ export default function AgentEditPage({ params }: AgentEditPageProps) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["agent", params.id],
-    queryFn: () => apiService.getAgent(params.id),
+    queryKey: ["agent", agentId],
+    queryFn: () => apiService.getAgent(agentId),
   });
 
   // Handle data update using useEffect instead of onSuccess
@@ -149,10 +150,10 @@ export default function AgentEditPage({ params }: AgentEditPageProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await apiService.updateAgent(params.id, formData);
+      const response = await apiService.updateAgent(agentId, formData);
 
       if (response.success) {
-        router.push(`/agents/${params.id}`);
+        router.push(`/agents/${agentId}`);
       } else {
         alert("Failed to update agent: " + (response.error || "Unknown error"));
       }
@@ -230,7 +231,7 @@ export default function AgentEditPage({ params }: AgentEditPageProps) {
           <div className="flex space-x-2">
             <Button
               variant="outline"
-              onClick={() => router.push(`/agents/${params.id}`)}
+              onClick={() => router.push(`/agents/${agentId}`)}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
