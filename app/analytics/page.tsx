@@ -51,10 +51,30 @@ import {
   Search,
   MoreHorizontal,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { AnalyticsSkeleton } from "@/components/skeletons/PageSkeletons";
+import { apiService } from "@/lib/services/apiService";
 
 export default function AnalyticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("30days");
   const [selectedMetric, setSelectedMetric] = useState("all");
+
+  const {
+    data: analyticsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["analytics", selectedPeriod],
+    queryFn: () => apiService.getDashboardStats(),
+  });
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <AnalyticsSkeleton />
+      </AdminLayout>
+    );
+  }
 
   const stats = [
     {
