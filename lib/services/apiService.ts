@@ -17,7 +17,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
 class ApiService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = "/api") {
+  constructor(baseUrl: string = "http://localhost:8081/api") {
     this.baseUrl = baseUrl;
   }
 
@@ -99,15 +99,11 @@ class ApiService {
     return this.get(`/inspections/${id}`);
   }
 
-  async approveInspection(id: string): Promise<ApiResponse<any>> {
-    return this.post(`/inspections/${id}/approve`);
-  }
-
-  async rejectInspection(
+  async updateInspectionStatus(
     id: string,
-    reason?: string,
+    status: string,
   ): Promise<ApiResponse<any>> {
-    return this.post(`/inspections/${id}/reject`, { reason });
+    return this.patch(`/inspections/${id}/status`, { status });
   }
 
   // Property-specific methods
@@ -120,39 +116,39 @@ class ApiService {
   }
 
   async createProperty(propertyData: any): Promise<ApiResponse<any>> {
-    return this.post("/properties", propertyData);
-  }
-
-  async updateProperty(
-    id: string,
-    propertyData: any,
-  ): Promise<ApiResponse<any>> {
-    return this.put(`/properties/${id}`, propertyData);
+    return this.post("/property/new", propertyData);
   }
 
   async deleteProperty(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/properties/${id}`);
+    return this.delete("/delete-property", { id });
+  }
+
+  async approveDisapproveProperty(
+    id: string,
+    status: string,
+  ): Promise<ApiResponse<any>> {
+    return this.patch("/approve-disapprove-property", { id, status });
   }
 
   // Agent-specific methods
   async getAgents(filters?: any): Promise<PaginatedResponse<any[]>> {
-    return this.get("/agents", filters);
+    return this.get("/all-agents", filters);
   }
 
   async getAgent(id: string): Promise<ApiResponse<any>> {
-    return this.get(`/agents/${id}`);
+    return this.get(`/agent/${id}`);
   }
 
-  async createAgent(agentData: any): Promise<ApiResponse<any>> {
-    return this.post("/agents", agentData);
-  }
-
-  async updateAgent(id: string, agentData: any): Promise<ApiResponse<any>> {
-    return this.put(`/agents/${id}`, agentData);
+  async getAgentProperties(agentId: string): Promise<ApiResponse<any[]>> {
+    return this.get(`/agent/${agentId}/properties`);
   }
 
   async deleteAgent(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/agents/${id}`);
+    return this.delete(`/delete-agent/${id}`);
+  }
+
+  async flagAgent(agentId: string, status: string): Promise<ApiResponse<any>> {
+    return this.patch(`/agent/flag/${agentId}/${status}`);
   }
 
   // Buyer-specific methods
@@ -239,6 +235,34 @@ class ApiService {
     preferences: any,
   ): Promise<ApiResponse<any>> {
     return this.put(`/preferences/buyer/${buyerId}`, preferences);
+  }
+
+  // Admin management methods
+  async createAdmin(adminData: any): Promise<ApiResponse<any>> {
+    return this.post("/create-admin", adminData);
+  }
+
+  async fetchAdmins(): Promise<ApiResponse<any[]>> {
+    return this.get("/fetch-admins");
+  }
+
+  async getSingleAdmin(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/get-single-admin/${id}`);
+  }
+
+  async updateAdmin(id: string, adminData: any): Promise<ApiResponse<any>> {
+    return this.patch(`/update-admin/${id}`, adminData);
+  }
+
+  async changeAdminStatus(
+    id: string,
+    status: string,
+  ): Promise<ApiResponse<any>> {
+    return this.patch(`/change-status/${id}`, { status });
+  }
+
+  async deleteAdmin(id: string): Promise<ApiResponse<any>> {
+    return this.delete(`/delete-admin/${id}`);
   }
 
   // Auth methods
