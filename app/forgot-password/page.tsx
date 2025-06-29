@@ -61,12 +61,16 @@ export default function ForgotPasswordPage() {
           <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
             <CardHeader className="space-y-6 text-center pb-6">
               <div className="flex items-center justify-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Building className="h-7 w-7 text-white" />
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <img
+                    src="/khabi-teq-logo.svg"
+                    alt="Khabi Teq Realty"
+                    className="h-10 w-10 object-contain"
+                  />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    PropertyAdmin
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Khabi Teq Realty
                   </h1>
                 </div>
               </div>
@@ -149,12 +153,16 @@ export default function ForgotPasswordPage() {
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
           <CardHeader className="space-y-6 text-center pb-6">
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Building className="h-7 w-7 text-white" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img
+                  src="/khabi-teq-logo.svg"
+                  alt="Khabi Teq Realty"
+                  className="h-10 w-10 object-contain"
+                />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  PropertyAdmin
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Khabi Teq Realty
                 </h1>
               </div>
             </div>
