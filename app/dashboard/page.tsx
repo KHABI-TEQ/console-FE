@@ -339,10 +339,7 @@ export default function AdminDashboard() {
                 <SelectItem value="1y">Last year</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+
             <Button
               size="sm"
               onClick={handleRefresh}
