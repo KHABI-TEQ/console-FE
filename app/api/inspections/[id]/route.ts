@@ -171,23 +171,135 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
-    const inspection = mockInspections.find((insp) => insp._id === params.id);
-
-    if (!inspection) {
-      return NextResponse.json(
-        { error: "Inspection not found" },
-        { status: 404 },
-      );
-    }
-
-    const response: InspectionDetailResponse = {
-      inspection,
+    // Return the exact sample response structure provided
+    const mockResponse = {
+      success: true,
+      message: "Inspection details fetched successfully",
+      data: {
+        _id: params.id,
+        propertyId: {
+          location: {
+            state: "Lagos",
+            localGovernment: "Eti-Osa",
+            area: " Ikota Villa GRA Estate Beside Mega Chicken Lekki.",
+          },
+          landSize: {
+            measurementType: "",
+            size: null,
+          },
+          additionalFeatures: {
+            additionalFeatures: [],
+            noOfBedrooms: 4,
+          },
+          _id: "683c8da8fd1239006afe131d",
+          features: [
+            "POP Ceilings",
+            "Chandeliers",
+            "Parking",
+            "Spacious Compound ",
+            "Security",
+            "Water Heaters",
+          ],
+          tenantCriteria: [],
+          areYouTheOwner: true,
+          isAvailable: "yes",
+          pictures: [
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798880/property-images/1748798879947-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798881/property-images/1748798881263-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798883/property-images/1748798882725-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798884/property-images/1748798884027-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798886/property-images/1748798885848-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798887/property-images/1748798886875-property-image.jpg",
+          ],
+          isApproved: true,
+          isRejected: false,
+          isPreference: false,
+          isPremium: true,
+          propertyType: "Residential",
+          propertyCondition: "",
+          briefType: "Outright Sales",
+          price: 250000000,
+          docOnProperty: [
+            {
+              isProvided: true,
+              _id: "683c8da8fd1239006afe131e",
+              docName: "Governor Consent",
+            },
+          ],
+          owner: "683c60e0b059886a7d01fdcb",
+          createdAt: "2025-06-01T17:28:08.267Z",
+          updatedAt: "2025-06-01T17:28:08.267Z",
+          __v: 0,
+        },
+        inspectionDate: "2025-07-01T00:00:00.000Z",
+        inspectionTime: "5:00 PM",
+        status: "pending_transaction",
+        requestedBy: {
+          _id: "68606afa30888fde1a3f0cf3",
+          fullName: "Ibiyeye Oladimeji",
+          email: "oladimejiibiyeye@gmail.com",
+          phoneNumber: "08165402158",
+          createdAt: "2025-06-28T22:21:46.967Z",
+          updatedAt: "2025-06-28T22:21:46.967Z",
+          __v: 0,
+        },
+        transaction: {
+          _id: "68606afb30888fde1a3f0cf9",
+          buyerId: {
+            _id: "68606afa30888fde1a3f0cf3",
+            fullName: "Ibiyeye Oladimeji",
+            email: "oladimejiibiyeye@gmail.com",
+            phoneNumber: "08165402158",
+            createdAt: "2025-06-28T22:21:46.967Z",
+            updatedAt: "2025-06-28T22:21:46.967Z",
+            __v: 0,
+          },
+          transactionReceipt:
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1751149302/property-images/1751149301005-property-image.png",
+          propertyId: "683c8da8fd1239006afe131d",
+          createdAt: "2025-06-28T22:21:47.533Z",
+          updatedAt: "2025-06-28T22:21:47.533Z",
+          __v: 0,
+        },
+        isNegotiating: true,
+        negotiationPrice: 300000,
+        letterOfIntention: "",
+        owner: {
+          _id: "683c60e0b059886a7d01fdcb",
+          isAccountInRecovery: false,
+          isAccountVerified: true,
+          role: "Agent",
+          email: "info@khabiteqrealty.com",
+          firstName: "Khabi",
+          lastName: "Tek",
+          password:
+            "$2a$10$Mp5XYeK/.yTJ2zxTEXO97unfpcx6FNw3Po26ciBn7Wm6MM8QU7PDC",
+          createdAt: "2025-06-01T13:39:07.618Z",
+          updatedAt: "2025-06-01T13:39:07.618Z",
+          __v: 0,
+          accountApproved: false,
+          accountStatus: "active",
+          isFlagged: false,
+          isInActive: false,
+          id: "683c60e0b059886a7d01fdcb",
+        },
+        sellerCounterOffer: 0,
+        pendingResponseFrom: "seller",
+        stage: "negotiation",
+        createdAt: "2025-06-28T22:21:47.676Z",
+        updatedAt: "2025-06-28T22:21:47.676Z",
+        __v: 0,
+      },
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(mockResponse);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch inspection" },
+      {
+        success: false,
+        message: "Failed to fetch inspection",
+        error: "Internal server error",
+      },
       { status: 500 },
     );
   }

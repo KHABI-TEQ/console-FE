@@ -1,337 +1,651 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { StatCard } from "@/components/shared/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  User,
+  ArrowLeft,
+  Edit,
   Mail,
   Phone,
   MapPin,
   Calendar,
-  DollarSign,
-  TrendingUp,
   Building,
-  FileText,
-  Eye,
-  Edit,
+  DollarSign,
   Star,
-  Award,
-  Target,
-  BarChart3,
-  CreditCard,
-  Home,
+  TrendingUp,
   Users,
-  Clock,
+  Eye,
   CheckCircle,
-  ArrowLeft,
-  Download,
+  Clock,
+  AlertTriangle,
+  Activity,
+  RefreshCw,
+  MoreHorizontal,
+  FileText,
+  Briefcase,
 } from "lucide-react";
-import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { apiService } from "@/lib/services/apiService";
 
-export default function AgentDetailPage() {
-  const params = useParams();
-  const agentId = params.id;
+interface AgentDetailPageProps {
+  params: { id: string };
+}
 
-  // Mock agent data - in real app, fetch from API using agentId
-  const agent = {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "Downtown District",
+export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+  const router = useRouter();
+
+  const {
+    data: agentResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["agent", params.id],
+    queryFn: () => apiService.getAgent(params.id),
+  });
+
+  const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
+    queryKey: ["agent-properties", params.id],
+    queryFn: () => apiService.getAgentProperties(params.id),
+  });
+
+  // Mock data for demonstration
+  const mockAgent = {
+    _id: params.id,
+    firstName: "Khabi",
+    lastName: "Tek",
+    email: "info@khabiteqrealty.com",
+    phoneNumber: "+234 802 345 6789",
+    role: "Agent",
+    company: "Khabi Teq Realty",
     avatar: "/placeholder.svg",
-    status: "Active",
-    tier: "Premium",
-    rating: 4.9,
-    joinedDate: "2023-01-15",
-    lastActive: "2 hours ago",
-    specialties: ["Luxury Homes", "Commercial", "Investment Properties"],
-    bio: "Experienced real estate professional with over 8 years in luxury residential and commercial properties. Specialized in high-end transactions and investment advisory.",
-    certifications: [
-      "Licensed Real Estate Agent",
-      "Certified Luxury Home Marketing Specialist",
+    isAccountVerified: true,
+    accountApproved: true,
+    accountStatus: "active",
+    isFlagged: false,
+    isInActive: false,
+    createdAt: "2025-06-01T13:39:07.618Z",
+    updatedAt: "2025-06-01T13:39:07.618Z",
+    bio: "Experienced real estate agent specializing in luxury properties in Lagos and Abuja. Over 10 years of experience in property sales and management.",
+    location: "Lagos, Nigeria",
+    specialties: [
+      "Luxury Homes",
+      "Commercial Properties",
+      "Investment Properties",
     ],
-    languages: ["English", "Spanish", "French"],
+    stats: {
+      totalProperties: 45,
+      activeBriefs: 12,
+      totalSales: 125,
+      totalRevenue: 2500000000,
+      rating: 4.8,
+      reviews: 89,
+      responseTime: "2 hours",
+      successRate: 92,
+    },
+    socialLinks: {
+      website: "https://khabiteqrealty.com",
+      linkedin: "https://linkedin.com/in/khabitek",
+      twitter: "https://twitter.com/khabitek",
+    },
   };
 
-  const stats = [
+  const mockProperties = [
     {
-      title: "Total Sales",
-      value: "24",
-      change: "+18.2%",
-      trend: "up" as const,
-      icon: Home,
-      color: "blue" as const,
+      _id: "1",
+      title: "Luxury Apartment - Victoria Island",
+      location: "Victoria Island, Lagos",
+      price: 450000000,
+      type: "Residential",
+      status: "active",
+      images: [
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+      ],
+      bedrooms: 4,
+      bathrooms: 3,
+      createdAt: "2025-01-15T10:30:00Z",
     },
     {
-      title: "Total Commission",
-      value: "$185K",
-      change: "+25.1%",
-      trend: "up" as const,
-      icon: DollarSign,
-      color: "green" as const,
-    },
-    {
-      title: "Active Listings",
-      value: "12",
-      change: "+12.5%",
-      trend: "up" as const,
-      icon: Building,
-      color: "orange" as const,
-    },
-    {
-      title: "Client Rating",
-      value: "4.9",
-      change: "+0.2",
-      trend: "up" as const,
-      icon: Star,
-      color: "purple" as const,
+      _id: "2",
+      title: "Commercial Complex - Lekki",
+      location: "Lekki Phase 1, Lagos",
+      price: 1200000000,
+      type: "Commercial",
+      status: "active",
+      images: [
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
+      ],
+      size: "5000 sqft",
+      createdAt: "2025-01-10T14:20:00Z",
     },
   ];
 
-  const transactions = [
+  const mockBriefs = [
     {
-      id: "T001",
-      property: "Modern Downtown Apartment",
-      address: "123 Main St, Downtown",
-      type: "Sale",
-      amount: 850000,
-      commission: 25500,
-      status: "Completed",
-      date: "2024-01-15",
-      buyer: "John Smith",
-      seller: "Alice Brown",
+      _id: "1",
+      title: "Luxury Apartment Marketing Strategy",
+      type: "Marketing",
+      status: "active",
+      priority: "high",
+      isApproved: false,
+      dueDate: "2025-02-15T10:30:00Z",
+      progress: 75,
     },
     {
-      id: "T002",
-      property: "Luxury Family Home",
-      address: "456 Oak Ave, Suburbs",
-      type: "Sale",
-      amount: 1250000,
-      commission: 37500,
-      status: "In Progress",
-      date: "2024-01-10",
-      buyer: "Lisa Chen",
-      seller: "David Wilson",
-    },
-    {
-      id: "T003",
-      property: "Commercial Office Space",
-      address: "789 Business Blvd",
-      type: "Lease",
-      amount: 5000,
-      commission: 2000,
-      status: "Completed",
-      date: "2024-01-05",
-      buyer: "TechCorp Inc.",
-      seller: "Downtown Properties LLC",
+      _id: "2",
+      title: "Property Inspection Guidelines",
+      type: "Inspection",
+      status: "pending",
+      priority: "medium",
+      isApproved: true,
+      dueDate: "2025-01-25T14:20:00Z",
+      progress: 45,
     },
   ];
 
-  const inspections = [
-    {
-      id: "I001",
-      property: "Modern Downtown Apartment",
-      status: "Completed",
-      date: "2024-01-18",
-      buyer: "John Smith",
-      result: "Approved",
-      notes: "All systems in excellent condition",
-    },
-    {
-      id: "I002",
-      property: "Luxury Family Home",
-      status: "Scheduled",
-      date: "2024-01-25",
-      buyer: "Lisa Chen",
-      result: "Pending",
-      notes: "Awaiting inspection completion",
-    },
-    {
-      id: "I003",
-      property: "Suburban Condo",
-      status: "In Progress",
-      date: "2024-01-20",
-      buyer: "Michael Rodriguez",
-      result: "Under Review",
-      notes: "Minor repairs needed",
-    },
-  ];
-
-  const negotiations = [
-    {
-      id: "N001",
-      property: "Luxury Family Home",
-      originalPrice: 1250000,
-      currentOffer: 1200000,
-      status: "Active",
-      rounds: 3,
-      buyer: "Lisa Chen",
-      lastUpdate: "2024-01-22",
-    },
-    {
-      id: "N002",
-      property: "Investment Property",
-      originalPrice: 750000,
-      currentOffer: 725000,
-      status: "Accepted",
-      rounds: 2,
-      buyer: "Investment Group LLC",
-      lastUpdate: "2024-01-20",
-    },
-  ];
+  const agent = mockAgent;
+  const properties = mockProperties;
+  const briefs = mockBriefs;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
     }).format(amount);
   };
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
-      case "completed":
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      case "in progress":
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-      case "scheduled":
-        return (
-          <Badge className="bg-orange-100 text-orange-800">Scheduled</Badge>
-        );
       case "active":
-        return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-      case "accepted":
-        return <Badge className="bg-green-100 text-green-800">Accepted</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case "inactive":
+        return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
+      case "flagged":
+        return <Badge className="bg-red-100 text-red-800">Flagged</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  const handleApproveBrief = async (briefId: string) => {
+    try {
+      await apiService.patch(`/briefs/${briefId}/approve`);
+      refetch();
+    } catch (error) {
+      console.error("Failed to approve brief:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading agent details...</p>
+            </div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <Card className="max-w-md mx-auto border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-900">
+                    Error Loading Agent
+                  </h3>
+                  <p className="text-red-700 text-sm">
+                    Failed to load agent details. Please try again.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => refetch()}
+                className="w-full mt-4 bg-red-600 hover:bg-red-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
-        <PageHeader
-          title={agent.name}
-          description="Agent profile, performance metrics, and transaction history"
-        >
-          <Link href="/agents">
-            <Button variant="outline" className="w-full sm:w-auto">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Agents
+              Back
             </Button>
-          </Link>
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Agent
-          </Button>
-        </PageHeader>
-
-        {/* Agent Profile Card */}
-        <Card className="border border-gray-200 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={agent.avatar} alt={agent.name} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-bold">
-                    {agent.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      {agent.name}
-                    </h2>
-                    <Badge className="bg-purple-100 text-purple-800">
-                      <Award className="h-3 w-3 mr-1" />
-                      {agent.tier}
+            <div className="flex items-center space-x-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={agent.avatar} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-medium">
+                  {agent.firstName[0]}
+                  {agent.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {agent.firstName} {agent.lastName}
+                </h1>
+                <p className="text-gray-600">{agent.company}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  {getStatusBadge(agent.accountStatus)}
+                  {agent.isAccountVerified && (
+                    <Badge className="bg-blue-100 text-blue-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Verified
                     </Badge>
+                  )}
+                  {agent.accountApproved && (
                     <Badge className="bg-green-100 text-green-800">
-                      {agent.status}
+                      Approved
                     </Badge>
-                  </div>
-                  <div className="flex items-center space-x-1 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(agent.rating)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                    <span className="text-sm text-gray-600 ml-2">
-                      {agent.rating} rating
-                    </span>
-                  </div>
-                  <p className="text-gray-600 mb-4">{agent.bio}</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm">
-                        <Mail className="h-4 w-4 text-gray-400 mr-3" />
-                        <span>{agent.email}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Phone className="h-4 w-4 text-gray-400 mr-3" />
-                        <span>{agent.phone}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <MapPin className="h-4 w-4 text-gray-400 mr-3" />
-                        <span>{agent.location}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm">
-                        <Calendar className="h-4 w-4 text-gray-400 mr-3" />
-                        <span>Joined {agent.joinedDate}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Clock className="h-4 w-4 text-gray-400 mr-3" />
-                        <span className="text-green-600">
-                          Active {agent.lastActive}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Users className="h-4 w-4 text-gray-400 mr-3" />
-                        <span>{agent.languages.join(", ")}</span>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" size="sm">
+              <Mail className="h-4 w-4 mr-2" />
+              Send Email
+            </Button>
+            <Button variant="outline" size="sm">
+              <Phone className="h-4 w-4 mr-2" />
+              Call Agent
+            </Button>
+            <Button variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </div>
+        </div>
 
-              <div className="lg:w-1/3 space-y-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Specialties
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <p className="text-sm text-gray-600">Total Properties</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {agent.stats.totalProperties}
+                  </p>
+                </div>
+                <Building className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Active Briefs</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {agent.stats.activeBriefs}
+                  </p>
+                </div>
+                <FileText className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Sales</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {agent.stats.totalSales}
+                  </p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Rating</p>
+                  <div className="flex items-center space-x-1">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {agent.stats.rating}
+                    </p>
+                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                  </div>
+                </div>
+                <Users className="h-8 w-8 text-orange-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="properties" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="properties">Properties</TabsTrigger>
+                <TabsTrigger value="briefs">Briefs</TabsTrigger>
+                <TabsTrigger value="activity">Activity</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="properties">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Posted Properties</span>
+                      <Badge variant="secondary">
+                        {properties.length} properties
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {properties.map((property) => (
+                        <Card
+                          key={property._id}
+                          className="hover:shadow-md transition-all duration-200"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start space-x-4">
+                              <img
+                                src={property.images[0]}
+                                alt={property.title}
+                                className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {property.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-500 flex items-center mt-1">
+                                      <MapPin className="h-3 w-3 mr-1" />
+                                      {property.location}
+                                    </p>
+                                  </div>
+                                  <div className="text-right ml-4">
+                                    <p className="text-lg font-bold text-gray-900">
+                                      {formatCurrency(property.price)}
+                                    </p>
+                                    {getStatusBadge(property.status)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between mt-3">
+                                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                    <span>{property.type}</span>
+                                    {property.bedrooms && (
+                                      <span>{property.bedrooms} bed</span>
+                                    )}
+                                    {property.bathrooms && (
+                                      <span>{property.bathrooms} bath</span>
+                                    )}
+                                    {property.size && (
+                                      <span>{property.size}</span>
+                                    )}
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      router.push(`/properties/${property._id}`)
+                                    }
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="briefs">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Submitted Briefs</span>
+                      <Badge variant="secondary">{briefs.length} briefs</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {briefs.map((brief) => (
+                        <Card
+                          key={brief._id}
+                          className="hover:shadow-md transition-all duration-200"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900">
+                                  {brief.title}
+                                </h3>
+                                <div className="flex items-center space-x-2 mt-2">
+                                  <Badge variant="outline">{brief.type}</Badge>
+                                  {getStatusBadge(brief.status)}
+                                  {brief.isApproved ? (
+                                    <Badge className="bg-green-100 text-green-800">
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Approved
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-yellow-100 text-yellow-800">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      Pending Approval
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                {!brief.isApproved && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleApproveBrief(brief._id)
+                                    }
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Approve
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    router.push(`/briefs/${brief._id}`)
+                                  }
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        router.push(`/briefs/${brief._id}/edit`)
+                                      }
+                                    >
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Edit Brief
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-red-600">
+                                      <AlertTriangle className="mr-2 h-4 w-4" />
+                                      Reject Brief
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between text-sm text-gray-600">
+                                <span>
+                                  Due:{" "}
+                                  {new Date(brief.dueDate).toLocaleDateString()}
+                                </span>
+                                <span>Progress: {brief.progress}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div
+                                  className="bg-blue-600 h-1 rounded-full"
+                                  style={{ width: `${brief.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="activity">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            Property listing approved
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Luxury Apartment - Victoria Island was approved
+                          </p>
+                          <p className="text-xs text-gray-400">2 hours ago</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">New brief submitted</p>
+                          <p className="text-sm text-gray-500">
+                            Marketing strategy brief for luxury properties
+                          </p>
+                          <p className="text-xs text-gray-400">1 day ago</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                          <Building className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Property updated</p>
+                          <p className="text-sm text-gray-500">
+                            Updated pricing for Commercial Complex - Lekki
+                          </p>
+                          <p className="text-xs text-gray-400">3 days ago</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm">{agent.email}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm">{agent.phoneNumber}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm">{agent.location}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm">
+                    Joined {new Date(agent.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* About */}
+            <Card>
+              <CardHeader>
+                <CardTitle>About</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {agent.bio}
+                </p>
+                <div className="mt-4">
+                  <h4 className="font-medium mb-2">Specialties</h4>
+                  <div className="flex flex-wrap gap-1">
                     {agent.specialties.map((specialty, idx) => (
                       <Badge key={idx} variant="outline" className="text-xs">
                         {specialty}
@@ -339,349 +653,43 @@ export default function AgentDetailPage() {
                     ))}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Certifications
-                  </h4>
-                  <div className="space-y-1">
-                    {agent.certifications.map((cert, idx) => (
-                      <div key={idx} className="flex items-center text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
-                        <span>{cert}</span>
-                      </div>
-                    ))}
-                  </div>
+            {/* Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Metrics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Revenue:</span>
+                  <span className="text-sm font-medium">
+                    {formatCurrency(agent.stats.totalRevenue)}
+                  </span>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Performance Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Success Rate:</span>
+                  <span className="text-sm font-medium">
+                    {agent.stats.successRate}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Response Time:</span>
+                  <span className="text-sm font-medium">
+                    {agent.stats.responseTime}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Reviews:</span>
+                  <span className="text-sm font-medium">
+                    {agent.stats.reviews}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Detailed Information Tabs */}
-        <Card className="border border-gray-200 shadow-sm">
-          <Tabs defaultValue="transactions" className="w-full">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
-                <TabsTrigger value="negotiations">Negotiations</TabsTrigger>
-                <TabsTrigger value="financial">Financial</TabsTrigger>
-              </TabsList>
-            </CardHeader>
-
-            <CardContent className="p-0">
-              <TabsContent value="transactions" className="mt-0">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">
-                      Transaction History
-                    </h3>
-                    <Badge variant="secondary">
-                      {transactions.length} transactions
-                    </Badge>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Property</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Commission</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Parties</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {transactions.map((transaction) => (
-                          <TableRow key={transaction.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">
-                                  {transaction.property}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  {transaction.address}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {transaction.type}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {formatCurrency(transaction.amount)}
-                            </TableCell>
-                            <TableCell className="font-medium text-green-600">
-                              {formatCurrency(transaction.commission)}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(transaction.status)}
-                            </TableCell>
-                            <TableCell>{transaction.date}</TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                <p>Buyer: {transaction.buyer}</p>
-                                <p>Seller: {transaction.seller}</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="inspections" className="mt-0">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">
-                      Inspection Records
-                    </h3>
-                    <Badge variant="secondary">
-                      {inspections.length} inspections
-                    </Badge>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Property</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Buyer</TableHead>
-                          <TableHead>Result</TableHead>
-                          <TableHead>Notes</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {inspections.map((inspection) => (
-                          <TableRow key={inspection.id}>
-                            <TableCell className="font-medium">
-                              {inspection.property}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(inspection.status)}
-                            </TableCell>
-                            <TableCell>{inspection.date}</TableCell>
-                            <TableCell>{inspection.buyer}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {inspection.result}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {inspection.notes}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="negotiations" className="mt-0">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">
-                      Active Negotiations
-                    </h3>
-                    <Badge variant="secondary">
-                      {negotiations.length} negotiations
-                    </Badge>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Property</TableHead>
-                          <TableHead>Original Price</TableHead>
-                          <TableHead>Current Offer</TableHead>
-                          <TableHead>Rounds</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Buyer</TableHead>
-                          <TableHead>Last Update</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {negotiations.map((negotiation) => (
-                          <TableRow key={negotiation.id}>
-                            <TableCell className="font-medium">
-                              {negotiation.property}
-                            </TableCell>
-                            <TableCell>
-                              {formatCurrency(negotiation.originalPrice)}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {formatCurrency(negotiation.currentOffer)}
-                            </TableCell>
-                            <TableCell>{negotiation.rounds}</TableCell>
-                            <TableCell>
-                              {getStatusBadge(negotiation.status)}
-                            </TableCell>
-                            <TableCell>{negotiation.buyer}</TableCell>
-                            <TableCell>{negotiation.lastUpdate}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="financial" className="mt-0">
-                <div className="p-6 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">
-                      Financial Breakdown
-                    </h3>
-                    <Badge variant="secondary">YTD 2024</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="p-4 bg-blue-50 border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-blue-600">Total Revenue</p>
-                          <p className="text-2xl font-bold text-blue-900">
-                            $185,000
-                          </p>
-                        </div>
-                        <DollarSign className="h-8 w-8 text-blue-600" />
-                      </div>
-                    </Card>
-
-                    <Card className="p-4 bg-green-50 border-green-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-green-600">
-                            Commission Rate
-                          </p>
-                          <p className="text-2xl font-bold text-green-900">
-                            3.2%
-                          </p>
-                        </div>
-                        <TrendingUp className="h-8 w-8 text-green-600" />
-                      </div>
-                    </Card>
-
-                    <Card className="p-4 bg-purple-50 border-purple-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-purple-600">
-                            Avg Deal Size
-                          </p>
-                          <p className="text-2xl font-bold text-purple-900">
-                            $925K
-                          </p>
-                        </div>
-                        <BarChart3 className="h-8 w-8 text-purple-600" />
-                      </div>
-                    </Card>
-
-                    <Card className="p-4 bg-orange-50 border-orange-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-orange-600">
-                            Closing Rate
-                          </p>
-                          <p className="text-2xl font-bold text-orange-900">
-                            87%
-                          </p>
-                        </div>
-                        <Target className="h-8 w-8 text-orange-600" />
-                      </div>
-                    </Card>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="p-4">
-                      <h4 className="font-semibold mb-4">
-                        Monthly Commission Trend
-                      </h4>
-                      <div className="space-y-3">
-                        {[
-                          { month: "January", amount: 45000, deals: 6 },
-                          { month: "February", amount: 38000, deals: 5 },
-                          { month: "March", amount: 52000, deals: 7 },
-                          { month: "April", amount: 50000, deals: 6 },
-                        ].map((month, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between"
-                          >
-                            <span className="text-sm font-medium">
-                              {month.month}
-                            </span>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {formatCurrency(month.amount)}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {month.deals} deals
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-
-                    <Card className="p-4">
-                      <h4 className="font-semibold mb-4">
-                        Commission by Property Type
-                      </h4>
-                      <div className="space-y-3">
-                        {[
-                          {
-                            type: "Luxury Homes",
-                            amount: 95000,
-                            percentage: 51,
-                          },
-                          { type: "Commercial", amount: 45000, percentage: 24 },
-                          {
-                            type: "Residential",
-                            amount: 30000,
-                            percentage: 16,
-                          },
-                          { type: "Investment", amount: 15000, percentage: 9 },
-                        ].map((type, idx) => (
-                          <div key={idx} className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">
-                                {type.type}
-                              </span>
-                              <span className="font-semibold">
-                                {formatCurrency(type.amount)}
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-blue-600 h-2 rounded-full"
-                                style={{ width: `${type.percentage}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-                  </div>
-                </div>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
       </div>
     </AdminLayout>
   );
