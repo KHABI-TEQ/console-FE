@@ -197,5 +197,12 @@ export default function LoginPage() {
                       </div>
                     )}
                   </Button>
+                </Form>
+              )}
+            </Formik>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
