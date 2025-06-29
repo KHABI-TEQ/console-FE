@@ -8,6 +8,7 @@ interface Notification {
   title: string;
   message: string;
   timestamp: Date;
+  duration?: number;
 }
 
 interface AppContextType {
@@ -37,13 +38,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...notification,
       id: Date.now().toString(),
       timestamp: new Date(),
+      duration: notification.duration || 5000,
     };
     setNotifications((prev) => [newNotification, ...prev.slice(0, 4)]);
 
-    // Auto remove after 5 seconds
+    // Auto remove after specified duration
     setTimeout(() => {
       removeNotification(newNotification.id);
-    }, 5000);
+    }, newNotification.duration);
   };
 
   const removeNotification = (id: string) => {
