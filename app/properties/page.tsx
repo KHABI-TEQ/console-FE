@@ -50,6 +50,7 @@ import {
   EmptyState,
   PropertiesEmptyState,
 } from "@/components/shared/EmptyState";
+import { ActionButtons } from "@/components/shared/ActionButtons";
 
 export default function PropertiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -360,23 +361,15 @@ export default function PropertiesPage() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 mt-3">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 hover:bg-blue-50 hover:border-blue-300"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            View
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 hover:bg-green-50 hover:border-green-300"
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
+        <div className="flex justify-center mt-3">
+          <ActionButtons
+            entityType="property"
+            entityId={property.id.toString()}
+            entityName={property.title}
+            variant="dropdown"
+            showMore={true}
+            onRefresh={handleRefresh}
+          />
         </div>
       </CardContent>
     </Card>
@@ -651,14 +644,13 @@ export default function PropertiesPage() {
                                 {property.agent.name}
                               </span>
                             </div>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <ActionButtons
+                              entityType="property"
+                              entityId={property.id.toString()}
+                              entityName={property.title}
+                              showMore={true}
+                              onRefresh={handleRefresh}
+                            />
                           </div>
                         </div>
                       </div>
