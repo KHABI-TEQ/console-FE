@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { apiService } from "@/lib/services/apiService";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -28,7 +30,6 @@ interface LoginFormValues {
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
 
   const initialValues: LoginFormValues = {
@@ -37,24 +38,26 @@ export default function LoginPage() {
     rememberMe: false,
   };
 
+  const loginMutation = useApiMutation({
+    mutationFn: async (credentials: { email: string; password: string }) => {
+      return await apiService.login(credentials);
+    },
+    onSuccess: (data, variables) => {
+      login(variables.email, variables.password);
+    },
+    successMessage: "Successfully signed in!",
+    errorMessage: "Login failed. Please check your credentials.",
+  });
+
   const handleSubmit = async (values: LoginFormValues) => {
-    setIsSubmitting(true);
-    await login(values.email, values.password);
-    setIsSubmitting(false);
+    loginMutation.mutate({
+      email: values.email,
+      password: values.password,
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 flex items-center justify-center p-4">
-      {/* Overlay Preloader */}
-      {isSubmitting && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p className="text-gray-700 font-medium">Signing you in...</p>
-          </div>
-        </div>
-      )}
-
       <div className="w-full max-w-md">
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
           <CardHeader className="space-y-6 text-center pb-6">
@@ -179,20 +182,20 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl"
-                    disabled={isSubmitting}
+                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg"
+                    disabled={loginMutation.isPending}
                   >
-                    <div className="flex items-center space-x-2">
-                      <span>Sign in</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
+                    {loginMutation.isPending ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Signing in...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <span>Sign in</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
                   </Button>
-                </Form>
-              )}
-            </Formik>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
   );
 }
