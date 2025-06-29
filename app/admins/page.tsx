@@ -144,8 +144,9 @@ export default function AdminsPage() {
   }
 
   const admins = Array.isArray(adminsData?.admins) ? adminsData.admins : [];
-  const totalAdmins = adminsData?.total || 0;
-  const totalPages = Math.ceil(totalAdmins / pageLimit);
+  const totalAdmins = adminsData?.pagination?.total || adminsData?.total || 0;
+  const totalPages =
+    adminsData?.pagination?.totalPages || Math.ceil(totalAdmins / pageLimit);
 
   const handleOpenEdit = (admin: Admin) => {
     setSelectedAdmin(admin);
