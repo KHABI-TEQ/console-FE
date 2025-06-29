@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import {
   ArrowLeft,
   Edit,
@@ -40,10 +40,7 @@ interface BriefDetailPageProps {
 
 export default function BriefDetailPage({ params }: BriefDetailPageProps) {
   const router = useRouter();
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    isLoading: false,
-  });
+  const { confirmAction } = useConfirmation();
   const [isApproving, setIsApproving] = useState(false);
 
   const {
@@ -222,16 +219,22 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
     }
   };
 
-  const handleDeleteBrief = async () => {
-    setDeleteModal({ isOpen: true, isLoading: true });
-    try {
-      await apiService.deleteBrief(params.id);
-      router.push("/briefs");
-    } catch (error) {
-      console.error("Failed to delete brief:", error);
-    } finally {
-      setDeleteModal({ isOpen: false, isLoading: false });
-    }
+  const handleDeleteBrief = () => {
+    confirmAction({
+      title: "Delete Brief",
+      description: `Are you sure you want to delete "${brief.title}"? This action cannot be undone and will remove all associated data including attachments and comments.`,
+      confirmText: "Delete Brief",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await apiService.deleteBrief(params.id);
+          router.push("/briefs");
+        } catch (error) {
+          console.error("Failed to delete brief:", error);
+        }
+      },
+    });
   };
 
   const handleApproveBrief = async () => {
@@ -718,18 +721,6 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
             </Card>
           </div>
         </div>
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={deleteModal.isOpen}
-          onClose={() => setDeleteModal({ isOpen: false, isLoading: false })}
-          onConfirm={handleDeleteBrief}
-          title="Delete Brief"
-          description={`Are you sure you want to delete "${brief.title}"? This action cannot be undone and will remove all associated data including attachments and comments.`}
-          confirmText="Delete Brief"
-          variant="danger"
-          isLoading={deleteModal.isLoading}
-        />
       </div>
     </AdminLayout>
   );
