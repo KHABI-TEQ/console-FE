@@ -67,6 +67,8 @@ export default function ContactsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
   const handleRefresh = () => {
     setIsLoading(true);
