@@ -67,8 +67,8 @@ export default async function LandlordEditPage({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["landlord", params.id],
-    queryFn: () => apiService.getLandowner(params.id),
+    queryKey: ["landlord", landlordId],
+    queryFn: () => apiService.getLandowner(landlordId),
   });
 
   useEffect(() => {
@@ -119,10 +119,10 @@ export default async function LandlordEditPage({
     setIsSubmitting(true);
 
     try {
-      const response = await apiService.updateLandowner(params.id, formData);
+      const response = await apiService.updateLandowner(landlordId, formData);
 
       if (response.success) {
-        router.push(`/landlords/${params.id}`);
+        router.push(`/landlords/${landlordId}`);
       } else {
         alert(
           "Failed to update landlord: " + (response.error || "Unknown error"),
