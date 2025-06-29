@@ -145,10 +145,23 @@ export default function AdminsPage() {
     );
   }
 
-  const admins = Array.isArray(adminsData?.admins) ? adminsData.admins : [];
+  // Handle multiple possible response structures
+  const admins = Array.isArray(adminsData?.admins)
+    ? adminsData.admins
+    : Array.isArray(adminsData?.data)
+      ? adminsData.data
+      : [];
+
   const totalAdmins = adminsData?.pagination?.total || adminsData?.total || 0;
   const totalPages =
     adminsData?.pagination?.totalPages || Math.ceil(totalAdmins / pageLimit);
+
+  console.log("Processed data:", {
+    admins,
+    totalAdmins,
+    totalPages,
+    adminsData,
+  });
 
   const handleOpenEdit = (admin: Admin) => {
     setSelectedAdmin(admin);
