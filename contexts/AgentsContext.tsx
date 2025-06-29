@@ -69,9 +69,17 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
           limit: pagination.limit,
         });
 
-        setAgents(response.data || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.success) {
+          setAgents(response.data || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agents",
+          });
         }
       } catch (error) {
         addNotification({
