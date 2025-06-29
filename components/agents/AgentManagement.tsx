@@ -78,6 +78,9 @@ export function AgentManagement({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [agentsPage, setAgentsPage] = useState(1);
+  const [landlordsPage, setLandlordsPage] = useState(1);
+  const limit = 10;
 
   const [agentsData, setAgentsData] = useState<any>(null);
   const [landlordsData, setLandlordsData] = useState<any>(null);
@@ -90,15 +93,16 @@ export function AgentManagement({
     } else {
       fetchLandlordsData();
     }
-  }, [activeTab, statusFilter, searchQuery]);
+  }, [activeTab, statusFilter, searchQuery, agentsPage, landlordsPage]);
 
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
     try {
       const params = {
-        page: "1",
-        limit: "50",
+        page: agentsPage.toString(),
+        limit: limit.toString(),
         ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter !== "all" && { status: statusFilter }),
       };
 
       const data = await apiService.getAgents(params);
@@ -114,9 +118,10 @@ export function AgentManagement({
     setLandlordsLoading(true);
     try {
       const params = {
-        page: "1",
-        limit: "50",
+        page: landlordsPage.toString(),
+        limit: limit.toString(),
         ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter !== "all" && { status: statusFilter }),
       };
 
       const data = await apiService.getLandowners(params);
@@ -130,9 +135,29 @@ export function AgentManagement({
 
   const handleRefresh = () => {
     if (activeTab === "agents") {
+      setAgentsPage(1);
       fetchAgentsData();
     } else {
+      setLandlordsPage(1);
       fetchLandlordsData();
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (activeTab === "agents") {
+      setAgentsPage(1);
+    } else {
+      setLandlordsPage(1);
+    }
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    if (activeTab === "agents") {
+      setAgentsPage(1);
+    } else {
+      setLandlordsPage(1);
     }
   };
 
