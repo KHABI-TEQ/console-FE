@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { apiService } from "@/lib/services/apiService";
+import { useRouter } from "next/navigation";
+import { useApp } from "./AppContext";
 
 interface User {
   id: string;
@@ -27,6 +29,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const { addNotification } = useApp();
 
   const isAuthenticated = !!user;
 
@@ -40,28 +44,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .split("; ")
         .find((row) => row.startsWith("auth-token="));
 
-      if (authToken) {
-        // If we have a token, try to get user profile
-        try {
-          // You might want to add a profile endpoint to verify the token
-          setUser({
-            id: "admin-1",
-            name: "Admin User",
-            email: "admin@example.com",
-            role: "admin",
-            avatar: "/placeholder.svg",
-          });
-        } catch (error) {
-          // Token is invalid, clear it
-          document.cookie = "auth-token=; path=/; max-age=0";
-        }
+      if (!authToken) {
+        console.warn("No auth token found");
+        return;
+      }
+
+      const response = await apiService.getProfile();
+
+      if (response.success) {
+        const userData = response.data?.user || response.admin?.admin || response.admin;
+
+        setUser({
+          id: userData.id || userData._id || "admin-1",
+          name:
+            userData.name ||
+            `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
+            "Admin User",
+          email: userData.email || "admin@example.com",
+          role: userData.role || "admin",
+          avatar: userData.avatar || "/placeholder.svg",
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        });
+      } else {
+        console.error("Profile fetch failed:", response.error || response.message);
+        document.cookie = "auth-token=; path=/; max-age=0";
+        // Optionally setUser(null) or redirect to login
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
+      console.error("Unexpected auth check failure:", error);
+      document.cookie = "auth-token=; path=/; max-age=0";
+      // Optionally setUser(null) or redirect
     } finally {
       setIsLoading(false);
     }
   };
+
+
 
   const login = async (email: string, password: string) => {
     try {
@@ -72,8 +91,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.success) {
         // Extract token from response - check multiple possible locations
         const token =
-          response.data?.token ||
-          response.data?.accessToken ||
+          response.admin?.token ||
+          response.admin?.accessToken ||
           response.token ||
           response.accessToken;
 
@@ -84,15 +103,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Set user data from response - check multiple possible locations
         const userData = response.data?.user ||
-          response.data?.admin ||
-          response.data ||
-          response.user ||
-          response.admin || {
-            id: "admin-1",
-            email: email,
-            name: "Admin User",
-            role: "admin",
-          };
+          response.admin?.admin ||
+          response.admin;
+
+        router.push("/dashboard");
 
         setUser({
           id: userData.id || userData._id || "admin-1",
@@ -106,30 +120,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           firstName: userData.firstName,
           lastName: userData.lastName,
         });
+
+        addNotification({
+          type: "success",
+          title: "Welcome back!",
+          message: "You have successfully signed in to your account.",
+        });
+
       } else {
-        throw new Error(response.error || response.message || "Login failed");
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: response.error || response.message || "Login failed",
+        });
+
       }
     } catch (error) {
-      console.error("Login failed:", error);
-
-      // If it's a network error or server not responding, still allow login for demo
-      if (
-        error instanceof Error &&
-        (error.message.includes("fetch") || error.message.includes("Network"))
-      ) {
-        // Set a mock user for demo purposes
-        document.cookie = `auth-token=demo-token-${Date.now()}; path=/; max-age=86400; secure; samesite=strict`;
-        setUser({
-          id: "demo-admin",
-          name: "Demo Admin",
-          email: email,
-          role: "admin",
-          avatar: "/placeholder.svg",
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Login failed",
         });
-        return;
-      }
-
-      throw error;
     } finally {
       setIsLoading(false);
     }
