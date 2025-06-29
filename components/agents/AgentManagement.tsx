@@ -376,7 +376,7 @@ export function AgentManagement({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAgents.map((agent, index) => (
+          {filteredAgents.map((agent: any, index: number) => (
             <TableRow
               key={agent.id || agent._id}
               className={`hover:bg-gray-50 transition-colors ${
@@ -585,7 +585,7 @@ export function AgentManagement({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredLandlords.map((landlord, index) => (
+          {filteredLandlords.map((landlord: any, index: number) => (
             <TableRow
               key={landlord.id || landlord._id}
               className={`hover:bg-gray-50 transition-colors ${
