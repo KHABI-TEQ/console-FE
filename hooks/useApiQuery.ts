@@ -63,7 +63,7 @@ export function useApiMutation<T, V = any>(
       }
     },
     onSuccess: (data, variables) => {
-      options?.onSuccess?.(data, variables);
+      options?.onSuccess?.(data as T, variables);
       if (options?.invalidateQueries) {
         options.invalidateQueries.forEach((queryKey) => {
           queryClient.invalidateQueries({ queryKey });

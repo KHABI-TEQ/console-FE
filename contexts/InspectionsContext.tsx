@@ -88,7 +88,7 @@ export function InspectionsProvider({
         if (response.success) {
           setInspections(response.data || []);
           if (response.pagination) {
-            setPagination(response.pagination);
+            setPagination(response.pagination as any);
           }
         } else {
           addNotification({

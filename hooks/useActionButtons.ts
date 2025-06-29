@@ -20,11 +20,11 @@ export function useActionButtons({
   const { addNotification } = useApp();
 
   const handleView = (id: string) => {
-    router.push(`/${entityType}s/${id}`);
+    router.push(`/${entityType}s/${id}` as any);
   };
 
   const handleEdit = (id: string) => {
-    router.push(`/${entityType}s/${id}/edit`);
+    router.push(`/${entityType}s/${id}/edit` as any);
   };
 
   const handleDelete = async (id: string, name?: string) => {
