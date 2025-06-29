@@ -12,8 +12,8 @@ import { AppProvider } from "@/contexts/AppContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Khabi Teq Realty - Property Management System",
-  description: "Advanced real estate management platform for Khabi Teq Realty",
+  title: "Property Admin - Management System",
+  description: "Advanced real estate property management platform",
 };
 
 export default function RootLayout({
