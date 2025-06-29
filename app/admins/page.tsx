@@ -169,32 +169,39 @@ export default function AdminsPage() {
     setIsDisableModalOpen(true);
   };
 
-  const handleDeleteAdmin = async (adminId: string) => {
-    if (window.confirm("Are you sure you want to delete this admin?")) {
-      try {
-        const response = await apiService.deleteAdmin(adminId);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: "Admin deleted successfully",
-          });
-          refetch();
-        } else {
+  const handleDeleteAdmin = (admin: Admin) => {
+    confirmAction({
+      title: "Delete Admin",
+      description: `Are you sure you want to delete ${admin.firstName} ${admin.lastName}? This action cannot be undone and will remove all admin privileges and access.`,
+      confirmText: "Delete Admin",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const response = await apiService.deleteAdmin(admin._id);
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: "Success",
+              message: "Admin deleted successfully",
+            });
+            refetch();
+          } else {
+            addNotification({
+              type: "error",
+              title: "Error",
+              message: response.error || "Failed to delete admin",
+            });
+          }
+        } catch (error) {
           addNotification({
             type: "error",
             title: "Error",
-            message: response.error || "Failed to delete admin",
+            message: "Failed to delete admin",
           });
         }
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to delete admin",
-        });
-      }
-    }
+      },
+    });
   };
 
   const filteredAdmins = admins.filter((admin: Admin) => {
