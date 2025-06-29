@@ -112,7 +112,7 @@ export default function AdminsPage() {
 
       // Return the structure expected by the component
       return {
-        admins: response.data || [],
+        admins: response.data || response.admins || [],
         total: response.total || 0,
         page: response.page || currentPage,
         limit: response.limit || pageLimit,
