@@ -53,7 +53,11 @@ export function useApiMutation<T, V = any>(
     mutationFn: async (variables: V) => {
       try {
         const response = await mutationFn(variables);
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          throw new Error(response.error || "Operation failed");
+        }
       } catch (error) {
         throw error;
       }
