@@ -786,6 +786,12 @@ export default function ContactsPage() {
                             </TableBody>
                           </Table>
                         </div>
+                        <Pagination
+                          currentPage={page}
+                          totalItems={1247}
+                          itemsPerPage={limit}
+                          onPageChange={setPage}
+                        />
                       </Card>
                     )}
                   </div>
