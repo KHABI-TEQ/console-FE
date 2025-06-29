@@ -178,13 +178,21 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const flagAgent = useCallback(
     async (agentId: string, status: string) => {
       try {
-        await apiService.flagAgent(agentId, status);
-        addNotification({
-          type: "success",
-          title: "Success",
-          message: `Agent ${status} successfully`,
-        });
-        fetchAgents();
+        const response = await apiService.flagAgent(agentId, status);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: response.message || `Agent ${status} successfully`,
+          });
+          fetchAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || `Failed to ${status} agent`,
+          });
+        }
       } catch (error) {
         addNotification({
           type: "error",
