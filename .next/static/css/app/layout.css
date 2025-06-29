@@ -2447,6 +2447,10 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(250 245 255 / var(--tw-bg-opacity, 1));
 }
+.hover\:bg-red-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));
+}
 .hover\:from-blue-700:hover {
   --tw-gradient-from: #1d4ed8 var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(29 78 216 / 0) var(--tw-gradient-to-position);
@@ -2900,6 +2904,10 @@ video {
 
   .sm\:max-w-sm {
     max-width: 24rem;
+  }
+
+  .sm\:max-w-xl {
+    max-width: 36rem;
   }
 
   .sm\:grid-cols-2 {
