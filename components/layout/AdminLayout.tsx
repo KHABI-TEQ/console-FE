@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApp } from "@/contexts/AppContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -398,17 +400,20 @@ function SidebarContent({
         {!isCollapsed ? (
           <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/api/placeholder/32/32" />
+              <AvatarImage src={user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-medium">
-                AU
+                {user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("") || "AU"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                Admin User
+                {user?.name || "Admin User"}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                admin@example.com
+                {user?.email || "admin@example.com"}
               </p>
             </div>
             <DropdownMenu>
@@ -433,7 +438,7 @@ function SidebarContent({
                   Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-red-600" onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
@@ -457,8 +462,9 @@ function SidebarContent({
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { user, logout } = useAuth();
+  const { sidebarCollapsed, setSidebarCollapsed } = useApp();
 
   useEffect(() => {
     setMounted(true);
