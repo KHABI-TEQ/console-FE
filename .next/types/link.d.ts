@@ -50,6 +50,7 @@ declare namespace __next_route_internal_types__ {
     | `/properties/new`
     | `/analytics`
     | `/profile`
+    | `/settings`
   type DynamicRoutes<T extends string = string> = 
     | `/agents/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}`
