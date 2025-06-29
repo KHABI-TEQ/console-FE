@@ -14,7 +14,16 @@ export function useApiQuery<T>(
     queryFn: async () => {
       try {
         const response = await queryFn();
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Data Loading Error",
+            message: response.error || "Failed to load data",
+          });
+          throw new Error(response.error || "Failed to load data");
+        }
       } catch (error) {
         addNotification({
           type: "error",
