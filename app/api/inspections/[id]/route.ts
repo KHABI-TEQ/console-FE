@@ -171,8 +171,7 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
-    // In a real application, you would fetch from your backend API
-    // For now, we'll return a mock response that matches the provided structure
+    // Return the exact sample response structure provided
     const mockResponse = {
       success: true,
       message: "Inspection details fetched successfully",
@@ -182,7 +181,7 @@ export async function GET(
           location: {
             state: "Lagos",
             localGovernment: "Eti-Osa",
-            area: "Ikota Villa GRA Estate Beside Mega Chicken Lekki.",
+            area: " Ikota Villa GRA Estate Beside Mega Chicken Lekki.",
           },
           landSize: {
             measurementType: "",
@@ -191,16 +190,13 @@ export async function GET(
           additionalFeatures: {
             additionalFeatures: [],
             noOfBedrooms: 4,
-            noOfBathrooms: 3,
-            noOfToilets: 4,
-            noOfCarParks: 2,
           },
           _id: "683c8da8fd1239006afe131d",
           features: [
             "POP Ceilings",
             "Chandeliers",
             "Parking",
-            "Spacious Compound",
+            "Spacious Compound ",
             "Security",
             "Water Heaters",
           ],
@@ -208,16 +204,19 @@ export async function GET(
           areYouTheOwner: true,
           isAvailable: "yes",
           pictures: [
-            "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-            "https://images.unsplash.com/photo-1560448075-bb485b067938?w=800&h=600&fit=crop",
-            "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&h=600&fit=crop",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798880/property-images/1748798879947-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798881/property-images/1748798881263-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798883/property-images/1748798882725-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798884/property-images/1748798884027-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798886/property-images/1748798885848-property-image.jpg",
+            "https://res.cloudinary.com/dkqjneask/image/upload/v1748798887/property-images/1748798886875-property-image.jpg",
           ],
           isApproved: true,
           isRejected: false,
           isPreference: false,
           isPremium: true,
           propertyType: "Residential",
-          propertyCondition: "Excellent",
+          propertyCondition: "",
           briefType: "Outright Sales",
           price: 250000000,
           docOnProperty: [
@@ -263,9 +262,8 @@ export async function GET(
           __v: 0,
         },
         isNegotiating: true,
-        negotiationPrice: 300000000,
-        letterOfIntention:
-          "I am very interested in purchasing this property for my family.",
+        negotiationPrice: 300000,
+        letterOfIntention: "",
         owner: {
           _id: "683c60e0b059886a7d01fdcb",
           isAccountInRecovery: false,
@@ -285,7 +283,7 @@ export async function GET(
           isInActive: false,
           id: "683c60e0b059886a7d01fdcb",
         },
-        sellerCounterOffer: 240000000,
+        sellerCounterOffer: 0,
         pendingResponseFrom: "seller",
         stage: "negotiation",
         createdAt: "2025-06-28T22:21:47.676Z",
