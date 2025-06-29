@@ -639,10 +639,6 @@ export default function BriefsPage() {
           title="Brief Management"
           description="Manage property briefs, assignments, and approval workflow"
         >
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
           <Button
             variant="outline"
             onClick={() => refetch()}
