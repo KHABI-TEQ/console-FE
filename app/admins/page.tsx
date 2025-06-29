@@ -51,6 +51,7 @@ import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { EditAdminModal } from "@/components/modals/EditAdminModal";
 import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
 import { DisableAdminModal } from "@/components/modals/DisableAdminModal";
+import { InlinePreloader } from "@/components/shared/Preloader";
 
 function AdminPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -279,10 +280,7 @@ function AdminPageContent() {
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p className="ml-4">Loading admins...</p>
-              </div>
+              <InlinePreloader text="Loading administrators..." />
             ) : (
               <div className="overflow-x-auto">
                 <Table>
