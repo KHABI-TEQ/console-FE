@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,17 +30,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   User,
   Mail,
   Phone,
@@ -54,123 +44,278 @@ import {
   Save,
   RefreshCw,
   Edit,
-  Trash2,
-  Plus,
   Activity,
   Clock,
-  Building,
-  Users,
-  DollarSign,
-  Star,
   Settings,
   Lock,
   Smartphone,
-  Globe,
-  Download,
-  Upload,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
+import { apiService } from "@/lib/services/apiService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApp } from "@/contexts/AppContext";
+
+interface ProfileData {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  role: string;
+  isAccountVerified: boolean;
+  isAccountInRecovery: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProfileFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  bio: string;
+  department: string;
+  location: string;
+}
+
+interface PasswordChangeData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [showPassword, setShowPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    // Personal Information
-    firstName: "John",
-    lastName: "Admin",
-    email: "john.admin@propertyadmin.com",
-    phone: "+1 (555) 123-4567",
-    title: "Senior Property Administrator",
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  const { user, updateUser } = useAuth();
+  const { addNotification } = useApp();
+
+  const [profileForm, setProfileForm] = useState<ProfileFormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    bio: "",
     department: "Administration",
-    location: "New York, NY",
-    bio: "Experienced property management professional with over 8 years in real estate administration and team leadership.",
-    avatar: "/placeholder.svg",
+    location: "",
+  });
 
-    // Account Settings
-    username: "johnadmin",
-    language: "en",
-    timezone: "America/New_York",
+  const [passwordForm, setPasswordForm] = useState<PasswordChangeData>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-    // Security Settings
-    twoFactorEnabled: true,
+  const [settings, setSettings] = useState({
+    twoFactorEnabled: false,
     loginNotifications: true,
-    sessionTimeout: "30",
-
-    // Notification Preferences
     emailNotifications: true,
     pushNotifications: true,
     smsNotifications: false,
     weeklyReports: true,
     systemAlerts: true,
     marketingEmails: false,
-
-    // Privacy Settings
     profileVisibility: "team",
     showEmail: false,
     showPhone: false,
     activityTracking: true,
   });
 
-  const [stats] = useState({
-    accountAge: "2 years, 3 months",
-    lastLogin: "2024-02-16 09:23 AM",
-    totalLogins: 1247,
-    propertiesManaged: 156,
-    agentsSupervised: 23,
-    reportsGenerated: 89,
-    avgResponseTime: "12 minutes",
+  // Fetch profile data
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useQuery<{ success: boolean; admin: ProfileData }>({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const response = await apiService.getProfile();
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch profile");
+      }
+      return response;
+    },
   });
 
-  const [recentActivity] = useState([
-    {
-      action: "Generated monthly report",
-      time: "2 hours ago",
-      type: "report",
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: Partial<ProfileFormData>) => {
+      const response = await apiService.put("/profile", data);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to update profile");
+      }
+      return response;
     },
-    {
-      action: "Approved agent application",
-      time: "5 hours ago",
-      type: "approval",
+    onSuccess: (data) => {
+      addNotification({
+        type: "success",
+        title: "Profile Updated",
+        message: "Your profile has been updated successfully.",
+      });
+
+      // Update user context if available
+      if (user && data.data) {
+        updateUser({
+          name: `${data.data.firstName || profileForm.firstName} ${data.data.lastName || profileForm.lastName}`,
+          email: data.data.email || profileForm.email,
+          firstName: data.data.firstName || profileForm.firstName,
+          lastName: data.data.lastName || profileForm.lastName,
+        });
+      }
+
+      setIsEditing(false);
+      refetchProfile();
     },
-    {
-      action: "Updated property listing",
-      time: "1 day ago",
-      type: "property",
+    onError: (error: Error) => {
+      addNotification({
+        type: "error",
+        title: "Update Failed",
+        message: error.message,
+      });
     },
-    {
-      action: "Conducted team meeting",
-      time: "2 days ago",
-      type: "meeting",
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: PasswordChangeData) => {
+      if (data.newPassword !== data.confirmPassword) {
+        throw new Error("New passwords do not match");
+      }
+
+      const response = await apiService.post("/profile/change-password", {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || "Failed to change password");
+      }
+      return response;
     },
-    {
-      action: "Reviewed inspection reports",
-      time: "3 days ago",
-      type: "inspection",
+    onSuccess: () => {
+      addNotification({
+        type: "success",
+        title: "Password Changed",
+        message: "Your password has been changed successfully.",
+      });
+      setIsChangePasswordOpen(false);
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     },
-  ]);
+    onError: (error: Error) => {
+      addNotification({
+        type: "error",
+        title: "Password Change Failed",
+        message: error.message,
+      });
+    },
+  });
+
+  // Initialize form data when profile loads
+  useEffect(() => {
+    if (profileData?.admin) {
+      const admin = profileData.admin;
+      setProfileForm({
+        firstName: admin.firstName || "",
+        lastName: admin.lastName || "",
+        email: admin.email || "",
+        phoneNumber: admin.phoneNumber || "",
+        bio: "",
+        department: "Administration",
+        location: "",
+      });
+    }
+  }, [profileData]);
 
   const handleProfileUpdate = () => {
-    // Handle profile update logic
-    console.log("Updating profile:", profile);
-    setIsEditing(false);
+    updateProfileMutation.mutate(profileForm);
   };
 
   const handlePasswordChange = () => {
-    // Handle password change logic
-    console.log("Changing password");
+    changePasswordMutation.mutate(passwordForm);
   };
 
-  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Handle file upload logic
-      console.log("Uploading avatar:", file);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getAccountAge = (createdAt: string) => {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - created.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 30) {
+      return `${diffDays} days`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} month${months > 1 ? "s" : ""}`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      const remainingMonths = Math.floor((diffDays % 365) / 30);
+      return `${years} year${years > 1 ? "s" : ""}${remainingMonths > 0 ? `, ${remainingMonths} month${remainingMonths > 1 ? "s" : ""}` : ""}`;
     }
   };
 
+  if (profileLoading) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <div className="h-32 bg-gray-200 rounded"></div>
+                <div className="h-20 bg-gray-200 rounded"></div>
+              </div>
+              <div className="lg:col-span-2">
+                <div className="h-96 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const admin = profileData?.admin;
+
+  if (!admin) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Profile Not Found
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Unable to load your profile information.
+            </p>
+            <Button onClick={() => refetchProfile()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
-      <div className="p-4 sm:p-6 space-y-6">
+      <div className="p-6 space-y-6">
         <PageHeader
           title="Profile Settings"
           description="Manage your account settings, preferences, and security options"
@@ -181,10 +326,14 @@ export default function ProfilePage() {
           </Button>
           <Button
             onClick={handleProfileUpdate}
-            disabled={!isEditing}
+            disabled={!isEditing || updateProfileMutation.isPending}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
-            <Save className="h-4 w-4 mr-2" />
+            {updateProfileMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Save Changes
           </Button>
         </PageHeader>
@@ -203,10 +352,10 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile.avatar} />
+                    <AvatarImage src="/placeholder.svg" />
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-2xl">
-                      {profile.firstName[0]}
-                      {profile.lastName[0]}
+                      {admin.firstName[0]}
+                      {admin.lastName[0]}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
@@ -216,18 +365,42 @@ export default function ProfilePage() {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={handleAvatarUpload}
+                        onChange={() => {
+                          addNotification({
+                            type: "info",
+                            title: "Feature Coming Soon",
+                            message:
+                              "Avatar upload functionality will be available soon.",
+                          });
+                        }}
                       />
                     </label>
                   )}
                 </div>
                 <div className="text-center">
                   <h3 className="text-xl font-semibold">
-                    {profile.firstName} {profile.lastName}
+                    {admin.firstName} {admin.lastName}
                   </h3>
-                  <p className="text-gray-600">{profile.title}</p>
-                  <Badge variant="outline" className="mt-2">
-                    {profile.department}
+                  <p className="text-gray-600 capitalize">{admin.role}</p>
+                  <Badge
+                    variant="outline"
+                    className={
+                      admin.isAccountVerified
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                    }
+                  >
+                    {admin.isAccountVerified ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Verified
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Unverified
+                      </>
+                    )}
                   </Badge>
                 </div>
               </div>
@@ -236,51 +409,55 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Account Age</span>
-                  <span className="font-medium">{stats.accountAge}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Last Login</span>
-                  <span className="font-medium text-sm">{stats.lastLogin}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Logins</span>
                   <span className="font-medium">
-                    {stats.totalLogins.toLocaleString()}
+                    {getAccountAge(admin.createdAt)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
-                    Properties Managed
+                  <span className="text-sm text-gray-600">Member Since</span>
+                  <span className="font-medium text-sm">
+                    {formatDate(admin.createdAt)}
                   </span>
-                  <span className="font-medium">{stats.propertiesManaged}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Last Updated</span>
+                  <span className="font-medium text-sm">
+                    {formatDate(admin.updatedAt)}
+                  </span>
                 </div>
               </div>
 
               {/* Security Status */}
               <div className="space-y-3 pt-4 border-t">
-                <h4 className="font-medium text-sm">Security Status</h4>
+                <h4 className="font-medium text-sm">Account Status</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">
-                      Two-Factor Auth
+                      Email Verified
                     </span>
                     <Badge
                       className={
-                        profile.twoFactorEnabled
+                        admin.isAccountVerified
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }
                     >
-                      {profile.twoFactorEnabled ? "Enabled" : "Disabled"}
+                      {admin.isAccountVerified ? "Yes" : "No"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">
-                      Session Timeout
+                      Account Recovery
                     </span>
-                    <span className="text-sm font-medium">
-                      {profile.sessionTimeout} min
-                    </span>
+                    <Badge
+                      className={
+                        admin.isAccountInRecovery
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }
+                    >
+                      {admin.isAccountInRecovery ? "Active" : "None"}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -290,9 +467,8 @@ export default function ProfilePage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="account">Account</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -309,9 +485,9 @@ export default function ProfilePage() {
                         <Label htmlFor="firstName">First Name</Label>
                         <Input
                           id="firstName"
-                          value={profile.firstName}
+                          value={profileForm.firstName}
                           onChange={(e) =>
-                            setProfile((prev) => ({
+                            setProfileForm((prev) => ({
                               ...prev,
                               firstName: e.target.value,
                             }))
@@ -323,9 +499,9 @@ export default function ProfilePage() {
                         <Label htmlFor="lastName">Last Name</Label>
                         <Input
                           id="lastName"
-                          value={profile.lastName}
+                          value={profileForm.lastName}
                           onChange={(e) =>
-                            setProfile((prev) => ({
+                            setProfileForm((prev) => ({
                               ...prev,
                               lastName: e.target.value,
                             }))
@@ -340,9 +516,9 @@ export default function ProfilePage() {
                       <Input
                         id="email"
                         type="email"
-                        value={profile.email}
+                        value={profileForm.email}
                         onChange={(e) =>
-                          setProfile((prev) => ({
+                          setProfileForm((prev) => ({
                             ...prev,
                             email: e.target.value,
                           }))
@@ -351,58 +527,29 @@ export default function ProfilePage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          value={profile.phone}
-                          onChange={(e) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              phone: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={profile.location}
-                          onChange={(e) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              location: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        value={profileForm.phoneNumber}
+                        onChange={(e) =>
+                          setProfileForm((prev) => ({
+                            ...prev,
+                            phoneNumber: e.target.value,
+                          }))
+                        }
+                        disabled={!isEditing}
+                        placeholder="Enter your phone number"
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Job Title</Label>
-                        <Input
-                          id="title"
-                          value={profile.title}
-                          onChange={(e) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              title: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div className="space-y-2">
                         <Label htmlFor="department">Department</Label>
                         <Select
-                          value={profile.department}
+                          value={profileForm.department}
                           onValueChange={(value) =>
-                            setProfile((prev) => ({
+                            setProfileForm((prev) => ({
                               ...prev,
                               department: value,
                             }))
@@ -423,188 +570,38 @@ export default function ProfilePage() {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={profileForm.location}
+                          onChange={(e) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
+                          disabled={!isEditing}
+                          placeholder="Your location"
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="bio">Bio</Label>
                       <Textarea
                         id="bio"
-                        value={profile.bio}
+                        value={profileForm.bio}
                         onChange={(e) =>
-                          setProfile((prev) => ({
+                          setProfileForm((prev) => ({
                             ...prev,
                             bio: e.target.value,
                           }))
                         }
                         disabled={!isEditing}
                         rows={3}
+                        placeholder="Tell us about yourself..."
                       />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="account" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input
-                        id="username"
-                        value={profile.username}
-                        onChange={(e) =>
-                          setProfile((prev) => ({
-                            ...prev,
-                            username: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="language">Language</Label>
-                        <Select
-                          value={profile.language}
-                          onValueChange={(value) =>
-                            setProfile((prev) => ({ ...prev, language: value }))
-                          }
-                          disabled={!isEditing}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="timezone">Timezone</Label>
-                        <Select
-                          value={profile.timezone}
-                          onValueChange={(value) =>
-                            setProfile((prev) => ({ ...prev, timezone: value }))
-                          }
-                          disabled={!isEditing}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="America/New_York">
-                              Eastern Time
-                            </SelectItem>
-                            <SelectItem value="America/Chicago">
-                              Central Time
-                            </SelectItem>
-                            <SelectItem value="America/Denver">
-                              Mountain Time
-                            </SelectItem>
-                            <SelectItem value="America/Los_Angeles">
-                              Pacific Time
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 pt-4 border-t">
-                      <h4 className="font-medium">Privacy Settings</h4>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label>Profile Visibility</Label>
-                            <p className="text-sm text-gray-600">
-                              Who can see your profile information
-                            </p>
-                          </div>
-                          <Select
-                            value={profile.profileVisibility}
-                            onValueChange={(value) =>
-                              setProfile((prev) => ({
-                                ...prev,
-                                profileVisibility: value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="public">Public</SelectItem>
-                              <SelectItem value="team">Team Only</SelectItem>
-                              <SelectItem value="private">Private</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label>Show Email</Label>
-                            <p className="text-sm text-gray-600">
-                              Display email in your profile
-                            </p>
-                          </div>
-                          <Switch
-                            checked={profile.showEmail}
-                            onCheckedChange={(checked) =>
-                              setProfile((prev) => ({
-                                ...prev,
-                                showEmail: checked,
-                              }))
-                            }
-                            disabled={!isEditing}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label>Show Phone</Label>
-                            <p className="text-sm text-gray-600">
-                              Display phone number in your profile
-                            </p>
-                          </div>
-                          <Switch
-                            checked={profile.showPhone}
-                            onCheckedChange={(checked) =>
-                              setProfile((prev) => ({
-                                ...prev,
-                                showPhone: checked,
-                              }))
-                            }
-                            disabled={!isEditing}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label>Activity Tracking</Label>
-                            <p className="text-sm text-gray-600">
-                              Allow system to track your activity
-                            </p>
-                          </div>
-                          <Switch
-                            checked={profile.activityTracking}
-                            onCheckedChange={(checked) =>
-                              setProfile((prev) => ({
-                                ...prev,
-                                activityTracking: checked,
-                              }))
-                            }
-                            disabled={!isEditing}
-                          />
-                        </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -628,9 +625,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.twoFactorEnabled}
+                          checked={settings.twoFactorEnabled}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               twoFactorEnabled: checked,
                             }))
@@ -646,31 +643,13 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.loginNotifications}
+                          checked={settings.loginNotifications}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               loginNotifications: checked,
                             }))
                           }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="sessionTimeout">
-                          Session Timeout (minutes)
-                        </Label>
-                        <Input
-                          id="sessionTimeout"
-                          type="number"
-                          value={profile.sessionTimeout}
-                          onChange={(e) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              sessionTimeout: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
                         />
                       </div>
                     </CardContent>
@@ -684,7 +663,10 @@ export default function ProfilePage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <Dialog>
+                      <Dialog
+                        open={isChangePasswordOpen}
+                        onOpenChange={setIsChangePasswordOpen}
+                      >
                         <DialogTrigger asChild>
                           <Button variant="outline" className="w-full">
                             <Lock className="h-4 w-4 mr-2" />
@@ -706,6 +688,13 @@ export default function ProfilePage() {
                               <Input
                                 id="currentPassword"
                                 type={showPassword ? "text" : "password"}
+                                value={passwordForm.currentPassword}
+                                onChange={(e) =>
+                                  setPasswordForm((prev) => ({
+                                    ...prev,
+                                    currentPassword: e.target.value,
+                                  }))
+                                }
                               />
                             </div>
                             <div className="space-y-2">
@@ -713,6 +702,13 @@ export default function ProfilePage() {
                               <Input
                                 id="newPassword"
                                 type={showPassword ? "text" : "password"}
+                                value={passwordForm.newPassword}
+                                onChange={(e) =>
+                                  setPasswordForm((prev) => ({
+                                    ...prev,
+                                    newPassword: e.target.value,
+                                  }))
+                                }
                               />
                             </div>
                             <div className="space-y-2">
@@ -722,6 +718,13 @@ export default function ProfilePage() {
                               <Input
                                 id="confirmPassword"
                                 type={showPassword ? "text" : "password"}
+                                value={passwordForm.confirmPassword}
+                                onChange={(e) =>
+                                  setPasswordForm((prev) => ({
+                                    ...prev,
+                                    confirmPassword: e.target.value,
+                                  }))
+                                }
                               />
                             </div>
                             <div className="flex items-center space-x-2">
@@ -733,23 +736,24 @@ export default function ProfilePage() {
                             </div>
                           </div>
                           <DialogFooter>
-                            <Button variant="outline">Cancel</Button>
-                            <Button onClick={handlePasswordChange}>
+                            <Button
+                              variant="outline"
+                              onClick={() => setIsChangePasswordOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handlePasswordChange}
+                              disabled={changePasswordMutation.isPending}
+                            >
+                              {changePasswordMutation.isPending ? (
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              ) : null}
                               Change Password
                             </Button>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
-
-                      <Button variant="outline" className="w-full">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Backup Codes
-                      </Button>
-
-                      <Button variant="outline" className="w-full">
-                        <Smartphone className="h-4 w-4 mr-2" />
-                        Manage Connected Devices
-                      </Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -775,9 +779,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.emailNotifications}
+                          checked={settings.emailNotifications}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               emailNotifications: checked,
                             }))
@@ -793,9 +797,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.pushNotifications}
+                          checked={settings.pushNotifications}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               pushNotifications: checked,
                             }))
@@ -811,9 +815,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.smsNotifications}
+                          checked={settings.smsNotifications}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               smsNotifications: checked,
                             }))
@@ -833,9 +837,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.weeklyReports}
+                          checked={settings.weeklyReports}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               weeklyReports: checked,
                             }))
@@ -851,29 +855,11 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Switch
-                          checked={profile.systemAlerts}
+                          checked={settings.systemAlerts}
                           onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
+                            setSettings((prev) => ({
                               ...prev,
                               systemAlerts: checked,
-                            }))
-                          }
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Marketing Emails</Label>
-                          <p className="text-sm text-gray-600">
-                            Product updates and promotional content
-                          </p>
-                        </div>
-                        <Switch
-                          checked={profile.marketingEmails}
-                          onCheckedChange={(checked) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              marketingEmails: checked,
                             }))
                           }
                         />
@@ -884,139 +870,44 @@ export default function ProfilePage() {
               </TabsContent>
 
               <TabsContent value="activity" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Activity className="h-5 w-5 mr-2" />
-                        Performance Metrics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">
-                            Properties Managed
-                          </span>
-                          <span className="font-semibold">
-                            {stats.propertiesManaged}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">
-                            Agents Supervised
-                          </span>
-                          <span className="font-semibold">
-                            {stats.agentsSupervised}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">
-                            Reports Generated
-                          </span>
-                          <span className="font-semibold">
-                            {stats.reportsGenerated}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">
-                            Avg Response Time
-                          </span>
-                          <span className="font-semibold">
-                            {stats.avgResponseTime}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Clock className="h-5 w-5 mr-2" />
-                        Recent Activity
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {recentActivity.map((activity, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-3 text-sm"
-                          >
-                            <div
-                              className={`w-2 h-2 rounded-full ${
-                                activity.type === "report"
-                                  ? "bg-blue-500"
-                                  : activity.type === "approval"
-                                    ? "bg-green-500"
-                                    : activity.type === "property"
-                                      ? "bg-purple-500"
-                                      : activity.type === "meeting"
-                                        ? "bg-orange-500"
-                                        : "bg-gray-500"
-                              }`}
-                            />
-                            <div className="flex-1">
-                              <p className="font-medium">{activity.action}</p>
-                              <p className="text-gray-500 text-xs">
-                                {activity.time}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card className="mt-6">
+                <Card>
                   <CardHeader>
-                    <CardTitle>Account Actions</CardTitle>
+                    <CardTitle className="flex items-center">
+                      <Activity className="h-5 w-5 mr-2" />
+                      Account Activity
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Button
-                        variant="outline"
-                        className="h-auto p-4 flex flex-col items-center space-y-2"
-                      >
-                        <RefreshCw className="h-6 w-6" />
-                        <span>Reset Preferences</span>
-                        <span className="text-xs text-gray-500">
-                          Restore default settings
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Account created</p>
+                            <p className="text-sm text-gray-600">
+                              Your admin account was created
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(admin.createdAt)}
                         </span>
-                      </Button>
+                      </div>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="h-auto p-4 flex flex-col items-center space-y-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-6 w-6" />
-                            <span>Delete Account</span>
-                            <span className="text-xs text-gray-500">
-                              Permanently delete account
-                            </span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will
-                              permanently delete your account and remove all
-                              associated data.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction className="bg-red-600 hover:bg-red-700">
-                              Delete Account
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Profile updated</p>
+                            <p className="text-sm text-gray-600">
+                              Last profile modification
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(admin.updatedAt)}
+                        </span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
