@@ -59,6 +59,7 @@ import {
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { apiService } from "@/lib/services/apiService";
 
 interface AgentManagementProps {
   defaultTab?: "agents" | "landlords";
