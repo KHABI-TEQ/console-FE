@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 flex items-center justify-center p-4">
       {/* Overlay Preloader */}
-      {isSubmitting && (
+      {forgotPasswordMutation.isPending && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col items-center space-y-4">
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
@@ -222,7 +222,7 @@ export default function ForgotPasswordPage() {
                   <Button
                     type="submit"
                     className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl"
-                    disabled={isSubmitting}
+                    disabled={forgotPasswordMutation.isPending}
                   >
                     <div className="flex items-center space-x-2">
                       <span>Send reset link</span>
