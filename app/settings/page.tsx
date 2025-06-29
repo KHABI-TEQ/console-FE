@@ -97,6 +97,12 @@ import {
   DollarSign,
   Unlock,
   Code,
+  Copy,
+  Zap,
+  Webhook,
+  RotateCcw,
+  ExternalLink,
+  CreditCard,
 } from "lucide-react";
 
 export default function SettingsPage() {
