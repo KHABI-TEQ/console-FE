@@ -105,7 +105,7 @@ const mockTransactions = [
 let mockInspections: IInspectionBookingPopulated[] = [
   {
     _id: "insp1",
-    propertyId: mockProperties[0],
+    propertyId: mockProperties[0] as any,
     bookedBy: "user1",
     bookedByModel: "Buyer",
     inspectionDate: "2024-01-20",
@@ -113,7 +113,7 @@ let mockInspections: IInspectionBookingPopulated[] = [
     status: "pending_inspection",
     slotId: "slot1",
     requestedBy: mockUsers[0],
-    transaction: mockTransactions[0],
+    transaction: mockTransactions[0] as any,
     isNegotiating: false,
     negotiationPrice: 0,
     letterOfIntention: "",
