@@ -43,6 +43,12 @@ export default function BriefDetailPage({ params }: BriefDetailPageProps) {
   const { confirmAction } = useConfirmation();
   const [isApproving, setIsApproving] = useState(false);
 
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    isLoading: false,
+  });
+
+
   const {
     data: briefResponse,
     isLoading,

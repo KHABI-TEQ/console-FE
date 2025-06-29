@@ -7,9 +7,16 @@ export interface ApiResponse<T = any> {
   limit?: number;
   total?: number;
   users?: T[];
+  user?: T;
   admin?: T;
+  admins?: T;
   token?: string;
-  pagination?: T;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface PaginatedResponse<T>
