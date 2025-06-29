@@ -60,6 +60,9 @@ import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { useQuery } from "@tanstack/react-query";
+import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { apiService } from "@/lib/services/apiService";
 
 export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,15 +70,32 @@ export default function ContactsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeTab, setActiveTab] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => setIsLoading(false), 1500);
-  };
+  const {
+    data: contactsResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["contacts", { searchQuery, typeFilter, statusFilter, page }],
+    queryFn: () =>
+      apiService.getContacts({
+        search: searchQuery,
+        type: typeFilter,
+        status: statusFilter,
+        page,
+        limit,
+      }),
+  });
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <ListPageSkeleton title="Contact Management" />
+      </AdminLayout>
+    );
+  }
 
   const stats = [
     {
