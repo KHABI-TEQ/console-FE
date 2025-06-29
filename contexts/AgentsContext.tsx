@@ -98,7 +98,16 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     async (id: string): Promise<Agent | null> => {
       try {
         const response = await apiService.getAgent(id);
-        return response.data;
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agent details",
+          });
+          return null;
+        }
       } catch (error) {
         addNotification({
           type: "error",
