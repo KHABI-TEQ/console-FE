@@ -93,6 +93,14 @@ export default function PropertiesPage() {
   const properties = propertiesResponse?.data || [];
   const totalCount = propertiesResponse?.total || 0;
 
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <PropertiesSkeleton />
+      </AdminLayout>
+    );
+  }
+
   const stats = [
     {
       title: "Total Properties",
