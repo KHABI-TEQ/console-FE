@@ -39,6 +39,7 @@ interface LandlordsContextType {
     totalPages: number;
   };
   fetchLandlords: (newFilters?: any) => Promise<void>;
+  refreshLandlords: () => Promise<void>;
   getLandlord: (id: string) => Promise<Landlord | null>;
   createLandlord: (landlordData: any) => Promise<void>;
   updateLandlord: (id: string, landlordData: any) => Promise<void>;
@@ -202,6 +203,10 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
+  const refreshLandlords = useCallback(async () => {
+    await fetchLandlords();
+  }, [fetchLandlords]);
+
   const value: LandlordsContextType = {
     landlords,
     selectedLandlord,
@@ -209,6 +214,7 @@ export function LandlordsProvider({ children }: { children: React.ReactNode }) {
     filters,
     pagination,
     fetchLandlords,
+    refreshLandlords,
     getLandlord,
     createLandlord,
     updateLandlord,
