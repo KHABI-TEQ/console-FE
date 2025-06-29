@@ -41,10 +41,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+export default async function AgentDetailPage({
+  params,
+}: AgentDetailPageProps) {
+  const { id: agentId } = await params;
   const router = useRouter();
 
   const {
