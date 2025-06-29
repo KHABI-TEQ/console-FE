@@ -105,7 +105,13 @@ export default function BriefsPage() {
     refetch,
   } = useQuery({
     queryKey: ["briefs", filters],
-    queryFn: () => apiService.getBriefs(filters),
+    queryFn: async () => {
+      const response = await apiService.getBriefs(filters);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch briefs");
+      }
+      return response;
+    },
   });
 
   // Mock data for demonstration
