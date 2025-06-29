@@ -34,11 +34,10 @@ declare namespace __next_route_internal_types__ {
     | `/agents`
     | `/analytics`
     | `/api/inspections`
-    | `/api/all-agents`
-    | `/api/all-users`
     | `/auth/forgot-password`
     | `/auth/login`
     | `/briefs`
+    | `/briefs/new`
     | `/buyer-preferences`
     | `/buyers`
     | `/contacts`
@@ -58,6 +57,7 @@ declare namespace __next_route_internal_types__ {
     | `/api/inspections/${SafeSlug<T>}`
     | `/api/inspections/${SafeSlug<T>}/approve`
     | `/api/inspections/${SafeSlug<T>}/reject`
+    | `/briefs/${SafeSlug<T>}`
     | `/properties/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
