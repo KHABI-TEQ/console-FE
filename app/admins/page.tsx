@@ -194,7 +194,7 @@ export default function AdminsPage() {
     }
   };
 
-  const filteredAdmins = admins.filter((admin) => {
+  const filteredAdmins = admins.filter((admin: Admin) => {
     const fullName = `${admin.firstName} ${admin.lastName}`.toLowerCase();
     const matchesSearch =
       fullName.includes(searchQuery.toLowerCase()) ||
