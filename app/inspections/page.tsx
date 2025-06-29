@@ -74,8 +74,9 @@ export default function InspectionsPage() {
   const [filters, setFilters] = useState<InspectionFilters>({});
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [selectedInspection, setSelectedInspection] =
-    useState<IInspectionBookingPopulated | null>(null);
+  const [selectedInspectionId, setSelectedInspectionId] = useState<
+    string | null
+  >(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const limit = 10;
 
