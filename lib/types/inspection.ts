@@ -166,4 +166,3 @@ export interface InspectionActionResponse {
   message: string;
   inspection?: any;
 }
-}
