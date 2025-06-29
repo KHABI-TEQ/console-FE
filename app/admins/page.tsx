@@ -53,6 +53,7 @@ import { DisableAdminModal } from "@/components/modals/DisableAdminModal";
 import { apiService } from "@/lib/services/apiService";
 import { useApp } from "@/contexts/AppContext";
 import { AdminProvider } from "@/contexts/AdminContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 
 interface Admin {
   _id: string;
