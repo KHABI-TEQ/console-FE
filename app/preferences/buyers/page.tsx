@@ -297,7 +297,7 @@ export default function BuyerPreferencesPage() {
                     </td>
                     <td className="p-4">
                       <Badge variant="outline">
-                        $
+                        ₦
                         {parseInt(
                           preferences.defaultBudgetRange.min,
                         ).toLocaleString()}
@@ -326,7 +326,7 @@ export default function BuyerPreferencesPage() {
                     </td>
                     <td className="p-4">
                       <Badge variant="outline">
-                        $
+                        ₦
                         {parseInt(
                           preferences.defaultBudgetRange.max,
                         ).toLocaleString()}
