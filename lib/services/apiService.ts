@@ -476,7 +476,7 @@ class ApiService {
   }
 
   async deleteAdmin(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/admin/${id}`);
+    return this.delete(`/admins/${id}`);
   }
 
   async changeAdminStatus(

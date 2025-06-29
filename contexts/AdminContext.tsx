@@ -91,7 +91,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const createAdmin = useCallback(
     async (adminData: any) => {
       try {
-        const response = await apiService.post("/admins", adminData);
+        const response = await apiService.post("/create-admin", adminData);
         if (response.success) {
           addNotification({
             type: "success",
