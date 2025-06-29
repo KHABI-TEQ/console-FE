@@ -213,7 +213,7 @@ export default function AnalyticsPage() {
     },
     {
       period: "Q3 2023",
-      avgPrice: "$800,000",
+      avgPrice: "₦800,000",
       priceChange: "+2.1%",
       volume: 196,
       volumeChange: "-4.2%",
