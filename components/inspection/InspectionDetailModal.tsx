@@ -60,6 +60,7 @@ import {
 import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
 import { useInspections } from "@/contexts/InspectionsContext";
+import { useApiMutation } from "@/hooks/useApiMutation";
 
 interface InspectionDetailModalProps {
   inspectionId: string | null;
@@ -134,44 +135,26 @@ export function InspectionDetailModal({
 
   const inspection = inspectionResponse?.data;
 
-  const approveMutation = useMutation({
+
+
+  const approveMutation = useApiMutation({
     mutationFn: () => updateInspectionStatus(inspectionId!, "approve"),
+    invalidateQueries: ["inspections", `inspection-${inspectionId}`],
+    successMessage: "Inspection approved successfully",
+    errorMessage: "Failed to approve inspection",
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Inspection approved successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["inspections"] });
-      queryClient.invalidateQueries({ queryKey: ["inspection", inspectionId] });
-      onClose();
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to approve inspection",
-        variant: "destructive",
-      });
+      onClose(); // Close the modal after successful approval
     },
   });
-
-  const rejectMutation = useMutation({
+ 
+  const rejectMutation = useApiMutation({
     mutationFn: () => updateInspectionStatus(inspectionId!, "reject"),
+    invalidateQueries: ["inspections", `inspection-${inspectionId}`],
+    successMessage: "Inspection rejected successfully", 
+    errorMessage: "Failed to reject inspection",
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Inspection rejected successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["inspections"] });
-      queryClient.invalidateQueries({ queryKey: ["inspection", inspectionId] });
       setRejectReason("");
       onClose();
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to reject inspection",
-        variant: "destructive",
-      });
     },
   });
 
