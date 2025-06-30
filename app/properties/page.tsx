@@ -63,7 +63,7 @@ interface PropertyFilters {
   page?: number;
   limit?: number;
 }
-
+ 
 export default function PropertiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
