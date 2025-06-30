@@ -63,10 +63,11 @@ interface BriefFormValues {
 }
 
 interface EditBriefPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function EditBriefPage({ params }: EditBriefPageProps) {
+export default async function EditBriefPage({ params }: EditBriefPageProps) {
+  const { id: briefId } = await params;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTag, setNewTag] = useState("");
@@ -77,13 +78,13 @@ export default function EditBriefPage({ params }: EditBriefPageProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["brief", params.id],
-    queryFn: () => apiService.getBrief(params.id),
+    queryKey: ["brief", briefId],
+    queryFn: () => apiService.getBrief(briefId),
   });
 
   // Mock data for demonstration
   const mockBrief = {
-    _id: params.id,
+    _id: briefId,
     title: "Luxury Apartment Marketing Strategy",
     description:
       "Comprehensive marketing plan for high-end residential properties in Victoria Island",
@@ -155,11 +156,11 @@ export default function EditBriefPage({ params }: EditBriefPageProps) {
   const handleSubmit = async (values: BriefFormValues) => {
     setIsSubmitting(true);
     try {
-      await apiService.updateBrief(params.id, {
+      await apiService.updateBrief(briefId, {
         ...values,
         updatedAt: new Date().toISOString(),
       });
-      router.push(`/briefs/${params.id}`);
+      router.push(`/briefs/${briefId}`);
     } catch (error) {
       console.error("Failed to update brief:", error);
     } finally {

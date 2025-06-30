@@ -36,11 +36,11 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentEditPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function AgentEditPage({ params }: AgentEditPageProps) {
-  const agentId = params.id;
+export default async function AgentEditPage({ params }: AgentEditPageProps) {
+  const { id: agentId } = await params;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newSpecialty, setNewSpecialty] = useState("");
