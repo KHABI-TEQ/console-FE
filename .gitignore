@@ -26,4 +26,9 @@ dist-ssr
 .next/
 .cursor/
 
+# typescript
+*.tsbuildinfo
+*.toml
+next-env.d.ts
+
 .config/
