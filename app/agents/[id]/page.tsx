@@ -41,10 +41,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+export default async function AgentDetailPage({
+  params,
+}: AgentDetailPageProps) {
+  const { id: agentId } = await params;
   const router = useRouter();
 
   const {
@@ -53,18 +56,18 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["agent", params.id],
-    queryFn: () => apiService.getAgent(params.id),
+    queryKey: ["agent", agentId],
+    queryFn: () => apiService.getAgent(agentId),
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
-    queryKey: ["agent-properties", params.id],
-    queryFn: () => apiService.getAgentProperties(params.id),
+    queryKey: ["agent-properties", agentId],
+    queryFn: () => apiService.getAgentProperties(agentId),
   });
 
   // Mock data for demonstration
   const mockAgent = {
-    _id: params.id,
+    _id: agentId,
     firstName: "Khabi",
     lastName: "Tek",
     email: "info@khabiteqrealty.com",

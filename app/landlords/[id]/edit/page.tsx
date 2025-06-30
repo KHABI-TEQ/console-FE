@@ -33,10 +33,13 @@ import {
 import { apiService } from "@/lib/services/apiService";
 
 interface LandlordEditPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function LandlordEditPage({ params }: LandlordEditPageProps) {
+export default async function LandlordEditPage({
+  params,
+}: LandlordEditPageProps) {
+  const { id: landlordId } = await params;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -64,8 +67,8 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["landlord", params.id],
-    queryFn: () => apiService.getLandowner(params.id),
+    queryKey: ["landlord", landlordId],
+    queryFn: () => apiService.getLandowner(landlordId),
   });
 
   useEffect(() => {
@@ -116,10 +119,10 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await apiService.updateLandowner(params.id, formData);
+      const response = await apiService.updateLandowner(landlordId, formData);
 
       if (response.success) {
-        router.push(`/landlords/${params.id}`);
+        router.push(`/landlords/${landlordId}`);
       } else {
         alert(
           "Failed to update landlord: " + (response.error || "Unknown error"),
@@ -201,7 +204,7 @@ export default function LandlordEditPage({ params }: LandlordEditPageProps) {
           <div className="flex space-x-2">
             <Button
               variant="outline"
-              onClick={() => router.push(`/landlords/${params.id}`)}
+              onClick={() => router.push(`/landlords/${landlordId}`)}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
