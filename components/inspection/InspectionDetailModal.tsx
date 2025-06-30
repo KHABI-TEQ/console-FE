@@ -819,7 +819,7 @@ export function InspectionDetailModal({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => approveMutation.mutate()}
+                                  onClick={() => approveMutation.mutate('approve')}
                                   disabled={approveMutation.isPending}
                                   className="bg-green-600 hover:bg-green-700"
                                 >
@@ -883,7 +883,7 @@ export function InspectionDetailModal({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => rejectMutation.mutate()}
+                                  onClick={() => rejectMutation.mutate('reject')}
                                   disabled={
                                     rejectMutation.isPending ||
                                     !rejectReason.trim()
