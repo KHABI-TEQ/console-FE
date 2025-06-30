@@ -11,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApiMutation } from "@/hooks/useApiMutation";
-import { apiService } from "@/lib/services/apiService";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -43,6 +42,7 @@ export default function LoginPage() {
     mutationFn: async (credentials: { email: string; password: string }) => {
       return await login(credentials.email, credentials.password);
     },
+    successMessage: "You have successfully signed in to your account"
   });
 
   const handleSubmit = async (values: LoginFormValues) => {

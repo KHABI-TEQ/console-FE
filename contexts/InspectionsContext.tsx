@@ -46,7 +46,7 @@ interface InspectionsContextType {
   getInspection: (id: string) => Promise<Inspection | null>;
   approveInspection: (id: string) => Promise<void>;
   rejectInspection: (id: string, reason: string) => Promise<void>;
-  updateInspectionStatus: (id: string, status: string) => Promise<void>;
+  updateInspectionStatus: (id: string, status: string) => Promise<any>;
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
   setSelectedInspection: (inspection: Inspection | null) => void;
@@ -198,27 +198,16 @@ export function InspectionsProvider({
     async (id: string, status: string) => {
       try {
         const response = await apiService.updateInspectionStatus(id, status);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message:
-              response.message || "Inspection status updated successfully",
-          });
-          fetchInspections();
-        } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: response.error || "Failed to update inspection status",
-          });
+
+        if (!response.success) {
+          throw new Error(response.message || "Failed to update inspection status");
         }
+        
+        fetchInspections();
+        return response;
+        
       } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to update inspection status",
-        });
+        throw error;
       }
     },
     [addNotification, fetchInspections],

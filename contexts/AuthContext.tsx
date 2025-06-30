@@ -122,20 +122,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       router.push("/dashboard");
 
-      addNotification({
-        type: "success",
-        title: "Welcome back!",
-        message: "You have successfully signed in to your account.",
-      });
+      // addNotification({
+      //   type: "success",
+      //   title: "Welcome back!",
+      //   message: "You have successfully signed in to your account.",
+      // });
 
-      return response; // ✅ allow consumer to use response
+      return response;
     } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Login failed",
-        message:
-          error instanceof Error ? error.message : "Unexpected error occurred",
-      });
+      // addNotification({
+      //   type: "error",
+      //   title: "Login failed",
+      //   message:
+      //     error instanceof Error ? error.message : "Unexpected error occurred",
+      // });
 
       throw error; // ✅ allow mutation to catch it
     } finally {

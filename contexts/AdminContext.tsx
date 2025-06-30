@@ -23,7 +23,7 @@ interface AdminContextType {
   fetchAdmins: () => Promise<void>;
   refreshAdmins: () => Promise<void>;
   getAdmin: (id: string) => Promise<Admin | null>;
-  createAdmin: (adminData: any) => Promise<void>;
+  createAdmin: (adminData: any) => Promise<any>;
   updateAdmin: (id: string, adminData: any) => Promise<void>;
   deleteAdmin: (id: string) => Promise<void>;
   changeAdminStatus: (id: string, status: string) => Promise<void>;
@@ -92,26 +92,16 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     async (adminData: any) => {
       try {
         const response = await apiService.post("/create-admin", adminData);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: response.message || "Admin created successfully",
-          });
-          fetchAdmins();
-        } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: response.error || "Failed to create admin",
-          });
+
+        if (!response.success) {
+          throw new Error(response.message || "Failed to create new admin account");
         }
+
+        fetchAdmins();
+
+        return response;
       } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to create admin",
-        });
+        throw error;
       }
     },
     [addNotification, fetchAdmins],
