@@ -99,7 +99,14 @@ function PropertiesContent() {
 
     setFilters(filters);
     fetchProperties(filters);
-  }, [searchQuery, statusFilter, typeFilter, userTypeFilter, pagination.page]);
+  }, [
+    searchQuery,
+    statusFilter,
+    typeFilter,
+    userTypeFilter,
+    fetchProperties,
+    setFilters,
+  ]);
 
   if (isLoading) {
     return (
