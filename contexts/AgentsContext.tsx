@@ -200,6 +200,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   }, [fetchAgents]);
 
   const fetchPendingAgents = useCallback(async () => {
+    setPendingLoading(true);
     try {
       const response = await apiService.getPendingAgents();
       if (response.success) {
@@ -217,11 +218,14 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
         title: "Error",
         message: "Failed to fetch pending agents",
       });
+    } finally {
+      setPendingLoading(false);
     }
   }, [addNotification]);
 
   const fetchApprovedAgents = useCallback(
     async (type: string = "all") => {
+      setApprovedLoading(true);
       try {
         const response = await apiService.getApprovedAgents(type);
         if (response.success) {
