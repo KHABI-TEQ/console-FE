@@ -64,6 +64,10 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     total: 0,
     totalPages: 0,
   });
+  // New state for agent management
+  const [pendingAgents, setPendingAgents] = useState<any[]>([]);
+  const [approvedAgents, setApprovedAgents] = useState<any[]>([]);
+  const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
   const { addNotification } = useApp();
 
   const fetchAgents = useCallback(
