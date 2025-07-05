@@ -187,35 +187,6 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     [addNotification, fetchAgents],
   );
 
-  const flagAgent = useCallback(
-    async (agentId: string, status: string) => {
-      try {
-        const response = await apiService.flagAgent(agentId, status);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: response.message || `Agent ${status} successfully`,
-          });
-          fetchAgents();
-        } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: response.error || `Failed to ${status} agent`,
-          });
-        }
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: `Failed to ${status} agent`,
-        });
-      }
-    },
-    [addNotification, fetchAgents],
-  );
-
   const setPage = useCallback((page: number) => {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
