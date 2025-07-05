@@ -13,7 +13,7 @@ export default function AgentsPage() {
       <LandlordsProvider>
         <AdminLayout>
           <Suspense fallback={<AgentsLandlordsSkeleton />}>
-            <AgentManagement defaultTab="agents" />
+            <AgentManagement defaultTab="pending-agents" />
           </Suspense>
         </AdminLayout>
       </LandlordsProvider>
