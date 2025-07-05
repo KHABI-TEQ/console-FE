@@ -204,7 +204,7 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
   };
 
   const handleFlagAgent = async () => {
-    if (isFlagging) return;
+    if (isFlagging || !agentId) return;
 
     setIsFlagging(true);
     try {
