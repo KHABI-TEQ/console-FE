@@ -1153,7 +1153,7 @@ export function AgentManagement({
                   value={approvedAgentType}
                   onValueChange={(value) => {
                     setApprovedAgentType(value);
-                    fetchApprovedAgents(value);
+                    setApprovedAgentsPage(1);
                   }}
                 >
                   <SelectTrigger className="h-11">
