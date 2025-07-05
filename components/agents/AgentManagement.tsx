@@ -69,15 +69,19 @@ import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentManagementProps {
-  defaultTab?: "agents" | "landlords";
+  defaultTab?: "pending-agents" | "approved-agents" | "landlords";
 }
 
 export function AgentManagement({
-  defaultTab = "agents",
+  defaultTab = "pending-agents",
 }: AgentManagementProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabFromUrl = searchParams.get("tab") as "agents" | "landlords" | null;
+  const tabFromUrl = searchParams.get("tab") as
+    | "pending-agents"
+    | "approved-agents"
+    | "landlords"
+    | null;
   const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -1082,12 +1086,20 @@ export function AgentManagement({
       {/* Tabs */}
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as "agents" | "landlords")}
+        onValueChange={(value) =>
+          setActiveTab(
+            value as "pending-agents" | "approved-agents" | "landlords",
+          )
+        }
       >
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="agents" className="flex items-center">
-            <Users className="h-4 w-4 mr-2" />
-            Agents ({pendingAgents.length + approvedAgents.length || 0})
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsTrigger value="pending-agents" className="flex items-center">
+            <Clock className="h-4 w-4 mr-2" />
+            Pending Agent Requests ({pendingAgents.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="approved-agents" className="flex items-center">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Approved Agents ({approvedAgents.length || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
