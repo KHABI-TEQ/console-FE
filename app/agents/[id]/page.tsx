@@ -315,6 +315,24 @@ export default async function AgentDetailPage({
               <Phone className="h-4 w-4 mr-2" />
               Call Agent
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFlagAgent}
+              disabled={isFlagging}
+              className={
+                agent.isFlagged
+                  ? "border-green-200 text-green-600 hover:bg-green-50"
+                  : "border-red-200 text-red-600 hover:bg-red-50"
+              }
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              {isFlagging
+                ? "Processing..."
+                : agent.isFlagged
+                  ? "Unflag Agent"
+                  : "Flag Agent"}
+            </Button>
             <Button variant="outline" size="sm">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
