@@ -243,6 +243,8 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
           title: "Error",
           message: "Failed to fetch approved agents",
         });
+      } finally {
+        setApprovedLoading(false);
       }
     },
     [addNotification],
