@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import { AddAgentModal } from "@/components/modals/AddAgentModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
+import { useRequestLoader } from "@/components/ui/request-loader";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import {
   Table,
   TableBody,
