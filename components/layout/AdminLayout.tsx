@@ -80,12 +80,6 @@ const navItems: NavItem[] = [
     disabled: false,
   },
   {
-    href: "/landlords",
-    label: "Landlords",
-    icon: UserCheck,
-    disabled: false,
-  },
-  {
     href: "/buyers",
     label: "Buyers",
     icon: UserCheck,
