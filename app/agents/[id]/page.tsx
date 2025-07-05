@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
+import { useAgents } from "@/contexts/AgentsContext";
 
 interface AgentDetailPageProps {
   params: Promise<{ id: string }>;
