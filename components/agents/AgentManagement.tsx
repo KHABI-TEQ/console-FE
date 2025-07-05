@@ -114,40 +114,54 @@ export function AgentManagement({
     flagAgent,
   } = useAgents();
 
+  // Data fetching with request tracking to prevent duplicate calls
+  const [requestTracker, setRequestTracker] = useState<Set<string>>(new Set());
+
+  const trackRequest = (key: string) => {
+    if (requestTracker.has(key)) return false;
+    setRequestTracker((prev) => new Set(prev).add(key));
+    return true;
+  };
+
+  const untrackRequest = (key: string) => {
+    setRequestTracker((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(key);
+      return newSet;
+    });
+  };
+
   useEffect(() => {
     if (activeTab === "agents") {
-      fetchAgentsData();
-      fetchPendingAgents();
-      fetchApprovedAgents(approvedAgentType);
-      fetchUpgradeRequests();
+      const key = `agents-${searchQuery}-${approvedAgentType}`;
+      if (trackRequest(key)) {
+        fetchAgentData().finally(() => untrackRequest(key));
+      }
     } else {
-      fetchLandlordsData();
+      const key = `landlords-${searchQuery}-${statusFilter}-${landlordsPage}`;
+      if (trackRequest(key)) {
+        fetchLandlordsData().finally(() => untrackRequest(key));
+      }
     }
   }, [
     activeTab,
     statusFilter,
     searchQuery,
-    agentsPage,
+    pendingAgentsPage,
+    approvedAgentsPage,
     landlordsPage,
     approvedAgentType,
   ]);
 
-  const fetchAgentsData = async () => {
-    setAgentsLoading(true);
+  const fetchAgentData = async () => {
     try {
-      const params = {
-        page: agentsPage.toString(),
-        limit: limit.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(statusFilter !== "all" && { status: statusFilter }),
-      };
-
-      const data = await apiService.getAgents(params);
-      setAgentsData(data);
+      await Promise.all([
+        fetchPendingAgents(),
+        fetchApprovedAgents(approvedAgentType),
+        fetchUpgradeRequests(),
+      ]);
     } catch (error) {
-      console.error("Error fetching agents:", error);
-    } finally {
-      setAgentsLoading(false);
+      console.error("Error fetching agent data:", error);
     }
   };
 
