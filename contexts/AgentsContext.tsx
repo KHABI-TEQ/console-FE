@@ -356,6 +356,8 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     pendingAgents,
     approvedAgents,
     upgradeRequests,
+    pendingLoading,
+    approvedLoading,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
