@@ -255,6 +255,7 @@ export default function PropertiesPage() {
               showEdit={true}
               showDelete={true}
               showApproval={!property.isApproved}
+              variant="dropdown"
               onRefresh={handleRefresh}
             />
           </div>
@@ -344,6 +345,7 @@ export default function PropertiesPage() {
                 showEdit={true}
                 showDelete={true}
                 showApproval={!property.isApproved}
+                variant="dropdown"
                 onRefresh={handleRefresh}
               />
             </div>
