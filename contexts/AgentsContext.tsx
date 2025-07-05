@@ -302,8 +302,8 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
               ? "Agent approved successfully"
               : "Agent rejected successfully",
           });
-          fetchPendingAgents();
-          fetchApprovedAgents();
+          // Refresh data after successful operation
+          await Promise.all([fetchPendingAgents(), fetchApprovedAgents()]);
         } else {
           addNotification({
             type: "error",
@@ -320,6 +320,40 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
       }
     },
     [addNotification, fetchPendingAgents, fetchApprovedAgents],
+  );
+
+  const flagAgent = useCallback(
+    async (agentId: string, status: string) => {
+      try {
+        const response = await apiService.flagAgent(agentId, status);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message:
+              response.message ||
+              `Agent ${status === "true" ? "flagged" : "unflagged"} successfully`,
+          });
+          // Refresh approved agents data after flagging/unflagging
+          await fetchApprovedAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message:
+              response.error ||
+              `Failed to ${status === "true" ? "flag" : "unflag"} agent`,
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: `Failed to ${status === "true" ? "flag" : "unflag"} agent`,
+        });
+      }
+    },
+    [addNotification, fetchApprovedAgents],
   );
 
   const value: AgentsContextType = {
