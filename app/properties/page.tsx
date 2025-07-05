@@ -99,14 +99,7 @@ function PropertiesContent() {
 
     setFilters(filters);
     fetchProperties(filters);
-  }, [
-    searchQuery,
-    statusFilter,
-    typeFilter,
-    userTypeFilter,
-    fetchProperties,
-    setFilters,
-  ]);
+  }, [searchQuery, statusFilter, typeFilter, userTypeFilter]);
 
   if (isLoading) {
     return (
@@ -363,8 +356,6 @@ function PropertiesContent() {
     </Card>
   );
 
-  // Remove error handling as it's handled by the context
-
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
@@ -530,12 +521,14 @@ function PropertiesContent() {
               </div>
             )}
           </CardContent>
-          <Pagination
-            currentPage={pagination.page}
-            totalItems={totalCount}
-            itemsPerPage={pagination.limit}
-            onPageChange={setPage}
-          />
+          {!isLoading && (
+            <Pagination
+              currentPage={pagination.page || 1}
+              totalItems={pagination.total || 0}
+              itemsPerPage={pagination.limit || 10}
+              onPageChange={setPage}
+            />
+          )}
         </Card>
       </div>
     </AdminLayout>

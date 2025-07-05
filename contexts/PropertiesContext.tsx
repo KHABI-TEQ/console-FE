@@ -94,12 +94,28 @@ export function PropertiesProvider({
         if (response.success) {
           setProperties(response.data || []);
           if (response.pagination) {
-            setPagination(response.pagination as any);
+            setPagination({
+              page:
+                response.pagination.currentPage ||
+                response.pagination.page ||
+                1,
+              limit:
+                response.pagination.perPage || response.pagination.limit || 10,
+              total: response.pagination.total || 0,
+              totalPages:
+                response.pagination.totalPages ||
+                Math.ceil(
+                  (response.pagination.total || 0) /
+                    (response.pagination.perPage ||
+                      response.pagination.limit ||
+                      10),
+                ),
+            });
           } else if (response.total !== undefined) {
             setPagination((prev) => ({
               ...prev,
               total: response.total || 0,
-              totalPages: Math.ceil((response.total || 0) / pagination.limit),
+              totalPages: Math.ceil((response.total || 0) / prev.limit),
             }));
           }
         } else {
@@ -119,7 +135,7 @@ export function PropertiesProvider({
         setIsLoading(false);
       }
     },
-    [filters, pagination.limit, addNotification],
+    [pagination.page, pagination.limit, addNotification],
   );
 
   const getProperty = useCallback(
@@ -296,14 +312,19 @@ export function PropertiesProvider({
   const setPage = useCallback(
     (page: number) => {
       setPagination((prev) => ({ ...prev, page }));
-      fetchProperties({ page });
+      const mergedFilters = { ...filters, page };
+      fetchProperties(mergedFilters);
     },
-    [fetchProperties],
+    [filters, fetchProperties],
   );
 
   const refreshProperties = useCallback(async () => {
     await fetchProperties();
   }, [fetchProperties]);
+
+  const setFiltersCallback = useCallback((newFilters: any) => {
+    setFilters(newFilters);
+  }, []);
 
   const value: PropertiesContextType = {
     properties,
@@ -319,7 +340,7 @@ export function PropertiesProvider({
     deleteProperty,
     approveProperty,
     rejectProperty,
-    setFilters,
+    setFilters: setFiltersCallback,
     setPage,
     setSelectedProperty,
   };
