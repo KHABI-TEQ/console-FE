@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AddAgentModal } from "@/components/modals/AddAgentModal";
+import { AddUserTypeModal } from "@/components/modals/AddUserTypeModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
@@ -1078,7 +1078,7 @@ export function AgentManagement({
             className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Add {activeTab === "agents" ? "Agent" : "Landlord"}
+            Add New User Type
           </Button>
         </div>
       </div>
@@ -1460,9 +1460,13 @@ export function AgentManagement({
       </Tabs>
 
       {/* Modals */}
-      <AddAgentModal
+      <AddUserTypeModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          // Refresh both agents and landlords data
+          handleRefresh();
+        }}
       />
 
       <EditAgentModal
