@@ -298,11 +298,39 @@ class ApiService {
   }
 
   async flagAgent(agentId: string, status: string): Promise<ApiResponse<any>> {
-    return this.patch(`/agent/flag/${agentId}`, { status });
+    return this.put(`/agent/flag/${agentId}/${status}`);
   }
 
   async getAgentProperties(agentId: string): Promise<ApiResponse<any[]>> {
     return this.get(`/agent/${agentId}/properties`);
+  }
+
+  // New agent management methods
+  async getPendingAgents(): Promise<ApiResponse<any>> {
+    return this.get("/all-agents", {
+      type: "all",
+      userType: "Agent",
+      approved: "false",
+    });
+  }
+
+  async getApprovedAgents(type: string = "all"): Promise<ApiResponse<any>> {
+    return this.get("/all-agents", {
+      type,
+      userType: "Agent",
+      approved: "true",
+    });
+  }
+
+  async approveAgent(
+    agentId: string,
+    approved: number,
+  ): Promise<ApiResponse<any>> {
+    return this.post("/approve-agent", { agentId, approved });
+  }
+
+  async getUpgradeRequests(): Promise<ApiResponse<any>> {
+    return this.get("/upgrade-agent");
   }
 
   // Landowners-specific methods
