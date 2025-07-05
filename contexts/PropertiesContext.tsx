@@ -77,10 +77,12 @@ export function PropertiesProvider({
     async (newFilters?: any) => {
       setIsLoading(true);
       try {
+        const currentPage =
+          newFilters?.page !== undefined ? newFilters.page : pagination.page;
         const mergedFilters = {
           ...filters,
           ...newFilters,
-          page: pagination.page,
+          page: currentPage,
           limit: pagination.limit,
         };
 
@@ -117,7 +119,7 @@ export function PropertiesProvider({
         setIsLoading(false);
       }
     },
-    [filters, pagination.page, pagination.limit, addNotification],
+    [filters, pagination.limit, addNotification],
   );
 
   const getProperty = useCallback(
@@ -291,9 +293,13 @@ export function PropertiesProvider({
     [addNotification, fetchProperties],
   );
 
-  const setPage = useCallback((page: number) => {
-    setPagination((prev) => ({ ...prev, page }));
-  }, []);
+  const setPage = useCallback(
+    (page: number) => {
+      setPagination((prev) => ({ ...prev, page }));
+      fetchProperties({ page });
+    },
+    [fetchProperties],
+  );
 
   const refreshProperties = useCallback(async () => {
     await fetchProperties();
