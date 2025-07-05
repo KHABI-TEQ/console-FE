@@ -287,10 +287,9 @@ export function AgentManagement({
   };
 
   // Filter functions
-  const filteredAgents = agentsData?.users || [];
   const filteredLandlords = landlordsData?.users || [];
 
-  // Filter pending agents based on search
+  // Filter pending agents based on search with pagination
   const filteredPendingAgents = pendingAgents.filter((agent: any) => {
     if (!searchQuery) return true;
     const fullName =
@@ -302,7 +301,7 @@ export function AgentManagement({
     );
   });
 
-  // Filter approved agents based on search
+  // Filter approved agents based on search with pagination
   const filteredApprovedAgents = approvedAgents.filter((agent: any) => {
     if (!searchQuery) return true;
     const fullName =
@@ -313,6 +312,17 @@ export function AgentManagement({
       email.includes(searchQuery.toLowerCase())
     );
   });
+
+  // Paginate filtered results
+  const paginatedPendingAgents = filteredPendingAgents.slice(
+    (pendingAgentsPage - 1) * limit,
+    pendingAgentsPage * limit,
+  );
+
+  const paginatedApprovedAgents = filteredApprovedAgents.slice(
+    (approvedAgentsPage - 1) * limit,
+    approvedAgentsPage * limit,
+  );
 
   // Stats for agents
   const agentStats = [
