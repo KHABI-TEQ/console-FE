@@ -389,6 +389,18 @@ class ApiService {
     return this.patch(`/property/${id}/reject`, { reason });
   }
 
+  // Brief approval/rejection methods
+  async approveBrief(briefId: string): Promise<ApiResponse<any>> {
+    return this.post(`/approve-brief/${briefId}`);
+  }
+
+  async rejectBrief(
+    briefId: string,
+    reason?: string,
+  ): Promise<ApiResponse<any>> {
+    return this.post(`/reject-brief/${briefId}`, { reason });
+  }
+
   // Buyer-specific methods
   async getBuyers(filters?: any): Promise<ApiResponse<any[]>> {
     return this.get("/buyers", filters);
