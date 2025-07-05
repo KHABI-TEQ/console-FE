@@ -77,17 +77,28 @@ export function PropertiesProvider({
     async (newFilters?: any) => {
       setIsLoading(true);
       try {
-        const response = await apiService.getProperties({
+        const mergedFilters = {
           ...filters,
           ...newFilters,
           page: pagination.page,
           limit: pagination.limit,
-        });
+        };
+
+        // Use submitted briefs endpoint if userType is specified
+        const response = mergedFilters.userType
+          ? await apiService.getSubmittedBriefs(mergedFilters)
+          : await apiService.getProperties(mergedFilters);
 
         if (response.success) {
           setProperties(response.data || []);
           if (response.pagination) {
             setPagination(response.pagination as any);
+          } else if (response.total !== undefined) {
+            setPagination((prev) => ({
+              ...prev,
+              total: response.total || 0,
+              totalPages: Math.ceil((response.total || 0) / pagination.limit),
+            }));
           }
         } else {
           addNotification({
