@@ -45,6 +45,8 @@ interface AgentsContextType {
   pendingAgents: any[];
   approvedAgents: any[];
   upgradeRequests: any[];
+  pendingLoading: boolean;
+  approvedLoading: boolean;
   fetchPendingAgents: () => Promise<void>;
   fetchApprovedAgents: (type?: string) => Promise<void>;
   fetchUpgradeRequests: () => Promise<void>;
@@ -68,6 +70,8 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const [pendingAgents, setPendingAgents] = useState<any[]>([]);
   const [approvedAgents, setApprovedAgents] = useState<any[]>([]);
   const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [approvedLoading, setApprovedLoading] = useState(false);
   const { addNotification } = useApp();
 
   const fetchAgents = useCallback(
