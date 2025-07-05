@@ -72,6 +72,7 @@ interface PropertyFilters {
 
 function PropertiesContent() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [userTypeFilter, setUserTypeFilter] = useState("Landowners");
@@ -89,9 +90,18 @@ function PropertiesContent() {
 
   const totalCount = pagination.total;
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     const filters: PropertyFilters = {
-      ...(searchQuery && { search: searchQuery }),
+      ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
       ...(statusFilter !== "all" && { status: statusFilter }),
       ...(typeFilter !== "all" && { type: typeFilter }),
       userType: userTypeFilter,
@@ -99,7 +109,7 @@ function PropertiesContent() {
 
     setFilters(filters);
     fetchProperties(filters);
-  }, [searchQuery, statusFilter, typeFilter, userTypeFilter]);
+  }, [debouncedSearchQuery, statusFilter, typeFilter, userTypeFilter]);
 
   if (isLoading) {
     return (
@@ -496,6 +506,7 @@ function PropertiesContent() {
                 onAction={() => {}}
                 onSecondaryAction={() => {
                   setSearchQuery("");
+                  setDebouncedSearchQuery("");
                   setStatusFilter("all");
                   setTypeFilter("all");
                   setUserTypeFilter("Landowners");
