@@ -189,7 +189,7 @@ export function AgentManagement({
   };
 
   const handleRefresh = () => {
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
       fetchAgentData();
@@ -201,7 +201,7 @@ export function AgentManagement({
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
     } else {
@@ -211,7 +211,7 @@ export function AgentManagement({
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
     } else {
