@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -30,6 +30,7 @@ import {
   MoreHorizontal,
   FileText,
   Briefcase,
+  Flag,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -39,16 +40,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
+import { useAgents } from "@/contexts/AgentsContext";
+import { AgentsProvider } from "@/contexts/AgentsContext";
 
 interface AgentDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function AgentDetailPage({
-  params,
-}: AgentDetailPageProps) {
-  const { id: agentId } = await params;
+function AgentDetailContent({ params }: AgentDetailPageProps) {
   const router = useRouter();
+  const { flagAgent } = useAgents();
+  const [isFlagging, setIsFlagging] = useState(false);
+  const [agentId, setAgentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(({ id }) => setAgentId(id));
+  }, [params]);
 
   const {
     data: agentResponse,
@@ -57,12 +64,14 @@ export default async function AgentDetailPage({
     refetch,
   } = useQuery({
     queryKey: ["agent", agentId],
-    queryFn: () => apiService.getAgent(agentId),
+    queryFn: () => apiService.getAgent(agentId!),
+    enabled: !!agentId,
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
     queryKey: ["agent-properties", agentId],
-    queryFn: () => apiService.getAgentProperties(agentId),
+    queryFn: () => apiService.getAgentProperties(agentId!),
+    enabled: !!agentId,
   });
 
   // Mock data for demonstration
@@ -195,7 +204,22 @@ export default async function AgentDetailPage({
     }
   };
 
-  if (isLoading) {
+  const handleFlagAgent = async () => {
+    if (isFlagging || !agentId) return;
+
+    setIsFlagging(true);
+    try {
+      const newStatus = agent.isFlagged ? "false" : "true";
+      await flagAgent(agentId, newStatus);
+      refetch(); // Refresh agent data after flagging
+    } catch (error) {
+      console.error("Failed to flag/unflag agent:", error);
+    } finally {
+      setIsFlagging(false);
+    }
+  };
+
+  if (!agentId || isLoading) {
     return (
       <AdminLayout>
         <div className="p-6">
@@ -284,6 +308,12 @@ export default async function AgentDetailPage({
                       Approved
                     </Badge>
                   )}
+                  {agent.isFlagged && (
+                    <Badge className="bg-red-100 text-red-800">
+                      <Flag className="h-3 w-3 mr-1" />
+                      Flagged
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -296,6 +326,24 @@ export default async function AgentDetailPage({
             <Button variant="outline" size="sm">
               <Phone className="h-4 w-4 mr-2" />
               Call Agent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFlagAgent}
+              disabled={isFlagging}
+              className={
+                agent.isFlagged
+                  ? "border-green-200 text-green-600 hover:bg-green-50"
+                  : "border-red-200 text-red-600 hover:bg-red-50"
+              }
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              {isFlagging
+                ? "Processing..."
+                : agent.isFlagged
+                  ? "Unflag Agent"
+                  : "Flag Agent"}
             </Button>
             <Button variant="outline" size="sm">
               <Edit className="h-4 w-4 mr-2" />
@@ -695,5 +743,13 @@ export default async function AgentDetailPage({
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+  return (
+    <AgentsProvider>
+      <AgentDetailContent params={params} />
+    </AgentsProvider>
   );
 }

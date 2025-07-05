@@ -57,6 +57,8 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  UserMinus,
+  Flag,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
@@ -78,6 +80,7 @@ export function AgentManagement({
   const [statusFilter, setStatusFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
   const [verificationFilter, setVerificationFilter] = useState("all");
+  const [approvedAgentType, setApprovedAgentType] = useState("all"); // New filter for approved agents
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
@@ -90,13 +93,35 @@ export function AgentManagement({
   const [agentsLoading, setAgentsLoading] = useState(false);
   const [landlordsLoading, setLandlordsLoading] = useState(false);
 
+  // Use new context methods
+  const {
+    pendingAgents,
+    approvedAgents,
+    upgradeRequests,
+    fetchPendingAgents,
+    fetchApprovedAgents,
+    fetchUpgradeRequests,
+    approveAgent,
+    flagAgent,
+  } = useAgents();
+
   useEffect(() => {
     if (activeTab === "agents") {
       fetchAgentsData();
+      fetchPendingAgents();
+      fetchApprovedAgents(approvedAgentType);
+      fetchUpgradeRequests();
     } else {
       fetchLandlordsData();
     }
-  }, [activeTab, statusFilter, searchQuery, agentsPage, landlordsPage]);
+  }, [
+    activeTab,
+    statusFilter,
+    searchQuery,
+    agentsPage,
+    landlordsPage,
+    approvedAgentType,
+  ]);
 
   const fetchAgentsData = async () => {
     setAgentsLoading(true);
@@ -140,6 +165,9 @@ export function AgentManagement({
     if (activeTab === "agents") {
       setAgentsPage(1);
       fetchAgentsData();
+      fetchPendingAgents();
+      fetchApprovedAgents(approvedAgentType);
+      fetchUpgradeRequests();
     } else {
       setLandlordsPage(1);
       fetchLandlordsData();
@@ -169,52 +197,76 @@ export function AgentManagement({
     setIsEditModalOpen(true);
   };
 
+  const handleApproveAgent = async (agentId: string, approved: number) => {
+    await approveAgent(agentId, approved);
+  };
+
+  const handleFlagAgent = async (agentId: string, status: string) => {
+    await flagAgent(agentId, status);
+    fetchApprovedAgents(approvedAgentType);
+  };
+
   // Filter functions
   const filteredAgents = agentsData?.users || [];
   const filteredLandlords = landlordsData?.users || [];
 
+  // Filter pending agents based on search
+  const filteredPendingAgents = pendingAgents.filter((agent: any) => {
+    if (!searchQuery) return true;
+    const fullName =
+      `${agent.firstName || ""} ${agent.lastName || ""}`.toLowerCase();
+    const email = (agent.email || "").toLowerCase();
+    return (
+      fullName.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase())
+    );
+  });
+
+  // Filter approved agents based on search
+  const filteredApprovedAgents = approvedAgents.filter((agent: any) => {
+    if (!searchQuery) return true;
+    const fullName =
+      `${agent.firstName || ""} ${agent.lastName || ""}`.toLowerCase();
+    const email = (agent.email || "").toLowerCase();
+    return (
+      fullName.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase())
+    );
+  });
+
   // Stats for agents
   const agentStats = [
     {
-      title: "Total Agents",
-      value: agentsData?.total?.toString() || "0",
+      title: "Pending Agents",
+      value: pendingAgents.length.toString(),
       change: "+8.2%",
       trend: "up" as const,
-      icon: Users,
-      color: "blue" as const,
+      icon: Clock,
+      color: "orange" as const,
     },
     {
-      title: "Active Agents",
-      value:
-        agentsData?.users
-          ?.filter((a: any) => a.accountStatus === "active" && !a.isInActive)
-          .length?.toString() || "0",
+      title: "Approved Agents",
+      value: approvedAgents.length.toString(),
       change: "+5.1%",
       trend: "up" as const,
       icon: UserCheck,
       color: "green" as const,
     },
     {
-      title: "Inactive/Flagged",
-      value:
-        agentsData?.users
-          ?.filter((a: any) => a.isInActive || a.isFlagged)
-          .length?.toString() || "0",
+      title: "Upgrade Requests",
+      value: upgradeRequests.length.toString(),
       change: "-12.5%",
       trend: "down" as const,
-      icon: Clock,
-      color: "orange" as const,
+      icon: TrendingUp,
+      color: "purple" as const,
     },
     {
-      title: "Verified Agents",
-      value:
-        agentsData?.users
-          ?.filter((a: any) => a.isAccountVerified)
-          .length?.toString() || "0",
+      title: "Total Agents",
+      value: (pendingAgents.length + approvedAgents.length).toString(),
       change: "+18.7%",
       trend: "up" as const,
-      icon: DollarSign,
-      color: "purple" as const,
+      icon: Users,
+      color: "blue" as const,
     },
   ];
 
@@ -337,19 +389,151 @@ export function AgentManagement({
     }
   };
 
-  const renderAgentsTable = () => {
-    if (isLoading) return <LoadingPlaceholder type="table" count={5} />;
-    if (filteredAgents.length === 0) {
+  const renderPendingAgentsTable = () => {
+    if (filteredPendingAgents.length === 0) {
       return (
-        <AgentsEmptyState
-          onAction={() => setIsAddModalOpen(true)}
-          onSecondaryAction={() => {
-            setSearchQuery("");
-            setStatusFilter("all");
-            setTierFilter("all");
-          }}
-          secondaryActionLabel="Clear Filters"
-        />
+        <div className="text-center py-8">
+          <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No pending agents
+          </h3>
+          <p className="text-gray-600">
+            There are no pending agent requests at the moment.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-gray-50">
+            <TableHead className="font-semibold text-gray-900">Agent</TableHead>
+            <TableHead className="font-semibold text-gray-900">
+              Contact Info
+            </TableHead>
+            <TableHead className="font-semibold text-gray-900">
+              Submitted
+            </TableHead>
+            <TableHead className="font-semibold text-gray-900">
+              Status
+            </TableHead>
+            <TableHead className="font-semibold text-gray-900">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredPendingAgents.map((agent: any, index: number) => (
+            <TableRow
+              key={agent.id || agent._id}
+              className={`hover:bg-gray-50 transition-colors ${
+                index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+              }`}
+            >
+              <TableCell className="py-4">
+                <div className="flex items-start space-x-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white font-medium">
+                      {((agent.firstName || "") + " " + (agent.lastName || ""))
+                        .trim()
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("") || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {(
+                        (agent.firstName || "") +
+                        " " +
+                        (agent.lastName || "")
+                      ).trim() || "Unknown User"}
+                    </p>
+                    <Badge className="bg-orange-100 text-orange-800 mt-1">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending Approval
+                    </Badge>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="space-y-1">
+                  <div className="flex items-center text-sm">
+                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                    <span className="truncate">{agent.email}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                    <span>{agent.phoneNumber || "N/A"}</span>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="text-sm">
+                  <Calendar className="h-4 w-4 text-gray-400 inline mr-2" />
+                  {new Date(agent.createdAt).toLocaleDateString()}
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="space-y-1">
+                  {agent.isAccountVerified ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-yellow-100 text-yellow-800">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Unverified
+                    </Badge>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleApproveAgent(agent.id || agent._id, 1)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleApproveAgent(agent.id || agent._id, 0)}
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Reject
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  const renderApprovedAgentsTable = () => {
+    if (filteredApprovedAgents.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No approved agents
+          </h3>
+          <p className="text-gray-600">
+            There are no approved agents matching your filters.
+          </p>
+        </div>
       );
     }
 
@@ -365,10 +549,7 @@ export function AgentManagement({
               Performance
             </TableHead>
             <TableHead className="font-semibold text-gray-900">
-              Status & Tier
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Activity
+              Status
             </TableHead>
             <TableHead className="font-semibold text-gray-900">
               Actions
@@ -376,7 +557,7 @@ export function AgentManagement({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAgents.map((agent: any, index: number) => (
+          {filteredApprovedAgents.map((agent: any, index: number) => (
             <TableRow
               key={agent.id || agent._id}
               className={`hover:bg-gray-50 transition-colors ${
@@ -419,21 +600,6 @@ export function AgentManagement({
                         {agent.agentData?.rating || "N/A"}
                       </span>
                     </div>
-                    {agent.agentData && (
-                      <div className="flex items-center space-x-1 mt-1">
-                        {agent.agentData.specialties?.map(
-                          (specialty: string, i: number) => (
-                            <Badge
-                              key={i}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {specialty}
-                            </Badge>
-                          ),
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </TableCell>
@@ -482,15 +648,20 @@ export function AgentManagement({
                 <div className="space-y-2">
                   {agent.accountStatus === "active" && !agent.isInActive ? (
                     <Badge className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       Active
                     </Badge>
                   ) : (
                     <Badge className="bg-gray-100 text-gray-800">
+                      <XCircle className="h-3 w-3 mr-1" />
                       Inactive
                     </Badge>
                   )}
                   {agent.isFlagged && (
-                    <Badge className="bg-red-100 text-red-800">Flagged</Badge>
+                    <Badge className="bg-red-100 text-red-800">
+                      <Flag className="h-3 w-3 mr-1" />
+                      Flagged
+                    </Badge>
                   )}
                   {agent.agentData?.tier && (
                     <Badge className="bg-purple-100 text-purple-800">
@@ -500,40 +671,30 @@ export function AgentManagement({
                 </div>
               </TableCell>
               <TableCell className="py-4">
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm">
-                    <CheckCircle
-                      className={`h-4 w-4 mr-2 ${agent.isAccountVerified ? "text-green-500" : "text-gray-400"}`}
-                    />
-                    <span>
-                      {agent.isAccountVerified ? "Verified" : "Unverified"}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Shield
-                      className={`h-4 w-4 mr-2 ${agent.accountApproved ? "text-green-500" : "text-orange-500"}`}
-                    />
-                    <span>
-                      {agent.accountApproved ? "Approved" : "Pending"}
-                    </span>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      handleFlagAgent(
+                        agent.id || agent._id,
+                        agent.isFlagged ? "false" : "true",
+                      )
+                    }
+                    className={
+                      agent.isFlagged
+                        ? "border-green-200 text-green-600 hover:bg-green-50"
+                        : "border-red-200 text-red-600 hover:bg-red-50"
+                    }
+                  >
+                    <Flag className="h-4 w-4 mr-1" />
+                    {agent.isFlagged ? "Unflag" : "Flag"}
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
                 </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <ActionButtons
-                  entityType="agent"
-                  entityId={agent.id || agent._id}
-                  entityName={(
-                    (agent.firstName || "") +
-                    " " +
-                    (agent.lastName || "")
-                  ).trim()}
-                  email={agent.email}
-                  phone={agent.phoneNumber}
-                  showContact={true}
-                  showMore={true}
-                  onRefresh={handleRefresh}
-                />
               </TableCell>
             </TableRow>
           ))}
@@ -735,10 +896,6 @@ export function AgentManagement({
     );
   };
 
-  if (isLoading && (activeTab === "agents" ? !agentsData : !landlordsData)) {
-    return <LoadingPlaceholder type="page" />;
-  }
-
   return (
     <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
@@ -786,7 +943,7 @@ export function AgentManagement({
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="agents" className="flex items-center">
             <Users className="h-4 w-4 mr-2" />
-            Agents ({agentsData?.total || 0})
+            Agents ({pendingAgents.length + approvedAgents.length || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
@@ -836,12 +993,12 @@ export function AgentManagement({
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
-                      placeholder="Search agents by name, email, location..."
+                      placeholder="Search agents by name, email..."
                       value={searchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-10 h-11"
@@ -849,63 +1006,127 @@ export function AgentManagement({
                   </div>
                 </div>
                 <Select
-                  value={statusFilter}
-                  onValueChange={handleStatusFilterChange}
+                  value={approvedAgentType}
+                  onValueChange={(value) => {
+                    setApprovedAgentType(value);
+                    fetchApprovedAgents(value);
+                  }}
                 >
                   <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder="Agent Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="banned">Banned</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={tierFilter} onValueChange={setTierFilter}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Tiers</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="standard">Standard</SelectItem>
-                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="all">All Agents</SelectItem>
+                    <SelectItem value="active">Active Agents</SelectItem>
+                    <SelectItem value="inactive">Inactive Agents</SelectItem>
+                    <SelectItem value="flagged">Flagged Agents</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
           </Card>
 
-          {/* Agents Table */}
+          {/* Pending Agents Section */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Users className="h-5 w-5 mr-2 text-gray-600" />
+                  <Clock className="h-5 w-5 mr-2 text-orange-600" />
                   <div>
-                    <span className="text-lg font-medium">Active Agents</span>
+                    <span className="text-lg font-medium">
+                      Pending Agent Requests
+                    </span>
                     <p className="text-sm text-gray-600 font-normal">
-                      {filteredAgents.length} agents found
+                      Agents awaiting approval
                     </p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  {filteredAgents.length} showing
+                <Badge
+                  variant="secondary"
+                  className="text-sm px-3 py-1 bg-orange-100 text-orange-800"
+                >
+                  {filteredPendingAgents.length} pending
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">{renderAgentsTable()}</div>
-              <Pagination
-                currentPage={agentsPage}
-                totalItems={agentsData?.total || 0}
-                itemsPerPage={limit}
-                onPageChange={setAgentsPage}
-              />
+              <div className="overflow-x-auto">
+                {renderPendingAgentsTable()}
+              </div>
             </CardContent>
           </Card>
+
+          {/* Approved Agents Section */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <UserCheck className="h-5 w-5 mr-2 text-green-600" />
+                  <div>
+                    <span className="text-lg font-medium">Approved Agents</span>
+                    <p className="text-sm text-gray-600 font-normal">
+                      {approvedAgentType === "all"
+                        ? "All approved agents"
+                        : approvedAgentType === "active"
+                          ? "Active agents"
+                          : approvedAgentType === "inactive"
+                            ? "Inactive agents"
+                            : "Flagged agents"}
+                    </p>
+                  </div>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="text-sm px-3 py-1 bg-green-100 text-green-800"
+                >
+                  {filteredApprovedAgents.length} agents
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                {renderApprovedAgentsTable()}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Upgrade Requests Section */}
+          {upgradeRequests.length > 0 && (
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2 text-purple-600" />
+                    <div>
+                      <span className="text-lg font-medium">
+                        Upgrade Requests
+                      </span>
+                      <p className="text-sm text-gray-600 font-normal">
+                        Agent tier upgrade requests
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="text-sm px-3 py-1 bg-purple-100 text-purple-800"
+                  >
+                    {upgradeRequests.length} requests
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center py-4">
+                  <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Upgrade requests functionality
+                  </h3>
+                  <p className="text-gray-600">
+                    Upgrade request management will be implemented here.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="landlords" className="space-y-6">

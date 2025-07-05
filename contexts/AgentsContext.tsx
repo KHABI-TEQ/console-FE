@@ -41,6 +41,14 @@ interface AgentsContextType {
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
   setSelectedAgent: (agent: Agent | null) => void;
+  // New methods for agent management
+  pendingAgents: any[];
+  approvedAgents: any[];
+  upgradeRequests: any[];
+  fetchPendingAgents: () => Promise<void>;
+  fetchApprovedAgents: (type?: string) => Promise<void>;
+  fetchUpgradeRequests: () => Promise<void>;
+  approveAgent: (agentId: string, approved: number) => Promise<void>;
 }
 
 const AgentsContext = createContext<AgentsContextType | undefined>(undefined);
@@ -56,6 +64,10 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     total: 0,
     totalPages: 0,
   });
+  // New state for agent management
+  const [pendingAgents, setPendingAgents] = useState<any[]>([]);
+  const [approvedAgents, setApprovedAgents] = useState<any[]>([]);
+  const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
   const { addNotification } = useApp();
 
   const fetchAgents = useCallback(
@@ -212,6 +224,104 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     await fetchAgents();
   }, [fetchAgents]);
 
+  const fetchPendingAgents = useCallback(async () => {
+    try {
+      const response = await apiService.getPendingAgents();
+      if (response.success) {
+        setPendingAgents(response.users || response.data || []);
+      } else {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: response.error || "Failed to fetch pending agents",
+        });
+      }
+    } catch (error) {
+      addNotification({
+        type: "error",
+        title: "Error",
+        message: "Failed to fetch pending agents",
+      });
+    }
+  }, [addNotification]);
+
+  const fetchApprovedAgents = useCallback(
+    async (type: string = "all") => {
+      try {
+        const response = await apiService.getApprovedAgents(type);
+        if (response.success) {
+          setApprovedAgents(response.users || response.data || []);
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch approved agents",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to fetch approved agents",
+        });
+      }
+    },
+    [addNotification],
+  );
+
+  const fetchUpgradeRequests = useCallback(async () => {
+    try {
+      const response = await apiService.getUpgradeRequests();
+      if (response.success) {
+        setUpgradeRequests(response.data || []);
+      } else {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: response.error || "Failed to fetch upgrade requests",
+        });
+      }
+    } catch (error) {
+      addNotification({
+        type: "error",
+        title: "Error",
+        message: "Failed to fetch upgrade requests",
+      });
+    }
+  }, [addNotification]);
+
+  const approveAgent = useCallback(
+    async (agentId: string, approved: number) => {
+      try {
+        const response = await apiService.approveAgent(agentId, approved);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: approved
+              ? "Agent approved successfully"
+              : "Agent rejected successfully",
+          });
+          fetchPendingAgents();
+          fetchApprovedAgents();
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to update agent status",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to update agent status",
+        });
+      }
+    },
+    [addNotification, fetchPendingAgents, fetchApprovedAgents],
+  );
+
   const value: AgentsContextType = {
     agents,
     selectedAgent,
@@ -227,6 +337,14 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     setFilters,
     setPage,
     setSelectedAgent,
+    // New values
+    pendingAgents,
+    approvedAgents,
+    upgradeRequests,
+    fetchPendingAgents,
+    fetchApprovedAgents,
+    fetchUpgradeRequests,
+    approveAgent,
   };
 
   return (
