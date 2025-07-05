@@ -136,12 +136,12 @@ export function AgentManagement({
   };
 
   useEffect(() => {
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       const key = `agents-${searchQuery}-${approvedAgentType}`;
       if (trackRequest(key)) {
         fetchAgentData().finally(() => untrackRequest(key));
       }
-    } else {
+    } else if (activeTab === "landlords") {
       const key = `landlords-${searchQuery}-${statusFilter}-${landlordsPage}`;
       if (trackRequest(key)) {
         fetchLandlordsData().finally(() => untrackRequest(key));
