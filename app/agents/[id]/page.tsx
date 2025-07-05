@@ -50,6 +50,8 @@ export default async function AgentDetailPage({
 }: AgentDetailPageProps) {
   const { id: agentId } = await params;
   const router = useRouter();
+  const { flagAgent } = useAgents();
+  const [isFlagging, setIsFlagging] = useState(false);
 
   const {
     data: agentResponse,
