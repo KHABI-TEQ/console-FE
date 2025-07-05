@@ -493,6 +493,7 @@ function PropertiesContent() {
                   setStatusFilter("all");
                   setTypeFilter("all");
                   setUserTypeFilter("Landowners");
+                  setPage(1);
                 }}
                 secondaryActionLabel="Clear Filters"
               />
