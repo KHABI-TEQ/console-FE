@@ -41,12 +41,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
 import { useAgents } from "@/contexts/AgentsContext";
+import { AgentsProvider } from "@/contexts/AgentsContext";
 
 interface AgentDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+function AgentDetailContent({ params }: AgentDetailPageProps) {
   const router = useRouter();
   const { flagAgent } = useAgents();
   const [isFlagging, setIsFlagging] = useState(false);
@@ -305,6 +306,12 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
                   {agent.accountApproved && (
                     <Badge className="bg-green-100 text-green-800">
                       Approved
+                    </Badge>
+                  )}
+                  {agent.isFlagged && (
+                    <Badge className="bg-red-100 text-red-800">
+                      <Flag className="h-3 w-3 mr-1" />
+                      Flagged
                     </Badge>
                   )}
                 </div>
@@ -736,5 +743,13 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+  return (
+    <AgentsProvider>
+      <AgentDetailContent params={params} />
+    </AgentsProvider>
   );
 }
