@@ -218,7 +218,7 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
     }
   };
 
-  if (isLoading) {
+  if (!agentId || isLoading) {
     return (
       <AdminLayout>
         <div className="p-6">
