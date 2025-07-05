@@ -186,11 +186,9 @@ export function AgentManagement({
 
   const handleRefresh = () => {
     if (activeTab === "agents") {
-      setAgentsPage(1);
-      fetchAgentsData();
-      fetchPendingAgents();
-      fetchApprovedAgents(approvedAgentType);
-      fetchUpgradeRequests();
+      setPendingAgentsPage(1);
+      setApprovedAgentsPage(1);
+      fetchAgentData();
     } else {
       setLandlordsPage(1);
       fetchLandlordsData();
@@ -200,7 +198,8 @@ export function AgentManagement({
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     if (activeTab === "agents") {
-      setAgentsPage(1);
+      setPendingAgentsPage(1);
+      setApprovedAgentsPage(1);
     } else {
       setLandlordsPage(1);
     }
@@ -209,7 +208,8 @@ export function AgentManagement({
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
     if (activeTab === "agents") {
-      setAgentsPage(1);
+      setPendingAgentsPage(1);
+      setApprovedAgentsPage(1);
     } else {
       setLandlordsPage(1);
     }
@@ -220,13 +220,70 @@ export function AgentManagement({
     setIsEditModalOpen(true);
   };
 
-  const handleApproveAgent = async (agentId: string, approved: number) => {
-    await approveAgent(agentId, approved);
+  const handleViewAgent = (agentId: string) => {
+    router.push(`/agents/${agentId}`);
   };
 
-  const handleFlagAgent = async (agentId: string, status: string) => {
-    await flagAgent(agentId, status);
-    fetchApprovedAgents(approvedAgentType);
+  // Confirmation handlers with loading states
+  const handleApproveAgent = (agentId: string, agentName: string) => {
+    confirmAction({
+      title: "Approve Agent",
+      description: `Are you sure you want to approve ${agentName}? This will grant them access to the platform.`,
+      confirmText: "Approve",
+      cancelText: "Cancel",
+      variant: "success",
+      onConfirm: async () => {
+        showLoader();
+        try {
+          await approveAgent(agentId, 1);
+        } finally {
+          hideLoader();
+        }
+      },
+    });
+  };
+
+  const handleRejectAgent = (agentId: string, agentName: string) => {
+    confirmAction({
+      title: "Reject Agent",
+      description: `Are you sure you want to reject ${agentName}? This action cannot be undone.`,
+      confirmText: "Reject",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        showLoader();
+        try {
+          await approveAgent(agentId, 0);
+        } finally {
+          hideLoader();
+        }
+      },
+    });
+  };
+
+  const handleFlagAgent = (
+    agentId: string,
+    agentName: string,
+    isFlagged: boolean,
+  ) => {
+    confirmAction({
+      title: isFlagged ? "Unflag Agent" : "Flag Agent",
+      description: isFlagged
+        ? `Are you sure you want to unflag ${agentName}? This will restore their normal account status.`
+        : `Are you sure you want to flag ${agentName}? This will mark their account for review.`,
+      confirmText: isFlagged ? "Unflag" : "Flag",
+      cancelText: "Cancel",
+      variant: isFlagged ? "success" : "warning",
+      onConfirm: async () => {
+        showLoader();
+        try {
+          await flagAgent(agentId, isFlagged ? "false" : "true");
+          await fetchApprovedAgents(approvedAgentType);
+        } finally {
+          hideLoader();
+        }
+      },
+    });
   };
 
   // Filter functions
