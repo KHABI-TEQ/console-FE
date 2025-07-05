@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
+import {
+  PropertiesProvider,
+  useProperties,
+} from "@/contexts/PropertiesContext";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,44 +57,49 @@ import {
   PropertiesEmptyState,
 } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
-import { apiService } from "@/lib/services/apiService";
 
 interface PropertyFilters {
   search?: string;
   status?: string;
   type?: string;
+  userType?: string;
+  isApproved?: boolean;
+  isRejected?: boolean;
+  isAvailable?: string;
   page?: number;
   limit?: number;
 }
- 
-export default function PropertiesPage() {
+
+function PropertiesContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [userTypeFilter, setUserTypeFilter] = useState("Landowners");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [page, setPage] = useState(1);
-  const limit = 12;
-
-  const filters: PropertyFilters = {
-    ...(searchQuery && { search: searchQuery }),
-    ...(statusFilter !== "all" && { status: statusFilter }),
-    ...(typeFilter !== "all" && { type: typeFilter }),
-    page,
-    limit,
-  };
 
   const {
-    data: propertiesResponse,
+    properties,
     isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["properties", filters],
-    queryFn: () => apiService.getProperties(filters),
-  });
+    pagination,
+    fetchProperties,
+    refreshProperties,
+    setFilters,
+    setPage,
+  } = useProperties();
 
-  const properties = propertiesResponse?.data || [];
-  const totalCount = propertiesResponse?.total || 0;
+  const totalCount = pagination.total;
+
+  useEffect(() => {
+    const filters: PropertyFilters = {
+      ...(searchQuery && { search: searchQuery }),
+      ...(statusFilter !== "all" && { status: statusFilter }),
+      ...(typeFilter !== "all" && { type: typeFilter }),
+      userType: userTypeFilter,
+    };
+
+    setFilters(filters);
+    fetchProperties(filters);
+  }, [searchQuery, statusFilter, typeFilter, userTypeFilter, pagination.page]);
 
   if (isLoading) {
     return (
@@ -159,7 +167,7 @@ export default function PropertiesPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    refreshProperties();
   };
 
   const PropertyCard = ({ property }: { property: any }) => (
@@ -248,6 +256,7 @@ export default function PropertiesPage() {
               showEdit={true}
               showDelete={true}
               showApproval={!property.isApproved}
+              variant="dropdown"
               onRefresh={handleRefresh}
             />
           </div>
@@ -337,6 +346,7 @@ export default function PropertiesPage() {
                 showEdit={true}
                 showDelete={true}
                 showApproval={!property.isApproved}
+                variant="dropdown"
                 onRefresh={handleRefresh}
               />
             </div>
@@ -346,38 +356,7 @@ export default function PropertiesPage() {
     </Card>
   );
 
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <Card className="max-w-md mx-auto border-red-200 bg-red-50">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-red-900">
-                    Error Loading Data
-                  </h3>
-                  <p className="text-red-700 text-sm">
-                    Failed to load properties. Please try again.
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={handleRefresh}
-                className="w-full mt-4 bg-red-600 hover:bg-red-700"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </AdminLayout>
-    );
-  }
+  // Remove error handling as it's handled by the context
 
   return (
     <AdminLayout>
@@ -416,7 +395,7 @@ export default function PropertiesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="md:col-span-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -428,6 +407,15 @@ export default function PropertiesPage() {
                   />
                 </div>
               </div>
+              <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="User Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Landowners">Landowners</SelectItem>
+                  <SelectItem value="Agent">Agents</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="h-11">
                   <SelectValue placeholder="Status" />
@@ -504,6 +492,8 @@ export default function PropertiesPage() {
                   setSearchQuery("");
                   setStatusFilter("all");
                   setTypeFilter("all");
+                  setUserTypeFilter("Landowners");
+                  setPage(1);
                 }}
                 secondaryActionLabel="Clear Filters"
               />
@@ -526,13 +516,21 @@ export default function PropertiesPage() {
             )}
           </CardContent>
           <Pagination
-            currentPage={page}
+            currentPage={pagination.page}
             totalItems={totalCount}
-            itemsPerPage={limit}
+            itemsPerPage={pagination.limit}
             onPageChange={setPage}
           />
         </Card>
       </div>
     </AdminLayout>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <PropertiesProvider>
+      <PropertiesContent />
+    </PropertiesProvider>
   );
 }

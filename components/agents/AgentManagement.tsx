@@ -69,15 +69,19 @@ import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 
 interface AgentManagementProps {
-  defaultTab?: "agents" | "landlords";
+  defaultTab?: "pending-agents" | "approved-agents" | "landlords";
 }
 
 export function AgentManagement({
-  defaultTab = "agents",
+  defaultTab = "pending-agents",
 }: AgentManagementProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabFromUrl = searchParams.get("tab") as "agents" | "landlords" | null;
+  const tabFromUrl = searchParams.get("tab") as
+    | "pending-agents"
+    | "approved-agents"
+    | "landlords"
+    | null;
   const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -132,12 +136,12 @@ export function AgentManagement({
   };
 
   useEffect(() => {
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       const key = `agents-${searchQuery}-${approvedAgentType}`;
       if (trackRequest(key)) {
         fetchAgentData().finally(() => untrackRequest(key));
       }
-    } else {
+    } else if (activeTab === "landlords") {
       const key = `landlords-${searchQuery}-${statusFilter}-${landlordsPage}`;
       if (trackRequest(key)) {
         fetchLandlordsData().finally(() => untrackRequest(key));
@@ -185,7 +189,7 @@ export function AgentManagement({
   };
 
   const handleRefresh = () => {
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
       fetchAgentData();
@@ -197,7 +201,7 @@ export function AgentManagement({
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
     } else {
@@ -207,7 +211,7 @@ export function AgentManagement({
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    if (activeTab === "agents") {
+    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
     } else {
@@ -1082,12 +1086,20 @@ export function AgentManagement({
       {/* Tabs */}
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as "agents" | "landlords")}
+        onValueChange={(value) =>
+          setActiveTab(
+            value as "pending-agents" | "approved-agents" | "landlords",
+          )
+        }
       >
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="agents" className="flex items-center">
-            <Users className="h-4 w-4 mr-2" />
-            Agents ({pendingAgents.length + approvedAgents.length || 0})
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsTrigger value="pending-agents" className="flex items-center">
+            <Clock className="h-4 w-4 mr-2" />
+            Pending Agent Requests ({pendingAgents.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="approved-agents" className="flex items-center">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Approved Agents ({approvedAgents.length || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
@@ -1095,7 +1107,7 @@ export function AgentManagement({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="agents" className="space-y-6">
+        <TabsContent value="pending-agents" className="space-y-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {agentStats.map((stat, index) => (
@@ -1133,39 +1145,20 @@ export function AgentManagement({
             <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
               <CardTitle className="flex items-center">
                 <Filter className="h-5 w-5 mr-2 text-gray-600" />
-                Filter Agents
+                Filter Pending Agents
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search agents by name, email..."
-                      value={searchQuery}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-10 h-11"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search pending agents by name, email..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10 h-11"
+                  />
                 </div>
-                <Select
-                  value={approvedAgentType}
-                  onValueChange={(value) => {
-                    setApprovedAgentType(value);
-                    setApprovedAgentsPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Agent Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    <SelectItem value="active">Active Agents</SelectItem>
-                    <SelectItem value="inactive">Inactive Agents</SelectItem>
-                    <SelectItem value="flagged">Flagged Agents</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
           </Card>
@@ -1196,6 +1189,80 @@ export function AgentManagement({
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 {renderPendingAgentsTable()}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="approved-agents" className="space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {agentStats.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <stat.icon className={`h-8 w-8 text-${stat.color}-600`} />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">
+                        {stat.title}
+                      </p>
+                      <div className="flex items-center">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stat.value}
+                        </p>
+                        <span
+                          className={`ml-2 text-sm ${
+                            stat.trend === "up"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {stat.change}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Filters */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center">
+                <Filter className="h-5 w-5 mr-2 text-gray-600" />
+                Filter Approved Agents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search approved agents by name, email..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10 h-11"
+                  />
+                </div>
+                <Select
+                  value={approvedAgentType}
+                  onValueChange={(value) => {
+                    setApprovedAgentType(value);
+                    setApprovedAgentsPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Agent Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Agents</SelectItem>
+                    <SelectItem value="active">Active Agents</SelectItem>
+                    <SelectItem value="inactive">Inactive Agents</SelectItem>
+                    <SelectItem value="flagged">Flagged Agents</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
