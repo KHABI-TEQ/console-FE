@@ -412,7 +412,7 @@ export default function InspectionsPage() {
                     Loading inspection data...
                   </p>
                   <p className="text-gray-500 text-sm">
-                    Please wait while we fetch the latest information
+                    Please wait while we filter and fetch the latest information
                   </p>
                 </div>
               ) : (

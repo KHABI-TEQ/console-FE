@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AddAgentModal } from "@/components/modals/AddAgentModal";
+import { AddUserTypeModal } from "@/components/modals/AddUserTypeModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
@@ -111,6 +111,8 @@ export function AgentManagement({
     pendingAgents,
     approvedAgents,
     upgradeRequests,
+    pendingLoading,
+    approvedLoading,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
@@ -484,6 +486,18 @@ export function AgentManagement({
   };
 
   const renderPendingAgentsTable = () => {
+    if (pendingLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <p className="text-gray-600 font-medium">Loading pending agents...</p>
+          <p className="text-gray-500 text-sm">
+            Please wait while we fetch the latest information
+          </p>
+        </div>
+      );
+    }
+
     if (paginatedPendingAgents.length === 0) {
       return (
         <div className="text-center py-8">
@@ -645,6 +659,20 @@ export function AgentManagement({
   };
 
   const renderApprovedAgentsTable = () => {
+    if (approvedLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <p className="text-gray-600 font-medium">
+            Loading approved agents...
+          </p>
+          <p className="text-gray-500 text-sm">
+            Please wait while we fetch the latest information
+          </p>
+        </div>
+      );
+    }
+
     if (paginatedApprovedAgents.length === 0) {
       return (
         <div className="text-center py-8">
@@ -1078,7 +1106,7 @@ export function AgentManagement({
             className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Add {activeTab === "agents" ? "Agent" : "Landlord"}
+            Add New User Type
           </Button>
         </div>
       </div>
@@ -1460,9 +1488,13 @@ export function AgentManagement({
       </Tabs>
 
       {/* Modals */}
-      <AddAgentModal
+      <AddUserTypeModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          // Refresh both agents and landlords data
+          handleRefresh();
+        }}
       />
 
       <EditAgentModal
