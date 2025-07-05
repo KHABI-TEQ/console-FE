@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
+import { apiService } from "@/lib/services/apiService";
 
 interface UseActionButtonsProps {
   entityType:
@@ -84,17 +85,36 @@ export function useActionButtons({
       variant: "success",
       onConfirm: async () => {
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          let response;
 
-          addNotification({
-            type: "success",
-            title: "Approved successfully",
-            message: `${name || entityType} has been approved.`,
-          });
+          switch (entityType) {
+            case "property":
+              response = await apiService.approveBrief(id);
+              break;
+            case "agent":
+              response = await apiService.approveAgent(id, 1);
+              break;
+            default:
+              throw new Error(`Approval not implemented for ${entityType}`);
+          }
 
-          if (onRefresh) {
-            onRefresh();
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: "Approved successfully",
+              message:
+                response.message || `${name || entityType} has been approved.`,
+            });
+
+            if (onRefresh) {
+              onRefresh();
+            }
+          } else {
+            addNotification({
+              type: "error",
+              title: "Approval failed",
+              message: response.error || `Failed to approve ${entityType}.`,
+            });
           }
         } catch (error) {
           addNotification({
@@ -116,17 +136,36 @@ export function useActionButtons({
       variant: "warning",
       onConfirm: async () => {
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          let response;
 
-          addNotification({
-            type: "success",
-            title: "Rejected successfully",
-            message: `${name || entityType} has been rejected.`,
-          });
+          switch (entityType) {
+            case "property":
+              response = await apiService.rejectBrief(id);
+              break;
+            case "agent":
+              response = await apiService.approveAgent(id, 0);
+              break;
+            default:
+              throw new Error(`Rejection not implemented for ${entityType}`);
+          }
 
-          if (onRefresh) {
-            onRefresh();
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: "Rejected successfully",
+              message:
+                response.message || `${name || entityType} has been rejected.`,
+            });
+
+            if (onRefresh) {
+              onRefresh();
+            }
+          } else {
+            addNotification({
+              type: "error",
+              title: "Rejection failed",
+              message: response.error || `Failed to reject ${entityType}.`,
+            });
           }
         } catch (error) {
           addNotification({
