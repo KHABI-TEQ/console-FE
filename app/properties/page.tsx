@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
+import { PropertiesProvider } from "@/contexts/PropertiesContext";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,14 +61,19 @@ interface PropertyFilters {
   search?: string;
   status?: string;
   type?: string;
+  userType?: string;
+  isApproved?: boolean;
+  isRejected?: boolean;
+  isAvailable?: string;
   page?: number;
   limit?: number;
 }
- 
+
 export default function PropertiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [userTypeFilter, setUserTypeFilter] = useState("Landowners");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
   const limit = 12;
@@ -76,6 +82,7 @@ export default function PropertiesPage() {
     ...(searchQuery && { search: searchQuery }),
     ...(statusFilter !== "all" && { status: statusFilter }),
     ...(typeFilter !== "all" && { type: typeFilter }),
+    userType: userTypeFilter,
     page,
     limit,
   };
@@ -380,159 +387,177 @@ export default function PropertiesPage() {
   }
 
   return (
-    <AdminLayout>
-      <div className="p-4 sm:p-6 space-y-6">
-        <PageHeader
-          title="Property Management"
-          description="Manage property listings, approvals, and portfolio"
-        >
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            className="w-full sm:w-auto"
+    <PropertiesProvider>
+      <AdminLayout>
+        <div className="p-4 sm:p-6 space-y-6">
+          <PageHeader
+            title="Property Management"
+            description="Manage property listings, approvals, and portfolio"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Property
-          </Button>
-        </PageHeader>
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Property
+            </Button>
+          </PageHeader>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat, index) => (
+              <StatCard key={index} {...stat} />
+            ))}
+          </div>
+
+          {/* Filters */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center">
+                <Filter className="h-5 w-5 mr-2 text-gray-600" />
+                Filter Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search properties by location, type, or features..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-11"
+                    />
+                  </div>
+                </div>
+                <Select
+                  value={userTypeFilter}
+                  onValueChange={setUserTypeFilter}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="User Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Landowners">Landowners</SelectItem>
+                    <SelectItem value="Agent">Agents</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="approved">Active</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="Residential">Residential</SelectItem>
+                    <SelectItem value="Commercial">Commercial</SelectItem>
+                    <SelectItem value="Land">Land</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Properties */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Building className="h-5 w-5 mr-2 text-gray-600" />
+                  <div>
+                    <span className="text-lg font-medium">
+                      Property Portfolio
+                    </span>
+                    <p className="text-sm text-gray-600 font-normal">
+                      {totalCount} properties found
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {properties.length} showing
+                  </Badge>
+                  <div className="flex border rounded-lg">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="rounded-r-none"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="rounded-l-none"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {isLoading ? (
+                <LoadingPlaceholder type="grid" count={6} />
+              ) : properties.length === 0 ? (
+                <PropertiesEmptyState
+                  onAction={() => {}}
+                  onSecondaryAction={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    setTypeFilter("all");
+                    setUserTypeFilter("Landowners");
+                  }}
+                  secondaryActionLabel="Clear Filters"
+                />
+              ) : (
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  }
+                >
+                  {properties.map((property: any) =>
+                    viewMode === "grid" ? (
+                      <PropertyCard key={property._id} property={property} />
+                    ) : (
+                      <PropertyListItem
+                        key={property._id}
+                        property={property}
+                      />
+                    ),
+                  )}
+                </div>
+              )}
+            </CardContent>
+            <Pagination
+              currentPage={page}
+              totalItems={totalCount}
+              itemsPerPage={limit}
+              onPageChange={setPage}
+            />
+          </Card>
         </div>
-
-        {/* Filters */}
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-            <CardTitle className="flex items-center">
-              <Filter className="h-5 w-5 mr-2 text-gray-600" />
-              Filter Properties
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search properties by location, type, or features..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11"
-                  />
-                </div>
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="approved">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Residential">Residential</SelectItem>
-                  <SelectItem value="Commercial">Commercial</SelectItem>
-                  <SelectItem value="Land">Land</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Properties */}
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Building className="h-5 w-5 mr-2 text-gray-600" />
-                <div>
-                  <span className="text-lg font-medium">
-                    Property Portfolio
-                  </span>
-                  <p className="text-sm text-gray-600 font-normal">
-                    {totalCount} properties found
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  {properties.length} showing
-                </Badge>
-                <div className="flex border rounded-lg">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="rounded-r-none"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {isLoading ? (
-              <LoadingPlaceholder type="grid" count={6} />
-            ) : properties.length === 0 ? (
-              <PropertiesEmptyState
-                onAction={() => {}}
-                onSecondaryAction={() => {
-                  setSearchQuery("");
-                  setStatusFilter("all");
-                  setTypeFilter("all");
-                }}
-                secondaryActionLabel="Clear Filters"
-              />
-            ) : (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    : "space-y-4"
-                }
-              >
-                {properties.map((property: any) =>
-                  viewMode === "grid" ? (
-                    <PropertyCard key={property._id} property={property} />
-                  ) : (
-                    <PropertyListItem key={property._id} property={property} />
-                  ),
-                )}
-              </div>
-            )}
-          </CardContent>
-          <Pagination
-            currentPage={page}
-            totalItems={totalCount}
-            itemsPerPage={limit}
-            onPageChange={setPage}
-          />
-        </Card>
-      </div>
-    </AdminLayout>
+      </AdminLayout>
+    </PropertiesProvider>
   );
 }
