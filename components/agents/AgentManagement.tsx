@@ -480,7 +480,7 @@ export function AgentManagement({
   };
 
   const renderPendingAgentsTable = () => {
-    if (filteredPendingAgents.length === 0) {
+    if (paginatedPendingAgents.length === 0) {
       return (
         <div className="text-center py-8">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -488,127 +488,155 @@ export function AgentManagement({
             No pending agents
           </h3>
           <p className="text-gray-600">
-            There are no pending agent requests at the moment.
+            {searchQuery
+              ? "No pending agents match your search criteria."
+              : "There are no pending agent requests at the moment."}
           </p>
         </div>
       );
     }
 
     return (
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold text-gray-900">Agent</TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Contact Info
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Submitted
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Status
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredPendingAgents.map((agent: any, index: number) => (
-            <TableRow
-              key={agent.id || agent._id}
-              className={`hover:bg-gray-50 transition-colors ${
-                index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-              }`}
-            >
-              <TableCell className="py-4">
-                <div className="flex items-start space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white font-medium">
-                      {((agent.firstName || "") + " " + (agent.lastName || ""))
-                        .trim()
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("") || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {(
-                        (agent.firstName || "") +
-                        " " +
-                        (agent.lastName || "")
-                      ).trim() || "Unknown User"}
-                    </p>
-                    <Badge className="bg-orange-100 text-orange-800 mt-1">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Pending Approval
-                    </Badge>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm">
-                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="truncate">{agent.email}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{agent.phoneNumber || "N/A"}</span>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="text-sm">
-                  <Calendar className="h-4 w-4 text-gray-400 inline mr-2" />
-                  {new Date(agent.createdAt).toLocaleDateString()}
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="space-y-1">
-                  {agent.isAccountVerified ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-yellow-100 text-yellow-800">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Unverified
-                    </Badge>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleApproveAgent(agent.id || agent._id, 1)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleApproveAgent(agent.id || agent._id, 0)}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Reject
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                </div>
-              </TableCell>
+      <>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-900">
+                Agent
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Contact Info
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Submitted
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Status
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Actions
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {paginatedPendingAgents.map((agent: any, index: number) => {
+              const agentName =
+                (
+                  (agent.firstName || "") +
+                  " " +
+                  (agent.lastName || "")
+                ).trim() || "Unknown User";
+
+              return (
+                <TableRow
+                  key={agent.id || agent._id}
+                  className={`hover:bg-gray-50 transition-colors ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                  }`}
+                >
+                  <TableCell className="py-4">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white font-medium">
+                          {agentName
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("") || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-gray-900">{agentName}</p>
+                        <Badge className="bg-orange-100 text-orange-800 mt-1">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending Approval
+                        </Badge>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center text-sm">
+                        <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="truncate">{agent.email}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                        <span>{agent.phoneNumber || "N/A"}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="text-sm">
+                      <Calendar className="h-4 w-4 text-gray-400 inline mr-2" />
+                      {new Date(agent.createdAt).toLocaleDateString()}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="space-y-1">
+                      {agent.isAccountVerified ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Unverified
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleApproveAgent(agent.id || agent._id, agentName)
+                        }
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleRejectAgent(agent.id || agent._id, agentName)
+                        }
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewAgent(agent.id || agent._id)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+
+        {/* Pagination for Pending Agents */}
+        {filteredPendingAgents.length > limit && (
+          <div className="border-t border-gray-200 px-6 py-3">
+            <Pagination
+              currentPage={pendingAgentsPage}
+              totalItems={filteredPendingAgents.length}
+              itemsPerPage={limit}
+              onPageChange={setPendingAgentsPage}
+            />
+          </div>
+        )}
+      </>
     );
   };
 
