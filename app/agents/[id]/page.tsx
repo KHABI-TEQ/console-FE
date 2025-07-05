@@ -198,6 +198,21 @@ export default async function AgentDetailPage({
     }
   };
 
+  const handleFlagAgent = async () => {
+    if (isFlagging) return;
+
+    setIsFlagging(true);
+    try {
+      const newStatus = agent.isFlagged ? "false" : "true";
+      await flagAgent(agentId, newStatus);
+      refetch(); // Refresh agent data after flagging
+    } catch (error) {
+      console.error("Failed to flag/unflag agent:", error);
+    } finally {
+      setIsFlagging(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
