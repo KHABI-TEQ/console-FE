@@ -57,7 +57,6 @@ import {
   PropertiesEmptyState,
 } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
-import { apiService } from "@/lib/services/apiService";
 
 interface PropertyFilters {
   search?: string;
