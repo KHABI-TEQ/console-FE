@@ -641,7 +641,7 @@ export function AgentManagement({
   };
 
   const renderApprovedAgentsTable = () => {
-    if (filteredApprovedAgents.length === 0) {
+    if (paginatedApprovedAgents.length === 0) {
       return (
         <div className="text-center py-8">
           <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -649,175 +649,201 @@ export function AgentManagement({
             No approved agents
           </h3>
           <p className="text-gray-600">
-            There are no approved agents matching your filters.
+            {searchQuery
+              ? "No approved agents match your search criteria."
+              : "There are no approved agents matching your filters."}
           </p>
         </div>
       );
     }
 
     return (
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold text-gray-900">Agent</TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Contact Info
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Performance
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Status
-            </TableHead>
-            <TableHead className="font-semibold text-gray-900">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredApprovedAgents.map((agent: any, index: number) => (
-            <TableRow
-              key={agent.id || agent._id}
-              className={`hover:bg-gray-50 transition-colors ${
-                index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-              }`}
-            >
-              <TableCell className="py-4">
-                <div className="flex items-start space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
-                      {((agent.firstName || "") + " " + (agent.lastName || ""))
-                        .trim()
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("") || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {(
-                        (agent.firstName || "") +
-                        " " +
-                        (agent.lastName || "")
-                      ).trim() || "Unknown User"}
-                    </p>
-                    <div className="flex items-center space-x-1 mt-1">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 ${
-                              i < Math.floor(agent.agentData?.rating || 0)
-                                ? "text-yellow-400 fill-current"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-600 ml-1">
-                        {agent.agentData?.rating || "N/A"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm">
-                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="truncate">{agent.email}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{agent.phoneNumber || "N/A"}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>
-                      Joined {new Date(agent.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="space-y-1">
-                  {agent.agentData ? (
-                    <>
-                      <div className="flex items-center space-x-2">
-                        <BarChart3 className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">
-                          {agent.agentData.sales || 0} sales
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-green-500" />
-                        <span className="font-medium">
-                          {formatCurrency(agent.agentData.commission || 0)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500">This year</p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-gray-500">No agent data</p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="space-y-2">
-                  {agent.accountStatus === "active" && !agent.isInActive ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Active
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-gray-100 text-gray-800">
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Inactive
-                    </Badge>
-                  )}
-                  {agent.isFlagged && (
-                    <Badge className="bg-red-100 text-red-800">
-                      <Flag className="h-3 w-3 mr-1" />
-                      Flagged
-                    </Badge>
-                  )}
-                  {agent.agentData?.tier && (
-                    <Badge className="bg-purple-100 text-purple-800">
-                      {agent.agentData.tier}
-                    </Badge>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      handleFlagAgent(
-                        agent.id || agent._id,
-                        agent.isFlagged ? "false" : "true",
-                      )
-                    }
-                    className={
-                      agent.isFlagged
-                        ? "border-green-200 text-green-600 hover:bg-green-50"
-                        : "border-red-200 text-red-600 hover:bg-red-50"
-                    }
-                  >
-                    <Flag className="h-4 w-4 mr-1" />
-                    {agent.isFlagged ? "Unflag" : "Flag"}
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                </div>
-              </TableCell>
+      <>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-900">
+                Agent
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Contact Info
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Performance
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Status
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900">
+                Actions
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {paginatedApprovedAgents.map((agent: any, index: number) => {
+              const agentName =
+                (
+                  (agent.firstName || "") +
+                  " " +
+                  (agent.lastName || "")
+                ).trim() || "Unknown User";
+
+              return (
+                <TableRow
+                  key={agent.id || agent._id}
+                  className={`hover:bg-gray-50 transition-colors ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                  }`}
+                >
+                  <TableCell className="py-4">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
+                          {agentName
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("") || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-gray-900">{agentName}</p>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < Math.floor(agent.agentData?.rating || 0)
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-gray-600 ml-1">
+                            {agent.agentData?.rating || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center text-sm">
+                        <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="truncate">{agent.email}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                        <span>{agent.phoneNumber || "N/A"}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                        <span>
+                          Joined{" "}
+                          {new Date(agent.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="space-y-1">
+                      {agent.agentData ? (
+                        <>
+                          <div className="flex items-center space-x-2">
+                            <BarChart3 className="h-4 w-4 text-blue-500" />
+                            <span className="font-medium">
+                              {agent.agentData.sales || 0} sales
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4 text-green-500" />
+                            <span className="font-medium">
+                              {formatCurrency(agent.agentData.commission || 0)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500">This year</p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-500">No agent data</p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="space-y-2">
+                      {agent.accountStatus === "active" && !agent.isInActive ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-800">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Inactive
+                        </Badge>
+                      )}
+                      {agent.isFlagged && (
+                        <Badge className="bg-red-100 text-red-800">
+                          <Flag className="h-3 w-3 mr-1" />
+                          Flagged
+                        </Badge>
+                      )}
+                      {agent.agentData?.tier && (
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {agent.agentData.tier}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleFlagAgent(
+                            agent.id || agent._id,
+                            agentName,
+                            agent.isFlagged,
+                          )
+                        }
+                        className={
+                          agent.isFlagged
+                            ? "border-green-200 text-green-600 hover:bg-green-50"
+                            : "border-red-200 text-red-600 hover:bg-red-50"
+                        }
+                      >
+                        <Flag className="h-4 w-4 mr-1" />
+                        {agent.isFlagged ? "Unflag" : "Flag"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewAgent(agent.id || agent._id)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+
+        {/* Pagination for Approved Agents */}
+        {filteredApprovedAgents.length > limit && (
+          <div className="border-t border-gray-200 px-6 py-3">
+            <Pagination
+              currentPage={approvedAgentsPage}
+              totalItems={filteredApprovedAgents.length}
+              itemsPerPage={limit}
+              onPageChange={setApprovedAgentsPage}
+            />
+          </div>
+        )}
+      </>
     );
   };
 
