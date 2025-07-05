@@ -75,6 +75,7 @@ interface AgentManagementProps {
 export function AgentManagement({
   defaultTab = "agents",
 }: AgentManagementProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab") as "agents" | "landlords" | null;
   const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
@@ -82,20 +83,26 @@ export function AgentManagement({
   const [statusFilter, setStatusFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
   const [verificationFilter, setVerificationFilter] = useState("all");
-  const [approvedAgentType, setApprovedAgentType] = useState("all"); // New filter for approved agents
+  const [approvedAgentType, setApprovedAgentType] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
-  const [agentsPage, setAgentsPage] = useState(1);
+
+  // Pagination for different sections
+  const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
+  const [approvedAgentsPage, setApprovedAgentsPage] = useState(1);
   const [landlordsPage, setLandlordsPage] = useState(1);
   const limit = 10;
 
-  const [agentsData, setAgentsData] = useState<any>(null);
   const [landlordsData, setLandlordsData] = useState<any>(null);
-  const [agentsLoading, setAgentsLoading] = useState(false);
   const [landlordsLoading, setLandlordsLoading] = useState(false);
+  const [isLoadingAction, setIsLoadingAction] = useState(false);
 
-  // Use new context methods
+  // Global loading and confirmation hooks
+  const { showLoader, hideLoader } = useRequestLoader();
+  const { confirmAction } = useConfirmation();
+
+  // Use context methods
   const {
     pendingAgents,
     approvedAgents,
