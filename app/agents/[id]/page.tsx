@@ -63,12 +63,14 @@ export default function AgentDetailPage({ params }: AgentDetailPageProps) {
     refetch,
   } = useQuery({
     queryKey: ["agent", agentId],
-    queryFn: () => apiService.getAgent(agentId),
+    queryFn: () => apiService.getAgent(agentId!),
+    enabled: !!agentId,
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
     queryKey: ["agent-properties", agentId],
-    queryFn: () => apiService.getAgentProperties(agentId),
+    queryFn: () => apiService.getAgentProperties(agentId!),
+    enabled: !!agentId,
   });
 
   // Mock data for demonstration
