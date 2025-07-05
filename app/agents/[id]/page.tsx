@@ -43,13 +43,11 @@ import { apiService } from "@/lib/services/apiService";
 import { useAgents } from "@/contexts/AgentsContext";
 
 interface AgentDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
-export default async function AgentDetailPage({
-  params,
-}: AgentDetailPageProps) {
-  const { id: agentId } = await params;
+export default function AgentDetailPage({ params }: AgentDetailPageProps) {
+  const { id: agentId } = params;
   const router = useRouter();
   const { flagAgent } = useAgents();
   const [isFlagging, setIsFlagging] = useState(false);
