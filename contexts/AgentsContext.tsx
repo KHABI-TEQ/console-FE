@@ -41,6 +41,14 @@ interface AgentsContextType {
   setFilters: (filters: any) => void;
   setPage: (page: number) => void;
   setSelectedAgent: (agent: Agent | null) => void;
+  // New methods for agent management
+  pendingAgents: any[];
+  approvedAgents: any[];
+  upgradeRequests: any[];
+  fetchPendingAgents: () => Promise<void>;
+  fetchApprovedAgents: (type?: string) => Promise<void>;
+  fetchUpgradeRequests: () => Promise<void>;
+  approveAgent: (agentId: string, approved: number) => Promise<void>;
 }
 
 const AgentsContext = createContext<AgentsContextType | undefined>(undefined);
