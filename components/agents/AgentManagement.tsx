@@ -406,7 +406,7 @@ export function AgentManagement({
   ];
 
   const currentStats = activeTab === "agents" ? agentStats : landlordStats;
-  const isLoading = activeTab === "agents" ? agentsLoading : landlordsLoading;
+  const isLoading = activeTab === "agents" ? false : landlordsLoading;
 
   // Utility functions
   const formatCurrency = (amount: number) => {
