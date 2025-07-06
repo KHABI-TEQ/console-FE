@@ -269,7 +269,7 @@ export function PropertyCard({
                   {property.buildingType}
                 </span>
                 <span className="sm:hidden">
-                  {property.buildingType.substring(0, 8)}...
+                  {property?.buildingType?.substring(0, 8)}...
                 </span>
               </div>
             </div>
