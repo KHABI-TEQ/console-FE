@@ -82,6 +82,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [approvedLoading, setApprovedLoading] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [pendingPagination, setPendingPagination] = useState({
     page: 1,
     limit: 10,
@@ -89,6 +90,12 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     totalPages: 0,
   });
   const [approvedPagination, setApprovedPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const [upgradePagination, setUpgradePagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
