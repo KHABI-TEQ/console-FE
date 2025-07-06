@@ -161,7 +161,7 @@ export function PropertyCard({
 
                 {showActionButtons && (
                   <ActionButtons
-                    entityType="property"
+                    entityType="propertie"
                     entityId={propertyId}
                     entityName={`${property.propertyType} Property`}
                     showView={true}
@@ -260,7 +260,7 @@ export function PropertyCard({
             </div>
             {showActionButtons && (
               <ActionButtons
-                entityType="property"
+                entityType="propertie"
                 entityId={propertyId}
                 entityName={`${property.propertyType} Property`}
                 showView={true}
