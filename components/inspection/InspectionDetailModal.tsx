@@ -60,6 +60,8 @@ import {
   HandCoins,
   Timer,
   CheckSquare,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
@@ -116,6 +118,7 @@ export function InspectionDetailModal({
 }: InspectionDetailModalProps) {
   const [rejectReason, setRejectReason] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [activitiesPage, setActivitiesPage] = useState(1);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { updateInspectionStatus } = useInspections();
@@ -136,6 +139,28 @@ export function InspectionDetailModal({
       return response;
     },
     enabled: !!inspectionId && isOpen,
+  });
+
+  const {
+    data: activitiesResponse,
+    isLoading: isActivitiesLoading,
+    error: activitiesError,
+    refetch: refetchActivities,
+  } = useQuery({
+    queryKey: ["inspection-activities", inspectionId, activitiesPage],
+    queryFn: async () => {
+      if (!inspectionId) return null;
+      const response = await apiService.getInspectionActivities(
+        inspectionId,
+        activitiesPage,
+        5,
+      );
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch activities");
+      }
+      return response;
+    },
+    enabled: !!inspectionId && isOpen && activeTab === "activities",
   });
 
   const inspection = inspectionResponse?.data;
@@ -301,54 +326,44 @@ export function InspectionDetailModal({
     },
   ];
 
-  const activities = [
-    {
-      id: 1,
-      type: "created",
-      title: "Inspection Request Created",
-      description: `${inspection.requestedBy.fullName} requested an inspection for this property`,
-      timestamp: inspection.createdAt,
-      icon: Calendar,
-      color: "blue",
-    },
-    {
-      id: 2,
-      type: "payment",
-      title: "Transaction Payment",
-      description: "Payment receipt uploaded for inspection",
-      timestamp: inspection.transaction?.createdAt || inspection.createdAt,
-      icon: CreditCard,
-      color: "green",
-    },
-    ...(inspection.status === "inspection_approved"
-      ? [
-          {
-            id: 3,
-            type: "approved",
-            title: "Inspection Approved",
-            description: "Admin approved the inspection request",
-            timestamp: inspection.updatedAt,
-            icon: CheckCircle,
-            color: "green",
-          },
-        ]
-      : []),
-    ...(inspection.isNegotiating
-      ? [
-          {
-            id: 4,
-            type: "negotiation",
-            title: "Price Negotiation Started",
-            description: `Buyer offered ${formatCurrency(
-              inspection.negotiationPrice,
-            )}`,
-            timestamp: inspection.updatedAt,
-            icon: HandCoins,
-            color: "purple",
-          },
-        ]
-      : []),
-  ];
+  const activities = activitiesResponse?.data || [];
+  const activitiesPagination = activitiesResponse?.pagination || {
+    total: 0,
+    currentPage: 1,
+    totalPages: 1,
+  };
+
+  const getActivityIcon = (status: string) => {
+    switch (status) {
+      case "negotiation_countered":
+        return HandCoins;
+      case "inspection_approved":
+        return CheckCircle;
+      case "inspection_rejected_by_seller":
+      case "inspection_rejected_by_buyer":
+        return XCircle;
+      case "pending_transaction":
+        return CreditCard;
+      default:
+        return Activity;
+    }
+  };
+
+  const getActivityColor = (status: string) => {
+    switch (status) {
+      case "negotiation_countered":
+        return "purple";
+      case "inspection_approved":
+        return "green";
+      case "inspection_rejected_by_seller":
+      case "inspection_rejected_by_buyer":
+        return "red";
+      case "pending_transaction":
+        return "blue";
+      default:
+        return "gray";
+    }
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -875,38 +890,111 @@ export function InspectionDetailModal({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {activities.map((activity, index) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-start space-x-4"
-                    >
-                      <div
-                        className={`w-10 h-10 rounded-full bg-${activity.color}-100 flex items-center justify-center flex-shrink-0`}
-                      >
-                        <activity.icon
-                          className={`h-5 w-5 text-${activity.color}-600`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">
-                            {activity.title}
-                          </h4>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(activity.timestamp)}
-                          </span>
+                {isActivitiesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  </div>
+                ) : activitiesError ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-600">Failed to load activities</p>
+                  </div>
+                ) : activities.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No activities found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {activities.map((activity: any, index: number) => {
+                      const ActivityIcon = getActivityIcon(activity.status);
+                      const activityColor = getActivityColor(activity.status);
+
+                      return (
+                        <div
+                          key={activity._id}
+                          className="flex items-start space-x-4"
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-full bg-${activityColor}-100 flex items-center justify-center flex-shrink-0`}
+                          >
+                            <ActivityIcon
+                              className={`h-5 w-5 text-${activityColor}-600`}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium text-gray-900">
+                                {activity.message}
+                              </h4>
+                              <span className="text-sm text-gray-500">
+                                {formatDate(activity.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">
+                              By {activity.senderId?.firstName}{" "}
+                              {activity.senderId?.lastName} (
+                              {activity.senderRole})
+                            </p>
+                            {activity.meta?.offerAmount && (
+                              <p className="text-sm text-orange-600 mt-1">
+                                Offer Amount:{" "}
+                                {formatCurrency(activity.meta.offerAmount)}
+                              </p>
+                            )}
+                            <Badge variant="outline" className="text-xs mt-2">
+                              {activity.stage} -{" "}
+                              {activity.status.replace(/_/g, " ")}
+                            </Badge>
+                            {index < activities.length - 1 && (
+                              <div className="w-px h-6 bg-gray-200 ml-5 mt-4"></div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {activity.description}
-                        </p>
-                        {index < activities.length - 1 && (
-                          <div className="w-px h-6 bg-gray-200 ml-5 mt-4"></div>
-                        )}
+                      );
+                    })}
+
+                    {activitiesPagination.totalPages > 1 && (
+                      <div className="flex justify-center pt-4 border-t">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setActivitiesPage(Math.max(1, activitiesPage - 1))
+                            }
+                            disabled={activitiesPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
+                          <span className="text-sm text-gray-600">
+                            Page {activitiesPage} of{" "}
+                            {activitiesPagination.totalPages}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setActivitiesPage(
+                                Math.min(
+                                  activitiesPagination.totalPages,
+                                  activitiesPage + 1,
+                                ),
+                              )
+                            }
+                            disabled={
+                              activitiesPage >= activitiesPagination.totalPages
+                            }
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
