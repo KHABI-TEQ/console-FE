@@ -133,15 +133,6 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     }
   };
 
-  const handleApproveBrief = async (briefId: string) => {
-    try {
-      await apiService.patch(`/briefs/${briefId}/approve`);
-      refetch();
-    } catch (error) {
-      console.error("Failed to approve brief:", error);
-    }
-  };
-
   const handleFlagAgent = async () => {
     if (isFlagging || !agentId) return;
 
@@ -360,8 +351,8 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             <Tabs defaultValue="properties" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="properties">Properties</TabsTrigger>
-                <TabsTrigger value="briefs">Briefs</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                <TabsTrigger value="inspections">Inspections</TabsTrigger>
               </TabsList>
 
               <TabsContent value="properties">
@@ -452,158 +443,111 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="briefs">
+              <TabsContent value="transactions">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      <span>Submitted Briefs</span>
-                      <Badge variant="secondary">{briefs.length} briefs</Badge>
+                      <span>Transactions</span>
+                      <Badge variant="secondary">
+                        {transactions.length} transactions
+                      </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {briefs.map((brief) => (
-                        <Card
-                          key={brief._id}
-                          className="hover:shadow-md transition-all duration-200"
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-gray-900">
-                                  {brief.title}
-                                </h3>
-                                <div className="flex items-center space-x-2 mt-2">
-                                  <Badge variant="outline">{brief.type}</Badge>
-                                  {getStatusBadge(brief.status)}
-                                  {brief.isApproved ? (
-                                    <Badge className="bg-green-100 text-green-800">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Approved
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="bg-yellow-100 text-yellow-800">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      Pending Approval
-                                    </Badge>
-                                  )}
+                      {transactions.length > 0 ? (
+                        transactions.map((transaction: any) => (
+                          <Card
+                            key={transaction._id}
+                            className="hover:shadow-md transition-all duration-200"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    Transaction #{transaction._id.slice(-6)}
+                                  </h3>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    Property ID: {transaction.propertyId}
+                                  </p>
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    {getStatusBadge(transaction.status)}
+                                  </div>
+                                </div>
+                                <div className="text-right ml-4">
+                                  <p className="text-lg font-bold text-gray-900">
+                                    {formatCurrency(transaction.amount)}
+                                  </p>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-2 ml-4">
-                                {!brief.isApproved && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleApproveBrief(brief._id)
-                                    }
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Approve
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    router.push(`/briefs/${brief._id}`)
-                                  }
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        router.push(`/briefs/${brief._id}/edit`)
-                                      }
-                                    >
-                                      <Edit className="mr-2 h-4 w-4" />
-                                      Edit Brief
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600">
-                                      <AlertTriangle className="mr-2 h-4 w-4" />
-                                      Reject Brief
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                            <div className="mt-3">
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <span>
-                                  Due:{" "}
-                                  {new Date(brief.dueDate).toLocaleDateString()}
-                                </span>
-                                <span>Progress: {brief.progress}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
-                                <div
-                                  className="bg-blue-600 h-1 rounded-full"
-                                  style={{ width: `${brief.progress}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No transactions
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            This agent hasn't made any transactions yet.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="activity">
+              <TabsContent value="inspections">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Inspections</span>
+                      <Badge variant="secondary">
+                        {inspections.length} inspections
+                      </Badge>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">
-                            Property listing approved
+                      {inspections.length > 0 ? (
+                        inspections.map((inspection: any) => (
+                          <Card
+                            key={inspection._id}
+                            className="hover:shadow-md transition-all duration-200"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    Inspection #{inspection._id.slice(-6)}
+                                  </h3>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    Property ID: {inspection.propertyId}
+                                  </p>
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    {getStatusBadge(inspection.status)}
+                                    <Badge variant="outline">
+                                      {inspection.stage}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No inspections
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            This agent hasn't booked any inspections yet.
                           </p>
-                          <p className="text-sm text-gray-500">
-                            Luxury Apartment - Victoria Island was approved
-                          </p>
-                          <p className="text-xs text-gray-400">2 hours ago</p>
                         </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">New brief submitted</p>
-                          <p className="text-sm text-gray-500">
-                            Marketing strategy brief for luxury properties
-                          </p>
-                          <p className="text-xs text-gray-400">1 day ago</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                          <Building className="h-4 w-4 text-purple-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Property updated</p>
-                          <p className="text-sm text-gray-500">
-                            Updated pricing for Commercial Complex - Lekki
-                          </p>
-                          <p className="text-xs text-gray-400">3 days ago</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
