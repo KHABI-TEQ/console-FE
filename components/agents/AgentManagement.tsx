@@ -505,7 +505,7 @@ export function AgentManagement({
       );
     }
 
-    if (paginatedPendingAgents.length === 0) {
+    if (pendingAgents.length === 0) {
       return (
         <div className="text-center py-8">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -544,13 +544,15 @@ export function AgentManagement({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedPendingAgents.map((agent: any, index: number) => {
+            {pendingAgents.map((agent: any, index: number) => {
               const agentName =
+                agent.fullName ||
                 (
                   (agent.firstName || "") +
                   " " +
                   (agent.lastName || "")
-                ).trim() || "Unknown User";
+                ).trim() ||
+                "Unknown User";
 
               return (
                 <TableRow
@@ -598,7 +600,7 @@ export function AgentManagement({
                   </TableCell>
                   <TableCell className="py-4">
                     <div className="space-y-1">
-                      {agent.isAccountVerified ? (
+                      {agent.isVerified ? (
                         <Badge className="bg-green-100 text-green-800">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Verified
@@ -637,7 +639,7 @@ export function AgentManagement({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleViewAgent(agent.id || agent._id)}
+                        onClick={() => handleViewPendingAgent(agent)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View
@@ -651,13 +653,13 @@ export function AgentManagement({
         </Table>
 
         {/* Pagination for Pending Agents */}
-        {filteredPendingAgents.length > limit && (
+        {pendingPagination.totalPages > 1 && (
           <div className="border-t border-gray-200 px-6 py-3">
             <Pagination
-              currentPage={pendingAgentsPage}
-              totalItems={filteredPendingAgents.length}
-              itemsPerPage={limit}
-              onPageChange={setPendingAgentsPage}
+              currentPage={pendingPagination.page}
+              totalItems={pendingPagination.total}
+              itemsPerPage={pendingPagination.limit}
+              onPageChange={handlePendingPageChange}
             />
           </div>
         )}
@@ -680,7 +682,7 @@ export function AgentManagement({
       );
     }
 
-    if (paginatedApprovedAgents.length === 0) {
+    if (approvedAgents.length === 0) {
       return (
         <div className="text-center py-8">
           <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -719,13 +721,15 @@ export function AgentManagement({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedApprovedAgents.map((agent: any, index: number) => {
+            {approvedAgents.map((agent: any, index: number) => {
               const agentName =
+                agent.fullName ||
                 (
                   (agent.firstName || "") +
                   " " +
                   (agent.lastName || "")
-                ).trim() || "Unknown User";
+                ).trim() ||
+                "Unknown User";
 
               return (
                 <TableRow
@@ -872,13 +876,13 @@ export function AgentManagement({
         </Table>
 
         {/* Pagination for Approved Agents */}
-        {filteredApprovedAgents.length > limit && (
+        {approvedPagination.totalPages > 1 && (
           <div className="border-t border-gray-200 px-6 py-3">
             <Pagination
-              currentPage={approvedAgentsPage}
-              totalItems={filteredApprovedAgents.length}
-              itemsPerPage={limit}
-              onPageChange={setApprovedAgentsPage}
+              currentPage={approvedPagination.page}
+              totalItems={approvedPagination.total}
+              itemsPerPage={approvedPagination.limit}
+              onPageChange={handleApprovedPageChange}
             />
           </div>
         )}
