@@ -82,6 +82,7 @@ export default function InspectionsPage() {
     string | null
   >(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const limit = 10;
 
   // Fetch inspection stats
