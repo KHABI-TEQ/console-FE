@@ -384,7 +384,7 @@ export function AgentManagement({
   const agentStats = [
     {
       title: "Pending Agents",
-      value: pendingAgents.length.toString(),
+      value: (pendingPagination.total || 0).toString(),
       change: "+8.2%",
       trend: "up" as const,
       icon: Clock,
@@ -392,7 +392,7 @@ export function AgentManagement({
     },
     {
       title: "Approved Agents",
-      value: approvedAgents.length.toString(),
+      value: (approvedPagination.total || 0).toString(),
       change: "+5.1%",
       trend: "up" as const,
       icon: UserCheck,
@@ -400,7 +400,7 @@ export function AgentManagement({
     },
     {
       title: "Upgrade Requests",
-      value: upgradeRequests.length.toString(),
+      value: (upgradePagination.total || 0).toString(),
       change: "-12.5%",
       trend: "down" as const,
       icon: TrendingUp,
@@ -408,7 +408,9 @@ export function AgentManagement({
     },
     {
       title: "Total Agents",
-      value: (pendingAgents.length + approvedAgents.length).toString(),
+      value: (
+        (pendingPagination.total || 0) + (approvedPagination.total || 0)
+      ).toString(),
       change: "+18.7%",
       trend: "up" as const,
       icon: Users,
