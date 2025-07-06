@@ -293,26 +293,35 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     [addNotification],
   );
 
-  const fetchUpgradeRequests = useCallback(async () => {
-    try {
-      const response = await apiService.getUpgradeRequests();
-      if (response.success) {
-        setUpgradeRequests(response.data || []);
-      } else {
+  const fetchUpgradeRequests = useCallback(
+    async (page: number = 1) => {
+      setUpgradeLoading(true);
+      try {
+        const response = await apiService.getUpgradeRequests(page, 10);
+        if (response.success) {
+          setUpgradeRequests(response.data || []);
+          if (response.pagination) {
+            setUpgradePagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch upgrade requests",
+          });
+        }
+      } catch (error) {
         addNotification({
           type: "error",
           title: "Error",
-          message: response.error || "Failed to fetch upgrade requests",
+          message: "Failed to fetch upgrade requests",
         });
+      } finally {
+        setUpgradeLoading(false);
       }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Error",
-        message: "Failed to fetch upgrade requests",
-      });
-    }
-  }, [addNotification]);
+    },
+    [addNotification],
+  );
 
   const approveAgent = useCallback(
     async (agentId: string, approved: number) => {
