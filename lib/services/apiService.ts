@@ -339,9 +339,20 @@ class ApiService {
 
   async approveAgent(
     agentId: string,
-    approved: number,
+    approved: boolean,
   ): Promise<ApiResponse<any>> {
-    return this.post("/approve-agent", { agentId, approved });
+    return this.post("/agents/approve-agent", { agentId, approved });
+  }
+
+  async flagAgentAccount(
+    agentId: string,
+    status: boolean,
+  ): Promise<ApiResponse<any>> {
+    return this.put(`/agents/${agentId}/flag-account`, { status });
+  }
+
+  async getAgentDetails(userId: string): Promise<ApiResponse<any>> {
+    return this.get(`/admin/agents/${userId}`);
   }
 
   async getUpgradeRequests(

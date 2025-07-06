@@ -35,6 +35,7 @@ interface AgentsContextType {
   fetchAgents: (newFilters?: any) => Promise<void>;
   refreshAgents: () => Promise<void>;
   getAgent: (id: string) => Promise<Agent | null>;
+  getAgentDetails: (userId: string) => Promise<any>;
   getAgentProperties: (agentId: string) => Promise<any[]>;
   deleteAgent: (id: string) => Promise<void>;
   flagAgent: (agentId: string, status: string) => Promise<void>;
@@ -143,6 +144,32 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     async (id: string): Promise<Agent | null> => {
       try {
         const response = await apiService.getAgent(id);
+        if (response.success) {
+          return response.data;
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch agent details",
+          });
+          return null;
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to fetch agent details",
+        });
+        return null;
+      }
+    },
+    [addNotification],
+  );
+
+  const getAgentDetails = useCallback(
+    async (userId: string): Promise<any> => {
+      try {
+        const response = await apiService.getAgentDetails(userId);
         if (response.success) {
           return response.data;
         } else {
@@ -326,7 +353,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const approveAgent = useCallback(
     async (agentId: string, approved: number) => {
       try {
-        const response = await apiService.approveAgent(agentId, approved);
+        const response = await apiService.approveAgent(agentId, approved === 1);
         if (response.success) {
           addNotification({
             type: "success",
@@ -358,7 +385,10 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const flagAgent = useCallback(
     async (agentId: string, status: string) => {
       try {
-        const response = await apiService.flagAgent(agentId, status);
+        const response = await apiService.flagAgentAccount(
+          agentId,
+          status === "true",
+        );
         if (response.success) {
           addNotification({
             type: "success",
@@ -461,6 +491,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     fetchAgents,
     refreshAgents,
     getAgent,
+    getAgentDetails,
     getAgentProperties,
     deleteAgent,
     flagAgent,
