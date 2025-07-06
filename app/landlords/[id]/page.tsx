@@ -502,7 +502,7 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  {landlord.bio}
+                  {landlord.bio || "No bio available."}
                 </p>
               </CardContent>
             </Card>
@@ -511,4 +511,10 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
       </div>
     </AdminLayout>
   );
+}
+
+export default function LandlordDetailPage({
+  params,
+}: LandlordDetailPageProps) {
+  return <LandlordDetailContent params={params} />;
 }
