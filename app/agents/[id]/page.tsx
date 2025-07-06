@@ -222,17 +222,25 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             </Button>
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={agent.avatar} />
+                <AvatarImage
+                  src={agent.profile_picture || "/placeholder.svg"}
+                />
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-medium">
-                  {agent.firstName[0]}
-                  {agent.lastName[0]}
+                  {agent.firstName?.[0] || "A"}
+                  {agent.lastName?.[0] || "N"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {agent.firstName} {agent.lastName}
+                  {agent.fullName ||
+                    `${agent.firstName || ""} ${agent.lastName || ""}`.trim() ||
+                    "Agent Name"}
                 </h1>
-                <p className="text-gray-600">{agent.company}</p>
+                <p className="text-gray-600">
+                  {agent.companyAgent?.companyName ||
+                    agent.agentType ||
+                    "Individual Agent"}
+                </p>
                 <div className="flex items-center space-x-2 mt-1">
                   {getStatusBadge(agent.accountStatus)}
                   {agent.isAccountVerified && (
@@ -298,7 +306,7 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
                 <div>
                   <p className="text-sm text-gray-600">Total Properties</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {agent.stats.totalProperties}
+                    {agent.stats?.totalProperties || 0}
                   </p>
                 </div>
                 <Building className="h-8 w-8 text-blue-600" />
@@ -309,9 +317,9 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active Briefs</p>
+                  <p className="text-sm text-gray-600">Total Transactions</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {agent.stats.activeBriefs}
+                    {agent.stats?.totalTransactions || 0}
                   </p>
                 </div>
                 <FileText className="h-8 w-8 text-green-600" />
@@ -322,9 +330,9 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Sales</p>
+                  <p className="text-sm text-gray-600">Completed Inspections</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {agent.stats.totalSales}
+                    {agent.stats?.completedInspections || 0}
                   </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
@@ -335,13 +343,10 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rating</p>
-                  <div className="flex items-center space-x-1">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {agent.stats.rating}
-                    </p>
-                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                  </div>
+                  <p className="text-sm text-gray-600">Ongoing Negotiations</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {agent.stats?.ongoingNegotiations || 0}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-orange-600" />
               </div>
@@ -371,65 +376,77 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {properties.map((property) => (
-                        <Card
-                          key={property._id}
-                          className="hover:shadow-md transition-all duration-200"
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start space-x-4">
-                              <img
-                                src={property.images[0]}
-                                alt={property.title}
-                                className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
-                                      {property.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 flex items-center mt-1">
-                                      <MapPin className="h-3 w-3 mr-1" />
-                                      {property.location}
-                                    </p>
-                                  </div>
-                                  <div className="text-right ml-4">
-                                    <p className="text-lg font-bold text-gray-900">
-                                      {formatCurrency(property.price)}
-                                    </p>
-                                    {getStatusBadge(property.status)}
-                                  </div>
+                      {properties.length > 0 ? (
+                        properties.map((property: any) => (
+                          <Card
+                            key={property._id}
+                            className="hover:shadow-md transition-all duration-200"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start space-x-4">
+                                <div className="w-20 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                  <Building className="h-8 w-8 text-gray-400" />
                                 </div>
-                                <div className="flex items-center justify-between mt-3">
-                                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                    <span>{property.type}</span>
-                                    {property.bedrooms && (
-                                      <span>{property.bedrooms} bed</span>
-                                    )}
-                                    {property.bathrooms && (
-                                      <span>{property.bathrooms} bath</span>
-                                    )}
-                                    {property.size && (
-                                      <span>{property.size}</span>
-                                    )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h3 className="font-semibold text-gray-900">
+                                        {property.propertyType} -{" "}
+                                        {property.location?.area ||
+                                          "Unknown Location"}
+                                      </h3>
+                                      <p className="text-sm text-gray-500 flex items-center mt-1">
+                                        <MapPin className="h-3 w-3 mr-1" />
+                                        {property.location?.state || ""}{" "}
+                                        {property.location?.localGovernment ||
+                                          ""}
+                                      </p>
+                                    </div>
+                                    <div className="text-right ml-4">
+                                      <p className="text-lg font-bold text-gray-900">
+                                        {formatCurrency(property.price)}
+                                      </p>
+                                      {property.isApproved
+                                        ? getStatusBadge("approved")
+                                        : property.isRejected
+                                          ? getStatusBadge("rejected")
+                                          : getStatusBadge("pending")}
+                                    </div>
                                   </div>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      router.push(`/properties/${property._id}`)
-                                    }
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    View
-                                  </Button>
+                                  <div className="flex items-center justify-between mt-3">
+                                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                      <span>{property.propertyType}</span>
+                                      <span>{property.briefType}</span>
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        router.push(
+                                          `/properties/${property._id}`,
+                                        )
+                                      }
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      View
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Building className="mx-auto h-12 w-12 text-gray-400" />
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No properties
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            This agent hasn't posted any properties yet.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -612,12 +629,18 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
                 </div>
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{agent.location}</span>
+                  <span className="text-sm">
+                    {agent.regionOfOperation?.join(", ") ||
+                      "Location not specified"}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <span className="text-sm">
-                    Joined {new Date(agent.createdAt).toLocaleDateString()}
+                    Joined{" "}
+                    {new Date(
+                      agent.createdAt || new Date(),
+                    ).toLocaleDateString()}
                   </span>
                 </div>
               </CardContent>
@@ -626,21 +649,56 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             {/* About */}
             <Card>
               <CardHeader>
-                <CardTitle>About</CardTitle>
+                <CardTitle>Agent Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {agent.bio}
-                </p>
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Specialties</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {agent.specialties.map((specialty, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
-                        {specialty}
-                      </Badge>
-                    ))}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Agent Type</h4>
+                    <Badge variant="outline">
+                      {agent.agentType || "Individual"}
+                    </Badge>
                   </div>
+                  {agent.companyAgent?.companyName && (
+                    <div>
+                      <h4 className="font-medium mb-2">Company Information</h4>
+                      <p className="text-sm text-gray-700">
+                        {agent.companyAgent.companyName}
+                      </p>
+                      {agent.companyAgent.cacNumber && (
+                        <p className="text-xs text-gray-500">
+                          CAC: {agent.companyAgent.cacNumber}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {agent.govtId && (
+                    <div>
+                      <h4 className="font-medium mb-2">Government ID</h4>
+                      <p className="text-sm text-gray-700">
+                        {agent.govtId.typeOfId}: {agent.govtId.idNumber}
+                      </p>
+                    </div>
+                  )}
+                  {agent.regionOfOperation &&
+                    agent.regionOfOperation.length > 0 && (
+                      <div>
+                        <h4 className="font-medium mb-2">Areas of Operation</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {agent.regionOfOperation.map(
+                            (region: string, idx: number) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {region}
+                              </Badge>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -648,31 +706,33 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
             {/* Performance */}
             <Card>
               <CardHeader>
-                <CardTitle>Performance Metrics</CardTitle>
+                <CardTitle>Account Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Revenue:</span>
+                  <span className="text-sm text-gray-600">Account Status:</span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(agent.stats.totalRevenue)}
+                    {agent.accountStatus}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Success Rate:</span>
+                  <span className="text-sm text-gray-600">
+                    Account Approved:
+                  </span>
                   <span className="text-sm font-medium">
-                    {agent.stats.successRate}%
+                    {agent.accountApproved ? "Yes" : "No"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Response Time:</span>
+                  <span className="text-sm text-gray-600">Is Flagged:</span>
                   <span className="text-sm font-medium">
-                    {agent.stats.responseTime}
+                    {agent.isFlagged ? "Yes" : "No"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Reviews:</span>
+                  <span className="text-sm text-gray-600">Total Spent:</span>
                   <span className="text-sm font-medium">
-                    {agent.stats.reviews}
+                    {formatCurrency(agent.stats?.totalSpent || 0)}
                   </span>
                 </div>
               </CardContent>
