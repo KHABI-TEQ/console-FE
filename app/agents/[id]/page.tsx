@@ -63,8 +63,8 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["agent", agentId],
-    queryFn: () => apiService.getAgent(agentId!),
+    queryKey: ["agent-details", agentId],
+    queryFn: () => apiService.getAgentDetails(agentId!),
     enabled: !!agentId,
   });
 
@@ -74,103 +74,41 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     enabled: !!agentId,
   });
 
-  // Mock data for demonstration
-  const mockAgent = {
-    _id: agentId,
-    firstName: "Khabi",
-    lastName: "Tek",
-    email: "info@khabiteqrealty.com",
-    phoneNumber: "+234 802 345 6789",
-    role: "Agent",
-    company: "Khabi Teq Realty",
-    avatar: "/placeholder.svg",
-    isAccountVerified: true,
-    accountApproved: true,
-    accountStatus: "active",
-    isFlagged: false,
-    isInActive: false,
-    createdAt: "2025-06-01T13:39:07.618Z",
-    updatedAt: "2025-06-01T13:39:07.618Z",
-    bio: "Experienced real estate agent specializing in luxury properties in Lagos and Abuja. Over 10 years of experience in property sales and management.",
-    location: "Lagos, Nigeria",
-    specialties: [
-      "Luxury Homes",
-      "Commercial Properties",
-      "Investment Properties",
-    ],
-    stats: {
-      totalProperties: 45,
-      activeBriefs: 12,
-      totalSales: 125,
-      totalRevenue: 2500000000,
-      rating: 4.8,
-      reviews: 89,
-      responseTime: "2 hours",
-      successRate: 92,
-    },
-    socialLinks: {
-      website: "https://khabiteqrealty.com",
-      linkedin: "https://linkedin.com/in/khabitek",
-      twitter: "https://twitter.com/khabitek",
-    },
-  };
+  // Extract data from API response or use fallback
+  const agentData = agentResponse?.data;
+  const agent = agentData?.user
+    ? {
+        ...agentData.user,
+        ...agentData.agentData,
+        stats: agentData.stats || {
+          totalProperties: agentData.properties?.length || 0,
+          totalTransactions: agentData.transactions?.length || 0,
+          totalSpent: agentData.stats?.totalSpent || 0,
+          completedInspections:
+            agentData.inspections?.filter((i: any) => i.status === "completed")
+              ?.length || 0,
+          ongoingNegotiations:
+            agentData.inspections?.filter((i: any) => i.stage === "negotiation")
+              ?.length || 0,
+        },
+      }
+    : {
+        _id: agentId,
+        firstName: "Agent",
+        lastName: "Name",
+        email: "agent@example.com",
+        phoneNumber: "+234 000 000 0000",
+        fullName: "Agent Name",
+        userType: "Agent",
+        accountApproved: false,
+        accountStatus: "pending",
+        isFlagged: false,
+        profile_picture: "/placeholder.svg",
+      };
 
-  const mockProperties = [
-    {
-      _id: "1",
-      title: "Luxury Apartment - Victoria Island",
-      location: "Victoria Island, Lagos",
-      price: 450000000,
-      type: "Residential",
-      status: "active",
-      images: [
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
-      ],
-      bedrooms: 4,
-      bathrooms: 3,
-      createdAt: "2025-01-15T10:30:00Z",
-    },
-    {
-      _id: "2",
-      title: "Commercial Complex - Lekki",
-      location: "Lekki Phase 1, Lagos",
-      price: 1200000000,
-      type: "Commercial",
-      status: "active",
-      images: [
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
-      ],
-      size: "5000 sqft",
-      createdAt: "2025-01-10T14:20:00Z",
-    },
-  ];
-
-  const mockBriefs = [
-    {
-      _id: "1",
-      title: "Luxury Apartment Marketing Strategy",
-      type: "Marketing",
-      status: "active",
-      priority: "high",
-      isApproved: false,
-      dueDate: "2025-02-15T10:30:00Z",
-      progress: 75,
-    },
-    {
-      _id: "2",
-      title: "Property Inspection Guidelines",
-      type: "Inspection",
-      status: "pending",
-      priority: "medium",
-      isApproved: true,
-      dueDate: "2025-01-25T14:20:00Z",
-      progress: 45,
-    },
-  ];
-
-  const agent = mockAgent;
-  const properties = mockProperties;
-  const briefs = mockBriefs;
+  const properties = agentData?.properties || [];
+  const transactions = agentData?.transactions || [];
+  const inspections = agentData?.inspections || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
