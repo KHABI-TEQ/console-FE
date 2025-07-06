@@ -55,6 +55,7 @@ function BuyersContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     buyers,
