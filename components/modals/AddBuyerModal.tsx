@@ -85,18 +85,9 @@ export function AddBuyerModal({
 
       // Reset form
       setFormData({
-        name: "",
+        fullName: "",
         email: "",
-        phone: "",
-        location: "",
-        status: "Lead",
-        budgetMin: "",
-        budgetMax: "",
-        preferences: [],
-        agent: "",
-        preApproved: false,
-        firstTimeBuyer: false,
-        notes: "",
+        phoneNumber: "",
       });
 
       onSuccess?.();
