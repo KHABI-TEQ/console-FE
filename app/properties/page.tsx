@@ -213,7 +213,7 @@ function PropertiesContent() {
               }
             >
               <Pagination
-                currentPage={pagination.currentPage || page}
+                currentPage={pagination.currentPage || pagination.page || page}
                 totalItems={total}
                 itemsPerPage={limit}
                 onPageChange={setPage}
