@@ -467,12 +467,18 @@ export default function BuyerDetailPage() {
                 )}
                 {inspections.length > 0 &&
                   inspectionsPagination.totalPages > 1 && (
-                    <Pagination
-                      currentPage={inspectionsPage}
-                      totalItems={inspectionsPagination.total}
-                      itemsPerPage={limit}
-                      onPageChange={setInspectionsPage}
-                    />
+                    <div className="px-6 pb-6">
+                      <Pagination
+                        currentPage={
+                          inspectionsPagination.currentPage ||
+                          inspectionsPagination.page ||
+                          inspectionsPage
+                        }
+                        totalItems={inspectionsPagination.total || 0}
+                        itemsPerPage={limit}
+                        onPageChange={setInspectionsPage}
+                      />
+                    </div>
                   )}
               </CardContent>
             </Card>
