@@ -470,8 +470,8 @@ export default function BuyerDetailPage() {
                     <div className="px-6 pb-6">
                       <Pagination
                         currentPage={
-                          inspectionsPagination.currentPage ||
-                          inspectionsPagination.page ||
+                          (inspectionsPagination as any).currentPage ||
+                          (inspectionsPagination as any).page ||
                           inspectionsPage
                         }
                         totalItems={inspectionsPagination.total || 0}
