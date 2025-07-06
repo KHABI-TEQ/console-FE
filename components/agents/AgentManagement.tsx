@@ -300,7 +300,7 @@ export function AgentManagement({
 
   const handleViewAgent = (agentId: string) => {
     router.push(`/agents/${agentId}`);
-  };
+  }; 
 
   const handleVerificationFilterChange = (value: string) => {
     setVerificationFilter(value);
@@ -1041,11 +1041,7 @@ export function AgentManagement({
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white font-medium">
-                      {(
-                        (landlord.firstName || "") +
-                        " " +
-                        (landlord.lastName || "")
-                      )
+                      {((landlord.fullName || ""))
                         .trim()
                         .split(" ")
                         .map((n: string) => n[0])
@@ -1055,15 +1051,9 @@ export function AgentManagement({
                   <div>
                     <p className="font-medium text-gray-900">
                       {(
-                        (landlord.firstName || "") +
-                        " " +
-                        (landlord.lastName || "")
-                      ).trim() || "Unknown Landlord"}
+                        (landlord.fullName || "")).trim() || "Unknown Landlord"}
                     </p>
                     <div className="flex items-center space-x-1 mt-1">
-                      <Badge variant="outline" className="text-xs">
-                        {landlord.userType || "Landowner"}
-                      </Badge>
                       {landlord.accountId && (
                         <Badge
                           variant="outline"
@@ -1105,7 +1095,7 @@ export function AgentManagement({
                     <span className="font-medium">Properties: N/A</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <DollarSign className="h-4 w-4 text-green-500 mr-2" />
+                    <span className="text-green-500 mr-2 font-bold">₦</span>
                     <span className="font-medium text-green-600">
                       Revenue: N/A
                     </span>

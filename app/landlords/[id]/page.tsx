@@ -67,11 +67,6 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
     enabled: !!landlordId,
   });
 
-  const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
-    queryKey: ["landlord-properties", landlordId],
-    queryFn: () => apiService.getProperties({ landlordId: landlordId }),
-    enabled: !!landlordId,
-  });
 
   // Extract data from API response or use fallback
   const landlordData = landlordResponse?.data;

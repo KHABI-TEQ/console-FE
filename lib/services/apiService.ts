@@ -301,10 +301,6 @@ class ApiService {
     return this.put(`/agent/flag/${agentId}/${status}`);
   }
 
-  async getAgentProperties(agentId: string): Promise<ApiResponse<any[]>> {
-    return this.get(`/agent/${agentId}/properties`);
-  }
-
   async getUserProperties(userId: string): Promise<ApiResponse<any[]>> {
     return this.get(`/users/${userId}/properties`);
   }
@@ -356,7 +352,7 @@ class ApiService {
   }
 
   async getAgentDetails(userId: string): Promise<ApiResponse<any>> {
-    return this.get(`/admin/agents/${userId}`);
+    return this.get(`/agents/${userId}`);
   }
 
   async getUpgradeRequests(
@@ -389,7 +385,7 @@ class ApiService {
   }
 
   async getLandowner(id: string): Promise<ApiResponse<any>> {
-    return this.get(`/landowner/${id}`);
+    return this.get(`/landowners/${id}`);
   }
 
   async createLandowner(landownerData: any): Promise<ApiResponse<any>> {
