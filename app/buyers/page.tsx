@@ -85,8 +85,13 @@ function BuyersContent() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, statusFilter]);
 
-  const handleRefresh = () => {
-    refreshBuyers();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshBuyers();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleEditBuyer = (buyer: any) => {
