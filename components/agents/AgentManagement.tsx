@@ -1581,7 +1581,7 @@ export function AgentManagement({
                 currentPage={upgradeRequestsPage}
                 totalItems={upgradePagination.total || 0}
                 itemsPerPage={10}
-                onPageChange={setUpgradeRequestsPage}
+                onPageChange={handleUpgradePageChange}
               />
             </CardContent>
           </Card>
