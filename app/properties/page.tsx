@@ -115,7 +115,7 @@ function PropertiesContent() {
                     Property Portfolio
                   </span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {total} properties found
+                    {pagination.total} properties found
                   </p>
                 </div>
               </div>
