@@ -59,6 +59,7 @@ function PropertiesContent() {
 
   const handlePageChange = (page: number) => {
     setPage(page);
+    fetchProperties({ ...filters, page, limit: 12 });
   };
 
   const handleRefresh = () => {
