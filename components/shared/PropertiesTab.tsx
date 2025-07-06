@@ -20,7 +20,7 @@ export function PropertiesTab({ userId, userType }: PropertiesTabProps) {
     refetch,
   } = useQuery({
     queryKey: ["user-properties", userId],
-    queryFn: () => apiService.getUserProperties(userId),
+    queryFn: () => apiService.getUserProperties(userId!),
     enabled: !!userId,
   });
 
