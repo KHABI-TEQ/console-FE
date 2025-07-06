@@ -455,9 +455,7 @@ export default function BuyersPage() {
             {buyers.length > 0 && pagination.totalPages > 1 && (
               <div className="px-6 pb-6">
                 <Pagination
-                  currentPage={
-                    pagination.currentPage || pagination.page || page
-                  }
+                  currentPage={page}
                   totalItems={totalCount}
                   itemsPerPage={limit}
                   onPageChange={setPage}
