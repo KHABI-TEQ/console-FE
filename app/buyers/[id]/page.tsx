@@ -303,9 +303,9 @@ export default function BuyerDetailPage() {
 
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                   <Badge className="bg-blue-100 text-blue-800">
-                    ID: {buyer.accountId || buyer._id}
+                    ID: {buyer?.accountId || buyer?._id || "Unknown"}
                   </Badge>
-                  {buyer.isAccountVerified ? (
+                  {buyer?.isAccountVerified ? (
                     <Badge className="bg-green-100 text-green-800">
                       <Star className="h-3 w-3 mr-1" />
                       Verified
@@ -316,13 +316,13 @@ export default function BuyerDetailPage() {
                       Pending Verification
                     </Badge>
                   )}
-                  {buyer.isPremium && (
+                  {buyer?.isPremium && (
                     <Badge className="bg-purple-100 text-purple-800">
                       <Star className="h-3 w-3 mr-1" />
                       Premium
                     </Badge>
                   )}
-                  {buyer.isFlagged && (
+                  {buyer?.isFlagged && (
                     <Badge className="bg-red-100 text-red-800">Flagged</Badge>
                   )}
                 </div>
