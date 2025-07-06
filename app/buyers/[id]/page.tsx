@@ -637,8 +637,8 @@ export default function BuyerDetailPage() {
                     <div className="px-6 pb-6">
                       <Pagination
                         currentPage={
-                          preferencesPagination.currentPage ||
-                          preferencesPagination.page ||
+                          (preferencesPagination as any).currentPage ||
+                          (preferencesPagination as any).page ||
                           preferencesPage
                         }
                         totalItems={preferencesPagination.total || 0}
