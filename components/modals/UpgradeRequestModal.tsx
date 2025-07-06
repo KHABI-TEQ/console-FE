@@ -70,24 +70,24 @@ export function UpgradeRequestModal({
   if (!request) return null;
 
   const handleApprove = async () => {
-    const confirmed = await showConfirmation({
+    confirmAction({
       title: "Approve Upgrade Request",
-      message: `Are you sure you want to approve ${request.fullName}'s upgrade request from ${request.currentAgentType} to ${request.requestedUpgradeAgentType}?`,
+      description: `Are you sure you want to approve ${request.fullName}'s upgrade request from ${request.currentAgentType} to ${request.requestedUpgradeAgentType}?`,
       confirmText: "Approve",
       cancelText: "Cancel",
+      variant: "success",
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await approveUpgradeRequest(request.id);
+          onClose();
+        } catch (error) {
+          console.error("Error approving upgrade request:", error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      },
     });
-
-    if (confirmed) {
-      setIsSubmitting(true);
-      try {
-        await approveUpgradeRequest(request.id);
-        onClose();
-      } catch (error) {
-        console.error("Error approving upgrade request:", error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
   };
 
   const handleReject = async () => {
