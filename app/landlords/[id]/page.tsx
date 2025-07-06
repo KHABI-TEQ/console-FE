@@ -299,13 +299,10 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rating</p>
-                  <div className="flex items-center space-x-1">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {landlord.stats.rating}
-                    </p>
-                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                  </div>
+                  <p className="text-sm text-gray-600">Pending Negotiations</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {landlord.stats.pendingNegotiations}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-orange-600" />
               </div>
