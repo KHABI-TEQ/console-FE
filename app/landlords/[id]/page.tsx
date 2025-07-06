@@ -63,12 +63,14 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
     refetch,
   } = useQuery({
     queryKey: ["landlord", landlordId],
-    queryFn: () => apiService.getLandowner(landlordId),
+    queryFn: () => apiService.getLandowner(landlordId!),
+    enabled: !!landlordId,
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
     queryKey: ["landlord-properties", landlordId],
     queryFn: () => apiService.getProperties({ landlordId: landlordId }),
+    enabled: !!landlordId,
   });
 
   // Mock data for demonstration - replace with actual API data when available
