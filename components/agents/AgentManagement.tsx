@@ -206,7 +206,7 @@ export function AgentManagement({
 
   const fetchAgentData = async () => {
     try {
-      const promises = [fetchUpgradeRequests()];
+      const promises = [];
 
       if (activeTab === "pending-agents") {
         promises.push(
