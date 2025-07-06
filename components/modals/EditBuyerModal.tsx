@@ -38,18 +38,9 @@ interface EditBuyerModalProps {
   onSuccess?: () => void;
   buyerData?: {
     id: string;
-    name: string;
+    fullName: string;
     email: string;
-    phone: string;
-    location: string;
-    status: string;
-    budgetMin: number;
-    budgetMax: number;
-    preferences: string[];
-    agent: string;
-    preApproved: boolean;
-    firstTimeBuyer: boolean;
-    notes: string;
+    phoneNumber: string;
   };
 }
 
