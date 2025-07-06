@@ -305,6 +305,10 @@ class ApiService {
     return this.get(`/agent/${agentId}/properties`);
   }
 
+  async getUserProperties(userId: string): Promise<ApiResponse<any[]>> {
+    return this.get(`/users/${userId}/properties`);
+  }
+
   // New agent management methods
   async getPendingAgents(
     page: number = 1,
@@ -401,6 +405,13 @@ class ApiService {
 
   async deleteLandowner(id: string): Promise<ApiResponse<any>> {
     return this.delete(`/landowner/${id}`);
+  }
+
+  async flagLandlordAccount(
+    userId: string,
+    status: boolean,
+  ): Promise<ApiResponse<any>> {
+    return this.put(`/landowners/${userId}/flag-account`, { status });
   }
 
   // Property-specific methods

@@ -42,6 +42,7 @@ import {
 import { apiService } from "@/lib/services/apiService";
 import { useAgents } from "@/contexts/AgentsContext";
 import { AgentsProvider } from "@/contexts/AgentsContext";
+import { PropertiesTab } from "@/components/shared/PropertiesTab";
 
 interface AgentDetailPageProps {
   params: Promise<{ id: string }>;
@@ -356,91 +357,7 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
               </TabsList>
 
               <TabsContent value="properties">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>Posted Properties</span>
-                      <Badge variant="secondary">
-                        {properties.length} properties
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {properties.length > 0 ? (
-                        properties.map((property: any) => (
-                          <Card
-                            key={property._id}
-                            className="hover:shadow-md transition-all duration-200"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start space-x-4">
-                                <div className="w-20 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
-                                  <Building className="h-8 w-8 text-gray-400" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <h3 className="font-semibold text-gray-900">
-                                        {property.propertyType} -{" "}
-                                        {property.location?.area ||
-                                          "Unknown Location"}
-                                      </h3>
-                                      <p className="text-sm text-gray-500 flex items-center mt-1">
-                                        <MapPin className="h-3 w-3 mr-1" />
-                                        {property.location?.state || ""}{" "}
-                                        {property.location?.localGovernment ||
-                                          ""}
-                                      </p>
-                                    </div>
-                                    <div className="text-right ml-4">
-                                      <p className="text-lg font-bold text-gray-900">
-                                        {formatCurrency(property.price)}
-                                      </p>
-                                      {property.isApproved
-                                        ? getStatusBadge("approved")
-                                        : property.isRejected
-                                          ? getStatusBadge("rejected")
-                                          : getStatusBadge("pending")}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between mt-3">
-                                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                      <span>{property.propertyType}</span>
-                                      <span>{property.briefType}</span>
-                                    </div>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        router.push(
-                                          `/properties/${property._id}`,
-                                        )
-                                      }
-                                    >
-                                      <Eye className="h-4 w-4 mr-1" />
-                                      View
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))
-                      ) : (
-                        <div className="text-center py-8">
-                          <Building className="mx-auto h-12 w-12 text-gray-400" />
-                          <h3 className="mt-2 text-sm font-medium text-gray-900">
-                            No properties
-                          </h3>
-                          <p className="mt-1 text-sm text-gray-500">
-                            This agent hasn't posted any properties yet.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <PropertiesTab userId={agentId!} userType="agent" />
               </TabsContent>
 
               <TabsContent value="transactions">

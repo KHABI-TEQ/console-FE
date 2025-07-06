@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -42,16 +42,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
+import { PropertiesTab } from "@/components/shared/PropertiesTab";
 
 interface LandlordDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function LandlordDetailPage({
-  params,
-}: LandlordDetailPageProps) {
-  const { id: landlordId } = await params;
+function LandlordDetailContent({ params }: LandlordDetailPageProps) {
   const router = useRouter();
+  const [landlordId, setLandlordId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(({ id }) => setLandlordId(id));
+  }, [params]);
 
   const {
     data: landlordResponse,
@@ -60,87 +63,59 @@ export default async function LandlordDetailPage({
     refetch,
   } = useQuery({
     queryKey: ["landlord", landlordId],
-    queryFn: () => apiService.getLandowner(landlordId),
+    queryFn: () => apiService.getLandowner(landlordId!),
+    enabled: !!landlordId,
   });
 
   const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
     queryKey: ["landlord-properties", landlordId],
     queryFn: () => apiService.getProperties({ landlordId: landlordId }),
+    enabled: !!landlordId,
   });
 
-  // Mock data for demonstration - replace with actual API data when available
-  const mockLandlord = {
-    _id: landlordId,
-    firstName: "John",
-    lastName: "Smith",
-    email: "john.smith@example.com",
-    phoneNumber: "+234 803 456 7890",
-    role: "Landlord",
-    avatar: "/placeholder.svg",
-    isAccountVerified: true,
-    accountApproved: true,
-    accountStatus: "active",
-    isFlagged: false,
-    isInActive: false,
-    createdAt: "2024-06-01T13:39:07.618Z",
-    updatedAt: "2024-06-01T13:39:07.618Z",
-    bio: "Experienced property owner with a diverse portfolio of residential and commercial properties across Lagos and Abuja. Committed to providing quality housing solutions.",
-    location: "Lagos, Nigeria",
-    userType: "Individual",
-    accountId: "LL001234",
-    stats: {
-      totalProperties: 12,
-      activeListings: 8,
-      totalTenants: 45,
-      totalRevenue: 850000000,
-      rating: 4.6,
-      reviews: 32,
-      occupancyRate: 92,
-      avgRent: 2500000,
-    },
-    bankDetails: {
-      accountName: "John Smith",
-      accountNumber: "0123456789",
-      bankName: "First Bank of Nigeria",
-      isVerified: true,
-    },
-  };
+  // Extract data from API response or use fallback
+  const landlordData = landlordResponse?.data;
+  const landlord = landlordData?.user
+    ? {
+        ...landlordData.user,
+        stats: landlordData.stats || {
+          totalProperties: landlordData.properties?.length || 0,
+          totalTransactions: landlordData.transactions?.length || 0,
+          totalEarned: landlordData.stats?.totalEarned || 0,
+          completedInspections:
+            landlordData.inspections?.filter(
+              (i: any) => i.status === "completed",
+            )?.length || 0,
+          pendingNegotiations:
+            landlordData.inspections?.filter(
+              (i: any) => i.stage === "negotiation",
+            )?.length || 0,
+        },
+      }
+    : {
+        _id: landlordId,
+        firstName: "Landlord",
+        lastName: "Name",
+        email: "landlord@example.com",
+        phoneNumber: "+234 000 000 0000",
+        fullName: "Landlord Name",
+        userType: "Landowners",
+        accountApproved: false,
+        accountStatus: "pending",
+        isFlagged: false,
+        profile_picture: "/placeholder.svg",
+        stats: {
+          totalProperties: 0,
+          totalTransactions: 0,
+          totalEarned: 0,
+          completedInspections: 0,
+          pendingNegotiations: 0,
+        },
+      };
 
-  const mockProperties = [
-    {
-      _id: "1",
-      title: "Modern 3-Bedroom Apartment",
-      location: "Victoria Island, Lagos",
-      price: 75000000,
-      type: "Residential",
-      status: "occupied",
-      tenant: "Sarah Johnson",
-      images: [
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
-      ],
-      bedrooms: 3,
-      bathrooms: 2,
-      monthlyRent: 2500000,
-      createdAt: "2024-01-15T10:30:00Z",
-    },
-    {
-      _id: "2",
-      title: "Executive Office Complex",
-      location: "Ikoyi, Lagos",
-      price: 450000000,
-      type: "Commercial",
-      status: "vacant",
-      images: [
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
-      ],
-      size: "3000 sqft",
-      monthlyRent: 8500000,
-      createdAt: "2024-01-10T14:20:00Z",
-    },
-  ];
-
-  const landlord = mockLandlord;
-  const properties = mockProperties;
+  const properties = landlordData?.properties || [];
+  const transactions = landlordData?.transactions || [];
+  const inspections = landlordData?.inspections || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -232,17 +207,23 @@ export default async function LandlordDetailPage({
             </Button>
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={landlord.avatar} />
+                <AvatarImage
+                  src={landlord.profile_picture || "/placeholder.svg"}
+                />
                 <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white text-lg font-medium">
-                  {landlord.firstName[0]}
-                  {landlord.lastName[0]}
+                  {landlord.firstName?.[0] || "L"}
+                  {landlord.lastName?.[0] || "L"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {landlord.firstName} {landlord.lastName}
+                  {landlord.fullName ||
+                    `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim() ||
+                    "Unknown Landlord"}
                 </h1>
-                <p className="text-gray-600">{landlord.userType} Landlord</p>
+                <p className="text-gray-600">
+                  {landlord.userType || "Landowner"}
+                </p>
                 <div className="flex items-center space-x-2 mt-1">
                   {getStatusBadge(landlord.accountStatus)}
                   {landlord.isAccountVerified && (
@@ -298,9 +279,9 @@ export default async function LandlordDetailPage({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active Listings</p>
+                  <p className="text-sm text-gray-600">Total Transactions</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {landlord.stats.activeListings}
+                    {landlord.stats.totalTransactions}
                   </p>
                 </div>
                 <Home className="h-8 w-8 text-green-600" />
@@ -311,9 +292,9 @@ export default async function LandlordDetailPage({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Tenants</p>
+                  <p className="text-sm text-gray-600">Completed Inspections</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {landlord.stats.totalTenants}
+                    {landlord.stats.completedInspections}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-purple-600" />
@@ -324,13 +305,10 @@ export default async function LandlordDetailPage({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rating</p>
-                  <div className="flex items-center space-x-1">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {landlord.stats.rating}
-                    </p>
-                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                  </div>
+                  <p className="text-sm text-gray-600">Pending Negotiations</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {landlord.stats.pendingNegotiations}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-orange-600" />
               </div>
@@ -349,97 +327,7 @@ export default async function LandlordDetailPage({
               </TabsList>
 
               <TabsContent value="properties">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>Property Portfolio</span>
-                      <Badge variant="secondary">
-                        {properties.length} properties
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {properties.map((property) => (
-                        <Card
-                          key={property._id}
-                          className="hover:shadow-md transition-all duration-200"
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start space-x-4">
-                              <img
-                                src={property.images[0]}
-                                alt={property.title}
-                                className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
-                                      {property.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 flex items-center mt-1">
-                                      <MapPin className="h-3 w-3 mr-1" />
-                                      {property.location}
-                                    </p>
-                                  </div>
-                                  <div className="text-right ml-4">
-                                    <p className="text-lg font-bold text-gray-900">
-                                      {formatCurrency(property.price)}
-                                    </p>
-                                    {getStatusBadge(property.status)}
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between mt-3">
-                                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                    <span>{property.type}</span>
-                                    {property.bedrooms && (
-                                      <span>{property.bedrooms} bed</span>
-                                    )}
-                                    {property.bathrooms && (
-                                      <span>{property.bathrooms} bath</span>
-                                    )}
-                                    {property.size && (
-                                      <span>{property.size}</span>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    {property.monthlyRent && (
-                                      <span className="text-sm text-green-600 font-medium">
-                                        {formatCurrency(property.monthlyRent)}
-                                        /month
-                                      </span>
-                                    )}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        router.push(
-                                          `/properties/${property._id}`,
-                                        )
-                                      }
-                                    >
-                                      <Eye className="h-4 w-4 mr-1" />
-                                      View
-                                    </Button>
-                                  </div>
-                                </div>
-                                {property.tenant && (
-                                  <div className="mt-2 text-sm text-gray-600">
-                                    <span className="font-medium">
-                                      Tenant:{" "}
-                                    </span>
-                                    {property.tenant}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <PropertiesTab userId={landlordId} userType="landlord" />
               </TabsContent>
 
               <TabsContent value="tenants">
@@ -528,7 +416,9 @@ export default async function LandlordDetailPage({
                 </div>
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{landlord.location}</span>
+                  <span className="text-sm">
+                    {landlord.location || "Location not specified"}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-4 w-4 text-gray-400" />
@@ -548,35 +438,47 @@ export default async function LandlordDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Account Name</p>
-                  <p className="font-medium">
-                    {landlord.bankDetails.accountName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Account Number</p>
-                  <p className="font-medium">
-                    {landlord.bankDetails.accountNumber}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Bank</p>
-                  <p className="font-medium">{landlord.bankDetails.bankName}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {landlord.bankDetails.isVerified ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-yellow-100 text-yellow-800">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Pending
-                    </Badge>
-                  )}
-                </div>
+                {landlord.bankDetails ? (
+                  <>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Name</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.accountName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Number</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.accountNumber}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Bank</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.bankName}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {landlord.bankDetails.isVerified ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      No bank details available
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -587,27 +489,29 @@ export default async function LandlordDetailPage({
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Revenue:</span>
+                  <span className="text-sm text-gray-600">Total Earned:</span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(landlord.stats.totalRevenue)}
+                    {formatCurrency(landlord.stats.totalEarned)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Occupancy Rate:</span>
-                  <span className="text-sm font-medium">
-                    {landlord.stats.occupancyRate}%
+                  <span className="text-sm text-gray-600">Account Status:</span>
+                  <span className="text-sm font-medium capitalize">
+                    {landlord.accountStatus}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Average Rent:</span>
+                  <span className="text-sm text-gray-600">
+                    Account Approved:
+                  </span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(landlord.stats.avgRent)}
+                    {landlord.accountApproved ? "Yes" : "No"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Reviews:</span>
+                  <span className="text-sm text-gray-600">Is Flagged:</span>
                   <span className="text-sm font-medium">
-                    {landlord.stats.reviews}
+                    {landlord.isFlagged ? "Yes" : "No"}
                   </span>
                 </div>
               </CardContent>
@@ -620,7 +524,7 @@ export default async function LandlordDetailPage({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  {landlord.bio}
+                  {landlord.bio || "No bio available."}
                 </p>
               </CardContent>
             </Card>
@@ -629,4 +533,10 @@ export default async function LandlordDetailPage({
       </div>
     </AdminLayout>
   );
+}
+
+export default function LandlordDetailPage({
+  params,
+}: LandlordDetailPageProps) {
+  return <LandlordDetailContent params={params} />;
 }
