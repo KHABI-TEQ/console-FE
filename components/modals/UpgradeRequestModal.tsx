@@ -65,7 +65,7 @@ export function UpgradeRequestModal({
   const [rejectReason, setRejectReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { approveUpgradeRequest, rejectUpgradeRequest } = useAgents();
-  const { showConfirmation } = useConfirmation();
+  const { confirmAction } = useConfirmation();
 
   if (!request) return null;
 
