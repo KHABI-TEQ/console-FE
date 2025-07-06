@@ -61,6 +61,7 @@ import {
 import { WashingMachine } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { useApp } from "@/contexts/AppContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Pagination } from "@/components/shared/Pagination";
 
 interface PropertyData {
@@ -120,7 +121,6 @@ interface PaginationMeta {
   total: number;
   totalPages: number;
 }
-
 
 export default function PropertyDetailPage() {
   const params = useParams();
