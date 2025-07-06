@@ -305,6 +305,10 @@ class ApiService {
     return this.get(`/agent/${agentId}/properties`);
   }
 
+  async getUserProperties(userId: string): Promise<ApiResponse<any[]>> {
+    return this.get(`/users/${userId}/properties`);
+  }
+
   // New agent management methods
   async getPendingAgents(
     page: number = 1,
