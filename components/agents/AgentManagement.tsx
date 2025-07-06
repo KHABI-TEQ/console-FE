@@ -1398,6 +1398,190 @@ export function AgentManagement({
           </Card>
         </TabsContent>
 
+        <TabsContent value="upgrade-requests" className="space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {agentStats.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <stat.icon className={`h-8 w-8 text-${stat.color}-600`} />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">
+                        {stat.title}
+                      </p>
+                      <div className="flex items-center">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stat.value}
+                        </p>
+                        <span
+                          className={`ml-2 text-sm font-medium ${
+                            stat.trend === "up"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {stat.change}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Actions Row */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                className="flex items-center"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Data
+              </Button>
+            </div>
+          </div>
+
+          {/* Upgrade Requests Table */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-purple-600" />
+                  <div>
+                    <span className="text-lg font-medium">
+                      Agent Upgrade Requests
+                    </span>
+                    <p className="text-sm text-gray-600 font-normal">
+                      Manage agent tier upgrade requests
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  {upgradeRequests.length} showing
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                {upgradeLoading ? (
+                  <LoadingPlaceholder type="table" count={5} />
+                ) : upgradeRequests.length === 0 ? (
+                  <EmptyState
+                    icon={TrendingUp}
+                    title="No upgrade requests found"
+                    description="No agent upgrade requests are currently pending review."
+                  />
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Agent</TableHead>
+                        <TableHead>Current Type</TableHead>
+                        <TableHead>Requested Type</TableHead>
+                        <TableHead>Request Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {upgradeRequests.map((request: any) => (
+                        <TableRow key={request.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src="" alt={request.fullName} />
+                                <AvatarFallback>
+                                  {request.fullName
+                                    ?.split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                    .toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {request.fullName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {request.email}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {request.currentAgentType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="default">
+                              {request.requestedUpgradeAgentType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {request.upgradeRequestDate}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={
+                                  request.accountStatus === "active"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {request.accountStatus}
+                              </Badge>
+                              {request.isVerified && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-green-600"
+                                >
+                                  <Shield className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                              {request.isFlagged && (
+                                <Badge variant="destructive">Flagged</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUpgradeRequest(request);
+                                setIsUpgradeRequestModalOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+              <Pagination
+                currentPage={upgradeRequestsPage}
+                totalItems={upgradePagination.total || 0}
+                itemsPerPage={10}
+                onPageChange={setUpgradeRequestsPage}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="landlords" className="space-y-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
