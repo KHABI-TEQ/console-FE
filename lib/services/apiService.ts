@@ -596,7 +596,11 @@ class ApiService {
   }
 
   async getPropertyStats(): Promise<ApiResponse<any>> {
-    return this.get("/analytics/properties");
+    return this.get("/properties/stats");
+  }
+
+  async getAllProperties(filters?: any): Promise<ApiResponse<any[]>> {
+    return this.get("/all-properties", filters);
   }
 
   async getAgentStats(): Promise<ApiResponse<any>> {
