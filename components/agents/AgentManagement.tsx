@@ -68,6 +68,7 @@ import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
 import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
+import { formatCurrency } from "@/lib/utils";
 
 interface AgentManagementProps {
   defaultTab?: "pending-agents" | "approved-agents" | "landlords";
