@@ -468,8 +468,8 @@ export function AgentManagement({
     },
   ];
 
-  const currentStats = activeTab === "agents" ? agentStats : landlordStats;
-  const isLoading = activeTab === "agents" ? false : landlordsLoading;
+  const currentStats = activeTab === "landlords" ? landlordStats : agentStats;
+  const isLoading = activeTab === "landlords" ? landlordsLoading : false;
 
   // Utility functions
 
