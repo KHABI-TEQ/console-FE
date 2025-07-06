@@ -48,11 +48,13 @@ interface LandlordDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function LandlordDetailPage({
-  params,
-}: LandlordDetailPageProps) {
-  const { id: landlordId } = await params;
+function LandlordDetailContent({ params }: LandlordDetailPageProps) {
   const router = useRouter();
+  const [landlordId, setLandlordId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(({ id }) => setLandlordId(id));
+  }, [params]);
 
   const {
     data: landlordResponse,
