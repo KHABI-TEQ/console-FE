@@ -26,7 +26,6 @@ interface Property {
   features: string[];
 }
 
-
 interface PropertiesContextType {
   properties: Property[];
   selectedProperty: Property | null;
@@ -79,7 +78,9 @@ export function PropertiesProvider({
       setIsLoading(true);
       try {
         const currentPage =
-          newFilters?.page !== undefined ? newFilters.page : pagination.currentPage;
+          newFilters?.page !== undefined
+            ? newFilters.page
+            : pagination.currentPage;
         const mergedFilters = {
           ...filters,
           ...newFilters,
@@ -87,10 +88,10 @@ export function PropertiesProvider({
           limit: pagination.perPage,
         };
 
-        // Use submitted briefs endpoint if userType is specified
+        // Use submitted briefs endpoint if userType is specified, otherwise use all-properties
         const response = mergedFilters.userType
           ? await apiService.getSubmittedBriefs(mergedFilters)
-          : await apiService.getProperties(mergedFilters);
+          : await apiService.getAllProperties(mergedFilters);
 
         if (response.success) {
           setProperties(response.data || []);
