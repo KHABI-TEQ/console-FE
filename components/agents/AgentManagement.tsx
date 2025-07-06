@@ -380,6 +380,11 @@ export function AgentManagement({
     fetchApprovedAgents(page, searchQuery);
   };
 
+  const handleUpgradePageChange = (page: number) => {
+    setUpgradeRequestsPage(page);
+    fetchUpgradeRequests(page);
+  };
+
   // Stats for agents
   const agentStats = [
     {
