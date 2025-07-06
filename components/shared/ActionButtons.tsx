@@ -21,7 +21,7 @@ interface ActionButtonsProps {
   entityType:
     | "agent"
     | "landlord"
-    | "property"
+    | "propertie"
     | "contact"
     | "inspection"
     | "buyer";
