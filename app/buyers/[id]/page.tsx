@@ -416,44 +416,46 @@ export default function BuyerDetailPage() {
                             <TableCell className="py-4">
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {inspection.propertyId?.title || "Property"}
+                                  {inspection?.propertyId?.title || "Property"}
                                 </p>
                                 <p className="text-sm text-gray-500 flex items-center mt-1">
                                   <MapPin className="h-3 w-3 mr-1" />
-                                  {inspection.propertyId?.location?.area},{" "}
-                                  {
-                                    inspection.propertyId?.location
-                                      ?.localGovernment
-                                  }
+                                  {inspection?.propertyId?.location?.area ||
+                                    "Unknown"}
+                                  ,{" "}
+                                  {inspection?.propertyId?.location
+                                    ?.localGovernment || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div>
                                 <p className="text-sm font-medium">
-                                  {formatDate(inspection.inspectionDate)}
+                                  {inspection?.inspectionDate
+                                    ? formatDate(inspection.inspectionDate)
+                                    : "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {inspection.inspectionTime}
+                                  {inspection?.inspectionTime || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
-                              {getStatusBadge(inspection.status)}
+                              {getStatusBadge(inspection?.status || "unknown")}
                             </TableCell>
                             <TableCell className="py-4">
                               <Badge variant="secondary" className="text-xs">
-                                {inspection.stage}
+                                {inspection?.stage || "Unknown"}
                               </Badge>
                             </TableCell>
                             <TableCell className="py-4">
                               <div>
                                 <p className="text-sm font-medium">
-                                  {inspection.owner?.firstName}{" "}
-                                  {inspection.owner?.lastName}
+                                  {inspection?.owner?.firstName || "Unknown"}{" "}
+                                  {inspection?.owner?.lastName || ""}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {inspection.owner?.email}
+                                  {inspection?.owner?.email || "No email"}
                                 </p>
                               </div>
                             </TableCell>
