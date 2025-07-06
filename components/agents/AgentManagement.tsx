@@ -126,6 +126,22 @@ export function AgentManagement({
     flagAgent,
   } = useAgents();
 
+  // Computed filtered arrays
+  const filteredPendingAgents = pendingAgents.filter((agent: any) => {
+    if (verificationFilter === "all") return true;
+    if (verificationFilter === "verified") return agent.isVerified;
+    if (verificationFilter === "unverified") return !agent.isVerified;
+    return true;
+  });
+
+  const filteredApprovedAgents = approvedAgents.filter((agent: any) => {
+    if (approvedAgentType === "all") return true;
+    if (approvedAgentType === "active") return agent.status === "active";
+    if (approvedAgentType === "inactive") return agent.status === "inactive";
+    if (approvedAgentType === "flagged") return agent.isFlagged;
+    return true;
+  });
+
   // Data fetching with request tracking to prevent duplicate calls
   const [requestTracker, setRequestTracker] = useState<Set<string>>(new Set());
 
