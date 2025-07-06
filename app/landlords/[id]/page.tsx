@@ -469,27 +469,29 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Revenue:</span>
+                  <span className="text-sm text-gray-600">Total Earned:</span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(landlord.stats.totalRevenue)}
+                    {formatCurrency(landlord.stats.totalEarned)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Occupancy Rate:</span>
-                  <span className="text-sm font-medium">
-                    {landlord.stats.occupancyRate}%
+                  <span className="text-sm text-gray-600">Account Status:</span>
+                  <span className="text-sm font-medium capitalize">
+                    {landlord.accountStatus}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Average Rent:</span>
+                  <span className="text-sm text-gray-600">
+                    Account Approved:
+                  </span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(landlord.stats.avgRent)}
+                    {landlord.accountApproved ? "Yes" : "No"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Reviews:</span>
+                  <span className="text-sm text-gray-600">Is Flagged:</span>
                   <span className="text-sm font-medium">
-                    {landlord.stats.reviews}
+                    {landlord.isFlagged ? "Yes" : "No"}
                   </span>
                 </div>
               </CardContent>
