@@ -82,6 +82,7 @@ export default function InspectionsPage() {
     string | null
   >(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const limit = 10;
 
   // Fetch inspection stats
@@ -126,9 +127,13 @@ export default function InspectionsPage() {
     setIsDetailOpen(true);
   };
 
-  const handleRefresh = () => {
-    refetchStats();
-    refetchInspections();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchStats(), refetchInspections()]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -246,10 +251,13 @@ export default function InspectionsPage() {
               <Button
                 variant="outline"
                 onClick={handleRefresh}
+                disabled={isRefreshing}
                 className="w-full sm:w-auto"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+                {isRefreshing ? "Refreshing..." : "Refresh"}
               </Button>
             </div>
           </div>

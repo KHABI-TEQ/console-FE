@@ -22,6 +22,7 @@ import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Use properties context
   const {
@@ -62,9 +63,13 @@ function PropertiesContent() {
     fetchProperties({ ...filters, page, limit: 12 });
   };
 
-  const handleRefresh = () => {
-    refetchStats();
-    refreshProperties();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchStats(), refreshProperties()]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (isPropertiesLoading && properties.length === 0) {
@@ -85,10 +90,13 @@ function PropertiesContent() {
           <Button
             variant="outline"
             onClick={handleRefresh}
+            disabled={isRefreshing}
             className="w-full sm:w-auto"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
           <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
             <Plus className="h-4 w-4 mr-2" />
@@ -159,7 +167,7 @@ function PropertiesContent() {
                   Please wait while we fetch the latest information
                 </p>
               </div>
-            ) : isPropertiesLoading ? (
+            ) : isPropertiesLoading || isRefreshing ? (
               <div className="relative">
                 <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
                   <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
@@ -210,7 +218,9 @@ function PropertiesContent() {
           {properties.length > 0 && pagination.totalPages > 1 && (
             <div
               className={
-                isPropertiesLoading ? "opacity-50 pointer-events-none" : ""
+                isPropertiesLoading || isRefreshing
+                  ? "opacity-50 pointer-events-none"
+                  : ""
               }
             >
               <Pagination
