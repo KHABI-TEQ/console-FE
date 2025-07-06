@@ -14,15 +14,28 @@ import { Building, Plus, RefreshCw, Grid3X3, List } from "lucide-react";
 import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
 import { PropertiesEmptyState } from "@/components/shared/EmptyState";
+import {
+  useProperties,
+  PropertiesProvider,
+} from "@/contexts/PropertiesContext";
 import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
-  const [filters, setFilters] = useState<any>({});
-  const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const limit = 12;
 
-  // Fetch property stats
+  // Use properties context
+  const {
+    properties,
+    isLoading: isPropertiesLoading,
+    filters,
+    pagination,
+    fetchProperties,
+    refreshProperties,
+    setFilters,
+    setPage,
+  } = useProperties();
+
+  // Fetch property stats (separate from context)
   const {
     data: statsResponse,
     isLoading: isStatsLoading,
@@ -32,39 +45,25 @@ function PropertiesContent() {
     queryFn: () => apiService.getPropertyStats(),
   });
 
-  // Fetch properties
-  const {
-    data: propertiesResponse,
-    isLoading: isPropertiesLoading,
-    refetch: refetchProperties,
-  } = useQuery({
-    queryKey: ["all-properties", filters, page],
-    queryFn: () =>
-      apiService.getAllProperties({
-        ...filters,
-        page,
-        limit,
-      }),
-  });
-
-  const properties = propertiesResponse?.data || [];
-  const pagination = propertiesResponse?.pagination || {
-    total: 0,
-    currentPage: 1,
-    page: 1,
-    totalPages: 1,
-  };
-  const total = pagination.total || 0;
-  const totalPages = pagination.totalPages || Math.ceil(total / limit);
+  // Initialize pagination with 12 items per page for properties grid
+  useEffect(() => {
+    if (pagination.perPage !== 12) {
+      fetchProperties({ ...filters, page: 1, limit: 12 });
+    }
+  }, []);
 
   const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters);
-    setPage(1); // Reset to first page when filters change
+    fetchProperties({ ...newFilters, page: 1, limit: 12 });
+  };
+
+  const handlePageChange = (page: number) => {
+    setPage(page);
   };
 
   const handleRefresh = () => {
     refetchStats();
-    refetchProperties();
+    refreshProperties();
   };
 
   if (isPropertiesLoading && !propertiesResponse) {
@@ -119,7 +118,7 @@ function PropertiesContent() {
                     Property Portfolio
                   </span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {total} properties found
+                    {pagination.total} properties found
                   </p>
                 </div>
               </div>
@@ -149,7 +148,7 @@ function PropertiesContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {isPropertiesLoading && !propertiesResponse ? (
+            {isPropertiesLoading && properties.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 <p className="text-gray-600 font-medium">
@@ -207,17 +206,17 @@ function PropertiesContent() {
               </div>
             )}
           </CardContent>
-          {properties.length > 0 && total > limit && (
+          {properties.length > 0 && pagination.totalPages > 1 && (
             <div
               className={
                 isPropertiesLoading ? "opacity-50 pointer-events-none" : ""
               }
             >
               <Pagination
-                currentPage={page}
-                totalItems={total}
-                itemsPerPage={limit}
-                onPageChange={setPage}
+                currentPage={pagination.currentPage}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.perPage}
+                onPageChange={handlePageChange}
               />
             </div>
           )}
@@ -228,5 +227,9 @@ function PropertiesContent() {
 }
 
 export default function PropertiesPage() {
-  return <PropertiesContent />;
+  return (
+    <PropertiesProvider>
+      <PropertiesContent />
+    </PropertiesProvider>
+  );
 }
