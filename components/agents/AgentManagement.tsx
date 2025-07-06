@@ -147,6 +147,7 @@ export function AgentManagement({
     name: string;
     isActive: boolean;
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusReason, setStatusReason] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
 
