@@ -39,17 +39,39 @@ export function useActionButtons({
       variant: "danger",
       onConfirm: async () => {
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          let response;
 
-          addNotification({
-            type: "success",
-            title: "Deleted successfully",
-            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been deleted.`,
-          });
+          switch (entityType) {
+            case "property":
+              response = await apiService.deleteProperty(id);
+              break;
+            case "agent":
+              response = await apiService.deleteAgent(id);
+              break;
+            default:
+              // Simulate API call for other types
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              response = { success: true };
+          }
 
-          if (onRefresh) {
-            onRefresh();
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: "Deleted successfully",
+              message:
+                response.message ||
+                `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been deleted.`,
+            });
+
+            if (onRefresh) {
+              onRefresh();
+            }
+          } else {
+            addNotification({
+              type: "error",
+              title: "Delete failed",
+              message: response.error || `Failed to delete ${entityType}.`,
+            });
           }
         } catch (error) {
           addNotification({
