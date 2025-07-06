@@ -92,12 +92,6 @@ const navItems: NavItem[] = [
     disabled: false,
   },
   {
-    href: "/briefs",
-    label: "Briefs",
-    icon: FileText,
-    disabled: false,
-  },
-  {
     href: "/contacts",
     label: "Contacts",
     icon: MessageSquare,

@@ -390,24 +390,18 @@ export function AgentManagement({
     {
       title: "Pending Agents",
       value: (pendingPagination.total || 0).toString(),
-      change: "+8.2%",
-      trend: "up" as const,
       icon: Clock,
       color: "orange" as const,
     },
     {
       title: "Approved Agents",
       value: (approvedPagination.total || 0).toString(),
-      change: "+5.1%",
-      trend: "up" as const,
       icon: UserCheck,
       color: "green" as const,
     },
     {
       title: "Upgrade Requests",
       value: (upgradePagination.total || 0).toString(),
-      change: "-12.5%",
-      trend: "down" as const,
       icon: TrendingUp,
       color: "purple" as const,
     },
@@ -416,8 +410,6 @@ export function AgentManagement({
       value: (
         (pendingPagination.total || 0) + (approvedPagination.total || 0)
       ).toString(),
-      change: "+18.7%",
-      trend: "up" as const,
       icon: Users,
       color: "blue" as const,
     },
@@ -428,8 +420,6 @@ export function AgentManagement({
     {
       title: "Total Landlords",
       value: landlordsData?.total?.toString() || "0",
-      change: "+15.2%",
-      trend: "up" as const,
       icon: Home,
       color: "blue" as const,
     },
@@ -439,8 +429,6 @@ export function AgentManagement({
         landlordsData?.users
           ?.filter((l: any) => l.accountStatus === "active" && !l.isInActive)
           .length?.toString() || "0",
-      change: "+8.1%",
-      trend: "up" as const,
       icon: Shield,
       color: "green" as const,
     },
@@ -450,8 +438,6 @@ export function AgentManagement({
         landlordsData?.users
           ?.filter((l: any) => l.isAccountVerified)
           .length?.toString() || "0",
-      change: "+22.3%",
-      trend: "up" as const,
       icon: Building,
       color: "purple" as const,
     },
@@ -461,8 +447,6 @@ export function AgentManagement({
         landlordsData?.users
           ?.filter((l: any) => l.isFlagged)
           .length?.toString() || "0",
-      change: "+18.7%",
-      trend: "down" as const,
       icon: AlertTriangle,
       color: "orange" as const,
     },
@@ -1209,15 +1193,6 @@ export function AgentManagement({
                         <p className="text-2xl font-bold text-gray-900">
                           {stat.value}
                         </p>
-                        <span
-                          className={`ml-2 text-sm ${
-                            stat.trend === "up"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {stat.change}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1311,15 +1286,6 @@ export function AgentManagement({
                         <p className="text-2xl font-bold text-gray-900">
                           {stat.value}
                         </p>
-                        <span
-                          className={`ml-2 text-sm ${
-                            stat.trend === "up"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {stat.change}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1419,15 +1385,6 @@ export function AgentManagement({
                         <p className="text-2xl font-bold text-gray-900">
                           {stat.value}
                         </p>
-                        <span
-                          className={`ml-2 text-sm font-medium ${
-                            stat.trend === "up"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {stat.change}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1603,15 +1560,6 @@ export function AgentManagement({
                         <p className="text-2xl font-bold text-gray-900">
                           {stat.value}
                         </p>
-                        <span
-                          className={`ml-2 text-sm ${
-                            stat.trend === "up"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {stat.change}
-                        </span>
                       </div>
                     </div>
                   </div>
