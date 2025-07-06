@@ -168,8 +168,10 @@ export default function PropertyDetailPage() {
   const rawPagination = inspectionsResponse?.pagination;
 
   const inspectionPagination: PaginationMeta = {
-    currentPage: rawPagination?.currentPage ?? rawPagination?.page ?? 1,
-    perPage: rawPagination?.perPage ?? rawPagination?.limit ?? 10,
+    currentPage:
+      (rawPagination as any)?.currentPage ?? (rawPagination as any)?.page ?? 1,
+    perPage:
+      (rawPagination as any)?.perPage ?? (rawPagination as any)?.limit ?? 10,
     total: rawPagination?.total ?? 0,
     totalPages: rawPagination?.totalPages ?? 1,
   };
