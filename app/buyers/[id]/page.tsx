@@ -547,35 +547,41 @@ export default function BuyerDetailPage() {
                             <TableCell className="py-4">
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {preference.propertyType}
+                                  {preference?.propertyType || "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {preference.propertyCondition}
+                                  {preference?.propertyCondition || "N/A"}
                                 </p>
                                 <Badge
                                   variant="outline"
                                   className="text-xs mt-1"
                                 >
-                                  {preference.preferenceType}
+                                  {preference?.preferenceType || "N/A"}
                                 </Badge>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {preference.location?.area}
+                                  {preference?.location?.area || "Unknown"}
                                 </p>
                                 <p className="text-gray-500">
-                                  {preference.location?.localGovernment},{" "}
-                                  {preference.location?.state}
+                                  {preference?.location?.localGovernment ||
+                                    "Unknown"}
+                                  , {preference?.location?.state || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {formatCurrency(preference.budgetMin)} -{" "}
-                                  {formatCurrency(preference.budgetMax)}
+                                  {preference?.budgetMin
+                                    ? formatCurrency(preference.budgetMin)
+                                    : "N/A"}{" "}
+                                  -{" "}
+                                  {preference?.budgetMax
+                                    ? formatCurrency(preference.budgetMax)
+                                    : "N/A"}
                                 </p>
                               </div>
                             </TableCell>
@@ -583,17 +589,17 @@ export default function BuyerDetailPage() {
                               <div className="text-sm space-y-1">
                                 <p>
                                   <Building className="h-3 w-3 inline mr-1" />
-                                  {preference.noOfBedrooms} beds,{" "}
-                                  {preference.noOfBathrooms} baths
+                                  {preference?.noOfBedrooms || 0} beds,{" "}
+                                  {preference?.noOfBathrooms || 0} baths
                                 </p>
-                                {preference.landSize && (
+                                {preference?.landSize && (
                                   <p>
                                     <Home className="h-3 w-3 inline mr-1" />
                                     {preference.landSize}{" "}
-                                    {preference.measurementType}
+                                    {preference?.measurementType || ""}
                                   </p>
                                 )}
-                                {preference.features?.length > 0 && (
+                                {preference?.features?.length > 0 && (
                                   <p className="text-xs text-gray-500">
                                     +{preference.features.length} features
                                   </p>
@@ -601,12 +607,16 @@ export default function BuyerDetailPage() {
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
-                              {getPreferenceStatusBadge(preference.status)}
+                              {getPreferenceStatusBadge(
+                                preference?.status || "unknown",
+                              )}
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {formatDate(preference.createdAt)}
+                                  {preference?.createdAt
+                                    ? formatDate(preference.createdAt)
+                                    : "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
