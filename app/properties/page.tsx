@@ -14,7 +14,10 @@ import { Building, Plus, RefreshCw, Grid3X3, List } from "lucide-react";
 import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
 import { PropertiesEmptyState } from "@/components/shared/EmptyState";
-import { useProperties } from "@/contexts/PropertiesContext";
+import {
+  useProperties,
+  PropertiesProvider,
+} from "@/contexts/PropertiesContext";
 import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
