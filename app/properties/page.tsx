@@ -227,5 +227,9 @@ function PropertiesContent() {
 }
 
 export default function PropertiesPage() {
-  return <PropertiesContent />;
+  return (
+    <PropertiesProvider>
+      <PropertiesContent />
+    </PropertiesProvider>
+  );
 }
