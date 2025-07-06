@@ -127,9 +127,13 @@ export default function InspectionsPage() {
     setIsDetailOpen(true);
   };
 
-  const handleRefresh = () => {
-    refetchStats();
-    refetchInspections();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchStats(), refetchInspections()]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
