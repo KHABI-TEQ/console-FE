@@ -432,35 +432,47 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Account Name</p>
-                  <p className="font-medium">
-                    {landlord.bankDetails.accountName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Account Number</p>
-                  <p className="font-medium">
-                    {landlord.bankDetails.accountNumber}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Bank</p>
-                  <p className="font-medium">{landlord.bankDetails.bankName}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {landlord.bankDetails.isVerified ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-yellow-100 text-yellow-800">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Pending
-                    </Badge>
-                  )}
-                </div>
+                {landlord.bankDetails ? (
+                  <>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Name</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.accountName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Number</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.accountNumber}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Bank</p>
+                      <p className="font-medium">
+                        {landlord.bankDetails.bankName}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {landlord.bankDetails.isVerified ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      No bank details available
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
