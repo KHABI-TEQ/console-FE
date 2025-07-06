@@ -58,7 +58,7 @@ import {
   AlertTriangle,
   User,
 } from "lucide-react";
-import { Toilet } from "lucide-react";
+import { WashingMachine } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { useApp } from "@/contexts/AppContext";
 import { Pagination } from "@/components/shared/Pagination";
@@ -470,10 +470,10 @@ export default function PropertyDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Toilet className="h-5 w-5 text-gray-400" />
+                        <WashingMachine className="h-5 w-5 text-gray-400" />
                         <div>
                           <p className="font-semibold">
-                            {property.additionalFeatures.noOfToilets}
+                            {property.additionalFeatures.noOfToilets || 0}
                           </p>
                           <p className="text-sm text-gray-600">Toilets</p>
                         </div>
