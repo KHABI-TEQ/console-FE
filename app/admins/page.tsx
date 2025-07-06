@@ -83,6 +83,7 @@ export default function AdminsPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageLimit] = useState(10);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
