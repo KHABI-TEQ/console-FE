@@ -147,6 +147,7 @@ export function AgentManagement({
     name: string;
     isActive: boolean;
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusReason, setStatusReason] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
 
@@ -289,17 +290,22 @@ export function AgentManagement({
     }
   };
 
-  const handleRefresh = () => {
-    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
-      setPendingAgentsPage(1);
-      setApprovedAgentsPage(1);
-      fetchAgentData();
-    } else if (activeTab === "upgrade-requests") {
-      setUpgradeRequestsPage(1);
-      fetchUpgradeRequests(1);
-    } else {
-      setLandlordsPage(1);
-      fetchLandlordsData();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      if (activeTab === "pending-agents" || activeTab === "approved-agents") {
+        setPendingAgentsPage(1);
+        setApprovedAgentsPage(1);
+        await fetchAgentData();
+      } else if (activeTab === "upgrade-requests") {
+        setUpgradeRequestsPage(1);
+        await fetchUpgradeRequests(1);
+      } else {
+        setLandlordsPage(1);
+        await fetchLandlordsData();
+      }
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -1257,9 +1263,12 @@ export function AgentManagement({
             variant="outline"
             className="w-full sm:w-auto"
             onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
           <Button
             onClick={() => setIsAddModalOpen(true)}
@@ -1526,9 +1535,12 @@ export function AgentManagement({
                 onClick={handleRefresh}
                 variant="outline"
                 className="flex items-center"
+                disabled={isRefreshing}
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Data
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+                {isRefreshing ? "Refreshing..." : "Refresh Data"}
               </Button>
             </div>
           </div>

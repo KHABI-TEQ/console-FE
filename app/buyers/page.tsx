@@ -55,6 +55,7 @@ function BuyersContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     buyers,
@@ -84,8 +85,13 @@ function BuyersContent() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, statusFilter]);
 
-  const handleRefresh = () => {
-    refreshBuyers();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshBuyers();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleEditBuyer = (buyer: any) => {
@@ -164,10 +170,13 @@ function BuyersContent() {
           <Button
             variant="outline"
             onClick={handleRefresh}
+            disabled={isRefreshing}
             className="w-full sm:w-auto"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
           <Button
             className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -241,7 +250,7 @@ function BuyersContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading ? (
+            {isLoading || isRefreshing ? (
               <div className="relative">
                 <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
                   <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>

@@ -83,6 +83,7 @@ export default function AdminsPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageLimit] = useState(10);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -320,9 +321,22 @@ export default function AdminsPage() {
             title="Admin Management"
             description="Manage system administrators, roles, and permissions"
           >
-            <Button onClick={() => refetch()} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button
+              onClick={async () => {
+                setIsRefreshing(true);
+                try {
+                  await refetch();
+                } finally {
+                  setIsRefreshing(false);
+                }
+              }}
+              variant="outline"
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
             <Button
               onClick={() => setIsAddModalOpen(true)}

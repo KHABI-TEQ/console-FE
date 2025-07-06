@@ -61,6 +61,7 @@ import {
 import { WashingMachine } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { useApp } from "@/contexts/AppContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Pagination } from "@/components/shared/Pagination";
 
 interface PropertyData {
@@ -121,11 +122,11 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addNotification } = useApp();
+  const { confirmAction } = useConfirmation();
   const [activeTab, setActiveTab] = useState("overview");
   const [inspectionPage, setInspectionPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -167,8 +168,10 @@ export default function PropertyDetailPage() {
   const rawPagination = inspectionsResponse?.pagination;
 
   const inspectionPagination: PaginationMeta = {
-    currentPage: rawPagination?.currentPage ?? rawPagination?.page ?? 1,
-    perPage: rawPagination?.perPage ?? rawPagination?.limit ?? 10,
+    currentPage:
+      (rawPagination as any)?.currentPage ?? (rawPagination as any)?.page ?? 1,
+    perPage:
+      (rawPagination as any)?.perPage ?? (rawPagination as any)?.limit ?? 10,
     total: rawPagination?.total ?? 0,
     totalPages: rawPagination?.totalPages ?? 1,
   };
@@ -265,38 +268,50 @@ export default function PropertyDetailPage() {
     }
   };
 
-  const handleUpdatePropertyStatus = async (action: "approve" | "reject") => {
+  const handleUpdatePropertyStatus = (action: "approve" | "reject") => {
     if (!property) return;
 
-    setIsUpdatingStatus(true);
-    try {
-      const response = await apiService.updatePropertyStatus(
-        property.id,
-        action,
-      );
-      if (response.success) {
-        addNotification({
-          type: "success",
-          title: `Property ${action === "approve" ? "Approved" : "Rejected"}`,
-          message: `Property has been successfully ${action}d.`,
-        });
-        refetchProperty();
-      } else {
-        addNotification({
-          type: "error",
-          title: `${action === "approve" ? "Approval" : "Rejection"} Failed`,
-          message: response.error || `Failed to ${action} property.`,
-        });
-      }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: `${action === "approve" ? "Approval" : "Rejection"} Failed`,
-        message: `An unexpected error occurred while ${action}ing the property.`,
-      });
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+    const actionTitle = action === "approve" ? "Approve" : "Reject";
+    const actionText = action === "approve" ? "approved" : "rejected";
+
+    confirmAction({
+      title: `${actionTitle} Property`,
+      description: `Are you sure you want to ${action} this property? This action will change the property status and notify the owner.`,
+      confirmText: `${actionTitle} Property`,
+      cancelText: "Cancel",
+      variant: action === "approve" ? "success" : "warning",
+      onConfirm: async () => {
+        setIsUpdatingStatus(true);
+        try {
+          const response = await apiService.updatePropertyStatus(
+            property.id,
+            action,
+          );
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: `Property ${actionTitle}d`,
+              message: `Property has been successfully ${actionText}.`,
+            });
+            refetchProperty();
+          } else {
+            addNotification({
+              type: "error",
+              title: `${actionTitle} Failed`,
+              message: response.error || `Failed to ${action} property.`,
+            });
+          }
+        } catch (error) {
+          addNotification({
+            type: "error",
+            title: `${actionTitle} Failed`,
+            message: `An unexpected error occurred while ${action}ing the property.`,
+          });
+        } finally {
+          setIsUpdatingStatus(false);
+        }
+      },
+    });
   };
 
   if (propertyLoading) {

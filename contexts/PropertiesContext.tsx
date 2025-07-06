@@ -95,18 +95,20 @@ export function PropertiesProvider({
           if (response.pagination) {
             setPagination({
               currentPage:
-                response.pagination?.currentPage ||
-                response.pagination.page ||
+                (response.pagination as any)?.currentPage ||
+                (response.pagination as any).page ||
                 1,
               perPage:
-                response.pagination?.perPage || response.pagination.limit || 10,
+                (response.pagination as any)?.perPage ||
+                (response.pagination as any).limit ||
+                10,
               total: response.pagination.total || 0,
               totalPages:
                 response.pagination.totalPages ||
                 Math.ceil(
                   (response.pagination.total || 0) /
-                    (response?.pagination?.perPage ||
-                      response.pagination.limit ||
+                    ((response?.pagination as any)?.perPage ||
+                      (response.pagination as any).limit ||
                       10),
                 ),
             });
