@@ -91,25 +91,25 @@ export function UpgradeRequestModal({
   };
 
   const handleReject = async () => {
-    const confirmed = await showConfirmation({
+    confirmAction({
       title: "Reject Upgrade Request",
-      message: `Are you sure you want to reject ${request.fullName}'s upgrade request?`,
+      description: `Are you sure you want to reject ${request.fullName}'s upgrade request?`,
       confirmText: "Reject",
       cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await rejectUpgradeRequest(request.id, rejectReason);
+          onClose();
+          setRejectReason("");
+        } catch (error) {
+          console.error("Error rejecting upgrade request:", error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      },
     });
-
-    if (confirmed) {
-      setIsSubmitting(true);
-      try {
-        await rejectUpgradeRequest(request.id, rejectReason);
-        onClose();
-        setRejectReason("");
-      } catch (error) {
-        console.error("Error rejecting upgrade request:", error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
   };
 
   const handleClose = () => {
