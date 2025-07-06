@@ -22,6 +22,7 @@ import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Use properties context
   const {
