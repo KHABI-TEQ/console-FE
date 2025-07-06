@@ -77,6 +77,7 @@ import {
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { LandlordActions } from "@/components/shared/LandlordActions";
 import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 import { formatCurrency } from "@/lib/utils";
@@ -1156,19 +1157,8 @@ export function AgentManagement({
                 </div>
               </TableCell>
               <TableCell className="py-4">
-                <ActionButtons
-                  entityType="landlord"
-                  entityId={landlord.id || landlord._id}
-                  entityName={(
-                    (landlord.firstName || "") +
-                    " " +
-                    (landlord.lastName || "")
-                  ).trim()}
-                  email={landlord.email}
-                  phone={landlord.phoneNumber}
-                  showContact={true}
-                  showApproval={!landlord.accountApproved}
-                  showMore={true}
+                <LandlordActions
+                  landlord={landlord}
                   onRefresh={handleRefresh}
                 />
               </TableCell>
