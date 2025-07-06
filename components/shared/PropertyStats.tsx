@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Building, CheckCircle, Clock, DollarSign } from "lucide-react";
+import { Building, CheckCircle, Clock, Banknote } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 
 interface PropertyStatsData {
@@ -34,33 +34,25 @@ export function PropertyStats({ data, isLoading }: PropertyStatsProps) {
     {
       title: "Total Properties",
       value: data.totalProperties?.toString() || "0",
-      change: "+12.5%",
-      trend: "up" as const,
       icon: Building,
       color: "blue" as const,
     },
     {
       title: "Active Properties",
       value: data.totalActiveProperties?.toString() || "0",
-      change: "+8.2%",
-      trend: "up" as const,
       icon: CheckCircle,
       color: "green" as const,
     },
     {
       title: "Inactive Properties",
       value: data.totalInactiveProperties?.toString() || "0",
-      change: "-5.3%",
-      trend: "down" as const,
       icon: Clock,
       color: "orange" as const,
     },
     {
       title: "Total Portfolio Value",
       value: formatCurrency(data.sumOfAllPropertyPrices || 0),
-      change: "+22.1%",
-      trend: "up" as const,
-      icon: DollarSign,
+      icon: Banknote,
       color: "purple" as const,
     },
   ];
