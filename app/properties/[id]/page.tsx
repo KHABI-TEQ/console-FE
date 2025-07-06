@@ -266,38 +266,50 @@ export default function PropertyDetailPage() {
     }
   };
 
-  const handleUpdatePropertyStatus = async (action: "approve" | "reject") => {
+  const handleUpdatePropertyStatus = (action: "approve" | "reject") => {
     if (!property) return;
 
-    setIsUpdatingStatus(true);
-    try {
-      const response = await apiService.updatePropertyStatus(
-        property.id,
-        action,
-      );
-      if (response.success) {
-        addNotification({
-          type: "success",
-          title: `Property ${action === "approve" ? "Approved" : "Rejected"}`,
-          message: `Property has been successfully ${action}d.`,
-        });
-        refetchProperty();
-      } else {
-        addNotification({
-          type: "error",
-          title: `${action === "approve" ? "Approval" : "Rejection"} Failed`,
-          message: response.error || `Failed to ${action} property.`,
-        });
-      }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: `${action === "approve" ? "Approval" : "Rejection"} Failed`,
-        message: `An unexpected error occurred while ${action}ing the property.`,
-      });
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+    const actionTitle = action === "approve" ? "Approve" : "Reject";
+    const actionText = action === "approve" ? "approved" : "rejected";
+
+    confirmAction({
+      title: `${actionTitle} Property`,
+      description: `Are you sure you want to ${action} this property? This action will change the property status and notify the owner.`,
+      confirmText: `${actionTitle} Property`,
+      cancelText: "Cancel",
+      variant: action === "approve" ? "success" : "warning",
+      onConfirm: async () => {
+        setIsUpdatingStatus(true);
+        try {
+          const response = await apiService.updatePropertyStatus(
+            property.id,
+            action,
+          );
+          if (response.success) {
+            addNotification({
+              type: "success",
+              title: `Property ${actionTitle}d`,
+              message: `Property has been successfully ${actionText}.`,
+            });
+            refetchProperty();
+          } else {
+            addNotification({
+              type: "error",
+              title: `${actionTitle} Failed`,
+              message: response.error || `Failed to ${action} property.`,
+            });
+          }
+        } catch (error) {
+          addNotification({
+            type: "error",
+            title: `${actionTitle} Failed`,
+            message: `An unexpected error occurred while ${action}ing the property.`,
+          });
+        } finally {
+          setIsUpdatingStatus(false);
+        }
+      },
+    });
   };
 
   if (propertyLoading) {
