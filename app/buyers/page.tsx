@@ -92,6 +92,7 @@ export default function BuyersPage() {
   const pagination = buyersResponse?.pagination || {
     total: 0,
     currentPage: 1,
+    page: 1,
     totalPages: 1,
   };
   const totalCount = pagination.total || 0;

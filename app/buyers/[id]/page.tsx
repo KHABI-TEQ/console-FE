@@ -103,12 +103,14 @@ export default function BuyerDetailPage() {
   const inspectionsPagination = inspectionsResponse?.pagination || {
     total: 0,
     currentPage: 1,
+    page: 1,
     totalPages: 1,
   };
   const preferences = preferencesResponse?.data || [];
   const preferencesPagination = preferencesResponse?.pagination || {
     total: 0,
     currentPage: 1,
+    page: 1,
     totalPages: 1,
   };
 
