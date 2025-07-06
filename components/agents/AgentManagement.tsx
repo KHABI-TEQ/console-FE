@@ -73,6 +73,8 @@ import {
   MoreHorizontal,
   Trash2,
   UserX,
+  Power,
+  PowerOff,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
