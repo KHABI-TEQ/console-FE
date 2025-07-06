@@ -258,8 +258,9 @@ export default function BuyerDetailPage() {
               <Avatar className="h-20 w-20 mx-auto sm:mx-0 mb-4 sm:mb-0">
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-xl">
                   {(
-                    buyer.fullName ||
-                    `${buyer.firstName} ${buyer.lastName}`.trim()
+                    buyer?.fullName ||
+                    `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() ||
+                    "Unknown Buyer"
                   )
                     .split(" ")
                     .map((n: string) => n[0])
@@ -269,8 +270,8 @@ export default function BuyerDetailPage() {
 
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {buyer.fullName ||
-                    `${buyer.firstName} ${buyer.lastName}`.trim() ||
+                  {buyer?.fullName ||
+                    `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() ||
                     "Unknown Buyer"}
                 </h2>
 
