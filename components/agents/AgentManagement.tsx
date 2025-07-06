@@ -1161,18 +1161,26 @@ export function AgentManagement({
         value={activeTab}
         onValueChange={(value) =>
           setActiveTab(
-            value as "pending-agents" | "approved-agents" | "landlords",
+            value as
+              | "pending-agents"
+              | "approved-agents"
+              | "upgrade-requests"
+              | "landlords",
           )
         }
       >
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="pending-agents" className="flex items-center">
             <Clock className="h-4 w-4 mr-2" />
-            Pending Agent Requests ({pendingAgents.length || 0})
+            Pending ({pendingPagination.total || 0})
           </TabsTrigger>
           <TabsTrigger value="approved-agents" className="flex items-center">
             <CheckCircle className="h-4 w-4 mr-2" />
-            Approved Agents ({approvedAgents.length || 0})
+            Approved ({approvedPagination.total || 0})
+          </TabsTrigger>
+          <TabsTrigger value="upgrade-requests" className="flex items-center">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Upgrades ({upgradePagination.total || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
