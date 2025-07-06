@@ -117,6 +117,17 @@ export function AgentManagement({
   const [selectedUpgradeRequest, setSelectedUpgradeRequest] =
     useState<any>(null);
 
+  // Agent status and delete modal states
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAgentForAction, setSelectedAgentForAction] = useState<{
+    id: string;
+    name: string;
+    isActive: boolean;
+  } | null>(null);
+  const [statusReason, setStatusReason] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+
   // Pagination for different sections
   const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
   const [approvedAgentsPage, setApprovedAgentsPage] = useState(1);
@@ -1062,11 +1073,32 @@ export function AgentManagement({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                            handleChangeStatus(agent.id || agent._id, agentName)
+                            handleToggleAgentStatus(
+                              agent.id || agent._id,
+                              agentName,
+                              agent.accountStatus === "active" &&
+                                !agent.isInActive,
+                            )
+                          }
+                          className={
+                            agent.accountStatus === "active" &&
+                            !agent.isInActive
+                              ? "text-orange-600"
+                              : "text-green-600"
                           }
                         >
-                          <UserX className="mr-2 h-4 w-4" />
-                          Change Status
+                          {agent.accountStatus === "active" &&
+                          !agent.isInActive ? (
+                            <>
+                              <PowerOff className="mr-2 h-4 w-4" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <Power className="mr-2 h-4 w-4" />
+                              Activate
+                            </>
+                          )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
