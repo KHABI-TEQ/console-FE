@@ -1132,14 +1132,14 @@ export function AgentManagement({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {activeTab === "agents"
-              ? "Agent Management"
-              : "Landlord Management"}
+            {activeTab === "landlords"
+              ? "Landlord Management"
+              : "Agent Management"}
           </h1>
           <p className="text-gray-600">
-            {activeTab === "agents"
-              ? "Manage real estate agents, track performance, and oversee operations"
-              : "Manage property landlords, verification status, and revenue tracking"}
+            {activeTab === "landlords"
+              ? "Manage property landlords, verification status, and revenue tracking"
+              : "Manage real estate agents, track performance, and oversee operations"}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
