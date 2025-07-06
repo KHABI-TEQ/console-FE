@@ -77,6 +77,7 @@ import {
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { LandlordActions } from "@/components/shared/LandlordActions";
 import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 import { formatCurrency } from "@/lib/utils";
