@@ -403,6 +403,13 @@ class ApiService {
     return this.delete(`/landowner/${id}`);
   }
 
+  async flagLandlordAccount(
+    userId: string,
+    status: boolean,
+  ): Promise<ApiResponse<any>> {
+    return this.put(`/landowners/${userId}/flag-account`, { status });
+  }
+
   // Property-specific methods
   async getProperties(filters?: any): Promise<ApiResponse<any[]>> {
     return this.get("/properties", filters);
