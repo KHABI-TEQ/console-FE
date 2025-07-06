@@ -72,7 +72,7 @@ export default function BuyersPage() {
   const limit = 20;
 
   const filters: BuyerFilters = {
-    ...(searchQuery && { search: searchQuery }),
+    ...(searchQuery.trim() && { search: searchQuery.trim() }),
     ...(statusFilter !== "all" && { status: statusFilter }),
     page,
     limit,
