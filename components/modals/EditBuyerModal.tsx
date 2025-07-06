@@ -55,7 +55,6 @@ export function EditBuyerModal({
     email: "",
     phoneNumber: "",
   });
-  const [newPreference, setNewPreference] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -68,28 +67,8 @@ export function EditBuyerModal({
     }
   }, [buyerData]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addPreference = () => {
-    if (
-      newPreference.trim() &&
-      !formData.preferences.includes(newPreference.trim())
-    ) {
-      setFormData((prev) => ({
-        ...prev,
-        preferences: [...prev.preferences, newPreference.trim()],
-      }));
-      setNewPreference("");
-    }
-  };
-
-  const removePreference = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      preferences: prev.preferences.filter((_, i) => i !== index),
-    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
