@@ -423,13 +423,6 @@ export function AgentManagement({
   const isLoading = activeTab === "agents" ? false : landlordsLoading;
 
   // Utility functions
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
