@@ -1794,6 +1794,96 @@ export function AgentManagement({
         }}
         request={selectedUpgradeRequest}
       />
+
+      {/* Agent Status Dialog */}
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedAgentForAction?.isActive ? "Deactivate" : "Activate"}{" "}
+              Agent
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to{" "}
+              {selectedAgentForAction?.isActive ? "deactivate" : "activate"}{" "}
+              {selectedAgentForAction?.name}? Please provide a reason.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="reason">Reason</Label>
+              <Textarea
+                id="reason"
+                placeholder={`Enter reason for ${
+                  selectedAgentForAction?.isActive
+                    ? "deactivating"
+                    : "activating"
+                } this agent...`}
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusSubmit}
+              disabled={!statusReason.trim()}
+              className={
+                selectedAgentForAction?.isActive
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }
+            >
+              {selectedAgentForAction?.isActive ? "Deactivate" : "Activate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Agent Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedAgentForAction?.name}?
+              This action cannot be undone and will permanently remove their
+              account and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="deleteReason">Reason for deletion</Label>
+              <Textarea
+                id="deleteReason"
+                placeholder="Enter reason for deleting this agent..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSubmit}
+              disabled={!deleteReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
