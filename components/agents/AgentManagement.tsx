@@ -290,17 +290,22 @@ export function AgentManagement({
     }
   };
 
-  const handleRefresh = () => {
-    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
-      setPendingAgentsPage(1);
-      setApprovedAgentsPage(1);
-      fetchAgentData();
-    } else if (activeTab === "upgrade-requests") {
-      setUpgradeRequestsPage(1);
-      fetchUpgradeRequests(1);
-    } else {
-      setLandlordsPage(1);
-      fetchLandlordsData();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      if (activeTab === "pending-agents" || activeTab === "approved-agents") {
+        setPendingAgentsPage(1);
+        setApprovedAgentsPage(1);
+        await fetchAgentData();
+      } else if (activeTab === "upgrade-requests") {
+        setUpgradeRequestsPage(1);
+        await fetchUpgradeRequests(1);
+      } else {
+        setLandlordsPage(1);
+        await fetchLandlordsData();
+      }
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
