@@ -47,16 +47,20 @@ interface AgentsContextType {
   upgradeRequests: any[];
   pendingLoading: boolean;
   approvedLoading: boolean;
+  upgradeLoading: boolean;
   pendingPagination: any;
   approvedPagination: any;
+  upgradePagination: any;
   fetchPendingAgents: (
     page?: number,
     search?: string,
     verified?: string,
   ) => Promise<void>;
   fetchApprovedAgents: (page?: number, search?: string) => Promise<void>;
-  fetchUpgradeRequests: () => Promise<void>;
+  fetchUpgradeRequests: (page?: number) => Promise<void>;
   approveAgent: (agentId: string, approved: number) => Promise<void>;
+  approveUpgradeRequest: (requestId: string) => Promise<void>;
+  rejectUpgradeRequest: (requestId: string, reason?: string) => Promise<void>;
 }
 
 const AgentsContext = createContext<AgentsContextType | undefined>(undefined);
@@ -78,6 +82,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [approvedLoading, setApprovedLoading] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [pendingPagination, setPendingPagination] = useState({
     page: 1,
     limit: 10,
@@ -85,6 +90,12 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     totalPages: 0,
   });
   const [approvedPagination, setApprovedPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const [upgradePagination, setUpgradePagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
@@ -282,26 +293,35 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     [addNotification],
   );
 
-  const fetchUpgradeRequests = useCallback(async () => {
-    try {
-      const response = await apiService.getUpgradeRequests();
-      if (response.success) {
-        setUpgradeRequests(response.data || []);
-      } else {
+  const fetchUpgradeRequests = useCallback(
+    async (page: number = 1) => {
+      setUpgradeLoading(true);
+      try {
+        const response = await apiService.getUpgradeRequests(page, 10);
+        if (response.success) {
+          setUpgradeRequests(response.data || []);
+          if (response.pagination) {
+            setUpgradePagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch upgrade requests",
+          });
+        }
+      } catch (error) {
         addNotification({
           type: "error",
           title: "Error",
-          message: response.error || "Failed to fetch upgrade requests",
+          message: "Failed to fetch upgrade requests",
         });
+      } finally {
+        setUpgradeLoading(false);
       }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Error",
-        message: "Failed to fetch upgrade requests",
-      });
-    }
-  }, [addNotification]);
+    },
+    [addNotification],
+  );
 
   const approveAgent = useCallback(
     async (agentId: string, approved: number) => {
@@ -369,6 +389,69 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     [addNotification, fetchApprovedAgents],
   );
 
+  const approveUpgradeRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const response = await apiService.approveUpgradeRequest(requestId);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: "Upgrade request approved successfully",
+          });
+          // Refresh upgrade requests data
+          await fetchUpgradeRequests(upgradePagination.page);
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to approve upgrade request",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to approve upgrade request",
+        });
+      }
+    },
+    [addNotification, fetchUpgradeRequests, upgradePagination.page],
+  );
+
+  const rejectUpgradeRequest = useCallback(
+    async (requestId: string, reason?: string) => {
+      try {
+        const response = await apiService.rejectUpgradeRequest(
+          requestId,
+          reason,
+        );
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: "Upgrade request rejected successfully",
+          });
+          // Refresh upgrade requests data
+          await fetchUpgradeRequests(upgradePagination.page);
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to reject upgrade request",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to reject upgrade request",
+        });
+      }
+    },
+    [addNotification, fetchUpgradeRequests, upgradePagination.page],
+  );
+
   const value: AgentsContextType = {
     agents,
     selectedAgent,
@@ -390,12 +473,16 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     upgradeRequests,
     pendingLoading,
     approvedLoading,
+    upgradeLoading,
     pendingPagination,
     approvedPagination,
+    upgradePagination,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
     approveAgent,
+    approveUpgradeRequest,
+    rejectUpgradeRequest,
   };
 
   return (
