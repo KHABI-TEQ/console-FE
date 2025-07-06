@@ -3,17 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Building,
-  MapPin,
-  Bed,
-  Bath,
-  Calendar,
-  Star,
-  Heart,
-  Share2,
-  Car,
-} from "lucide-react";
+import { Building, MapPin, Bed, Bath, Calendar, Star, Car } from "lucide-react";
 import { ActionButtons } from "@/components/shared/ActionButtons";
 
 interface PropertyData {
@@ -211,22 +201,6 @@ export function PropertyCard({
           {property.isPreference && (
             <Badge className="bg-orange-100 text-orange-800">Preference</Badge>
           )}
-        </div>
-        <div className="absolute top-3 right-3 flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 

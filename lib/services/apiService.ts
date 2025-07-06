@@ -297,6 +297,18 @@ class ApiService {
     return this.delete(`/agent/${id}`);
   }
 
+  async deleteAgentNew(id: string, reason?: string): Promise<ApiResponse<any>> {
+    return this.delete(`/agents/${id}/delete`);
+  }
+
+  async updateAgentStatus(
+    id: string,
+    status: boolean,
+    reason?: string,
+  ): Promise<ApiResponse<any>> {
+    return this.post(`/agents/${id}/status`, { status, reason });
+  }
+
   async flagAgent(agentId: string, status: string): Promise<ApiResponse<any>> {
     return this.put(`/agent/flag/${agentId}/${status}`);
   }
@@ -419,6 +431,24 @@ class ApiService {
     return this.get(`/property/${id}`);
   }
 
+  async getPropertyDetails(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/properties/${id}`);
+  }
+
+  async getPropertyInspections(
+    id: string,
+    filters?: any,
+  ): Promise<ApiResponse<any>> {
+    return this.get(`/properties/${id}/inspections`, filters);
+  }
+
+  async updatePropertyStatus(
+    id: string,
+    action: "approve" | "reject",
+  ): Promise<ApiResponse<any>> {
+    return this.post(`/properties/${id}/approval-status`, { action });
+  }
+
   async createProperty(propertyData: any): Promise<ApiResponse<any>> {
     return this.post("/properties", propertyData);
   }
@@ -431,7 +461,7 @@ class ApiService {
   }
 
   async deleteProperty(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/property/${id}`);
+    return this.delete(`/properties/${id}/delete`);
   }
 
   async approveProperty(id: string): Promise<ApiResponse<any>> {

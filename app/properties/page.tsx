@@ -181,13 +181,19 @@ function PropertiesContent() {
               </div>
             )}
           </CardContent>
-          {!isPropertiesLoading && properties.length > 0 && (
-            <Pagination
-              currentPage={page}
-              totalItems={total}
-              itemsPerPage={limit}
-              onPageChange={setPage}
-            />
+          {properties.length > 0 && total > limit && (
+            <div
+              className={
+                isPropertiesLoading ? "opacity-50 pointer-events-none" : ""
+              }
+            >
+              <Pagination
+                currentPage={page}
+                totalItems={total}
+                itemsPerPage={limit}
+                onPageChange={setPage}
+              />
+            </div>
           )}
         </Card>
       </div>
