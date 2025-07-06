@@ -51,18 +51,9 @@ export function EditBuyerModal({
   buyerData,
 }: EditBuyerModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
-    phone: "",
-    location: "",
-    status: "Lead",
-    budgetMin: "",
-    budgetMax: "",
-    preferences: [] as string[],
-    agent: "",
-    preApproved: false,
-    firstTimeBuyer: false,
-    notes: "",
+    phoneNumber: "",
   });
   const [newPreference, setNewPreference] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
