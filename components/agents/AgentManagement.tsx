@@ -33,6 +33,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Users,
   UserCheck,
   UserPlus,
@@ -63,6 +70,9 @@ import {
   ChevronRight,
   UserMinus,
   Flag,
+  MoreHorizontal,
+  Trash2,
+  UserX,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
@@ -866,35 +876,55 @@ export function AgentManagement({
                     </div>
                   </TableCell>
                   <TableCell className="py-4">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          handleFlagAgent(
-                            agent.id || agent._id,
-                            agentName,
-                            agent.isFlagged,
-                          )
-                        }
-                        className={
-                          agent.isFlagged
-                            ? "border-green-200 text-green-600 hover:bg-green-50"
-                            : "border-red-200 text-red-600 hover:bg-red-50"
-                        }
-                      >
-                        <Flag className="h-4 w-4 mr-1" />
-                        {agent.isFlagged ? "Unflag" : "Flag"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewAgent(agent.id || agent._id)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleFlagAgent(
+                              agent.id || agent._id,
+                              agentName,
+                              agent.isFlagged,
+                            )
+                          }
+                          className={
+                            agent.isFlagged ? "text-green-600" : "text-red-600"
+                          }
+                        >
+                          <Flag className="mr-2 h-4 w-4" />
+                          {agent.isFlagged ? "Unflag" : "Flag"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleViewAgent(agent.id || agent._id)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleChangeStatus(agent.id || agent._id, agentName)
+                          }
+                        >
+                          <UserX className="mr-2 h-4 w-4" />
+                          Change Status
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleDeleteAgent(agent.id || agent._id, agentName)
+                          }
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               );
