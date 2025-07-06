@@ -35,26 +35,6 @@ export function AddBuyerModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addPreference = () => {
-    if (
-      newPreference.trim() &&
-      !formData.preferences.includes(newPreference.trim())
-    ) {
-      setFormData((prev) => ({
-        ...prev,
-        preferences: [...prev.preferences, newPreference.trim()],
-      }));
-      setNewPreference("");
-    }
-  };
-
-  const removePreference = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      preferences: prev.preferences.filter((_, i) => i !== index),
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
