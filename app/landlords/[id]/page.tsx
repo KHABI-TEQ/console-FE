@@ -273,9 +273,9 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active Listings</p>
+                  <p className="text-sm text-gray-600">Total Transactions</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {landlord.stats.activeListings}
+                    {landlord.stats.totalTransactions}
                   </p>
                 </div>
                 <Home className="h-8 w-8 text-green-600" />
