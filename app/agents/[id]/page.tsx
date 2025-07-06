@@ -68,13 +68,7 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     queryFn: () => apiService.getAgentDetails(agentId!),
     enabled: !!agentId,
   });
-
-  const { data: propertiesResponse, isLoading: propertiesLoading } = useQuery({
-    queryKey: ["agent-properties", agentId],
-    queryFn: () => apiService.getAgentProperties(agentId!),
-    enabled: !!agentId,
-  });
-
+ 
   // Extract data from API response or use fallback
   const agentData = agentResponse?.data;
   const agent = agentData?.user
