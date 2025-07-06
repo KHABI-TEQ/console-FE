@@ -59,6 +59,7 @@ function PropertiesContent() {
 
   const handlePageChange = (page: number) => {
     setPage(page);
+    fetchProperties({ ...filters, page, limit: 12 });
   };
 
   const handleRefresh = () => {
@@ -66,7 +67,7 @@ function PropertiesContent() {
     refreshProperties();
   };
 
-  if (isPropertiesLoading && !propertiesResponse) {
+  if (isPropertiesLoading && properties.length === 0) {
     return (
       <AdminLayout>
         <PropertiesSkeleton />

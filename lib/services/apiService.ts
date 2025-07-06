@@ -552,10 +552,6 @@ class ApiService {
     return this.delete(`/brief/${id}`);
   }
 
-  async getSubmittedBriefs(filters?: any): Promise<ApiResponse<any[]>> {
-    return this.get("/submitted-briefs", filters);
-  }
-
   // Contact-specific methods
   async getContacts(filters?: any): Promise<ApiResponse<any[]>> {
     return this.get("/contacts", filters);
