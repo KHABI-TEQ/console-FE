@@ -207,10 +207,12 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
             </Button>
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={landlord.avatar} />
+                <AvatarImage
+                  src={landlord.profile_picture || "/placeholder.svg"}
+                />
                 <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white text-lg font-medium">
-                  {landlord.firstName[0]}
-                  {landlord.lastName[0]}
+                  {landlord.firstName?.[0] || "L"}
+                  {landlord.lastName?.[0] || "L"}
                 </AvatarFallback>
               </Avatar>
               <div>
