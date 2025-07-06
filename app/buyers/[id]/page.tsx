@@ -227,7 +227,7 @@ export default function BuyerDetailPage() {
       <div className="p-4 sm:p-6 space-y-6">
         <PageHeader
           title="Buyer Details"
-          description={`Complete profile and activity for ${buyer.fullName || `${buyer.firstName} ${buyer.lastName}`.trim()}`}
+          description={`Complete profile and activity for ${buyer?.fullName || `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() || "Unknown Buyer"}`}
         >
           <Button
             variant="outline"
