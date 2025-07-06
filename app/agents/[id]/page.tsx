@@ -68,7 +68,7 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     queryFn: () => apiService.getAgentDetails(agentId!),
     enabled: !!agentId,
   });
- 
+
   // Extract data from API response or use fallback
   const agentData = agentResponse?.data;
   const agent = agentData?.user
@@ -195,8 +195,8 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center space-x-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <Button
               variant="outline"
               size="sm"
@@ -206,148 +206,174 @@ function AgentDetailContent({ params }: AgentDetailPageProps) {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage
-                  src={agent.profile_picture || "/placeholder.svg"}
-                />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-medium">
-                  {agent.firstName?.[0] || "A"}
-                  {agent.lastName?.[0] || "N"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {agent.fullName ||
-                    `${agent.firstName || ""} ${agent.lastName || ""}`.trim() ||
-                    "Agent Name"}
-                </h1>
-                <p className="text-gray-600">
-                  {agent.companyAgent?.companyName ||
-                    agent.agentType ||
-                    "Individual Agent"}
-                </p>
-                <div className="flex items-center space-x-2 mt-1">
-                  {getStatusBadge(agent.accountStatus)}
-                  {agent.isAccountVerified && (
-                    <Badge className="bg-blue-100 text-blue-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  )}
-                  {agent.accountApproved && (
-                    <Badge className="bg-green-100 text-green-800">
-                      Approved
-                    </Badge>
-                  )}
-                  {agent.isFlagged && (
-                    <Badge className="bg-red-100 text-red-800">
-                      <Flag className="h-3 w-3 mr-1" />
-                      Flagged
-                    </Badge>
-                  )}
-                </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleFlagAgent}
+                disabled={isFlagging}
+                className={
+                  agent.isFlagged
+                    ? "border-green-200 text-green-600 hover:bg-green-50"
+                    : "border-red-200 text-red-600 hover:bg-red-50"
+                }
+              >
+                <Flag className="h-4 w-4 mr-2" />
+                {isFlagging
+                  ? "Processing..."
+                  : agent.isFlagged
+                    ? "Unflag"
+                    : "Flag"}
+              </Button>
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
+              <AvatarImage src={agent.profile_picture || "/placeholder.svg"} />
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xl font-medium">
+                {agent.firstName?.[0] || "A"}
+                {agent.lastName?.[0] || "N"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                {agent.fullName ||
+                  `${agent.firstName || ""} ${agent.lastName || ""}`.trim() ||
+                  "Agent Name"}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {agent.companyAgent?.companyName ||
+                  agent.agentType ||
+                  "Individual Agent"}
+              </p>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+                {getStatusBadge(agent.accountStatus)}
+                {agent.isAccountVerified && (
+                  <Badge className="bg-blue-100 text-blue-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Verified
+                  </Badge>
+                )}
+                {agent.accountApproved && (
+                  <Badge className="bg-green-100 text-green-800">
+                    Approved
+                  </Badge>
+                )}
+                {agent.isFlagged && (
+                  <Badge className="bg-red-100 text-red-800">
+                    <Flag className="h-3 w-3 mr-1" />
+                    Flagged
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" size="sm">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <Button variant="outline" size="sm" className="w-full">
               <Mail className="h-4 w-4 mr-2" />
               Send Email
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full">
               <Phone className="h-4 w-4 mr-2" />
               Call Agent
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={handleFlagAgent}
-              disabled={isFlagging}
-              className={
-                agent.isFlagged
-                  ? "border-green-200 text-green-600 hover:bg-green-50"
-                  : "border-red-200 text-red-600 hover:bg-red-50"
-              }
+              className="w-full sm:col-span-2"
             >
-              <Flag className="h-4 w-4 mr-2" />
-              {isFlagging
-                ? "Processing..."
-                : agent.isFlagged
-                  ? "Unflag Agent"
-                  : "Flag Agent"}
-            </Button>
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
+              <Activity className="h-4 w-4 mr-2" />
+              View Activity Log
             </Button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Properties</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">Properties</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {agent.stats?.totalProperties || 0}
                   </p>
                 </div>
-                <Building className="h-8 w-8 text-blue-600" />
+                <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Transactions</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Transactions
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {agent.stats?.totalTransactions || 0}
                   </p>
                 </div>
-                <FileText className="h-8 w-8 text-green-600" />
+                <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Completed Inspections</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Inspections
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {agent.stats?.completedInspections || 0}
                   </p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-purple-600" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Ongoing Negotiations</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Negotiations
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {agent.stats?.ongoingNegotiations || 0}
                   </p>
                 </div>
-                <Users className="h-8 w-8 text-orange-600" />
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             <Tabs defaultValue="properties" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="properties">Properties</TabsTrigger>
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="properties" className="text-xs sm:text-sm">
+                  Properties
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="text-xs sm:text-sm"
+                >
+                  Transactions
+                </TabsTrigger>
+                <TabsTrigger value="inspections" className="text-xs sm:text-sm">
+                  Inspections
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="properties">

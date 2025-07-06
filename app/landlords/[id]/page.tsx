@@ -67,7 +67,6 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
     enabled: !!landlordId,
   });
 
-
   // Extract data from API response or use fallback
   const landlordData = landlordResponse?.data;
   const landlord = landlordData?.user
@@ -189,8 +188,8 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center space-x-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <Button
               variant="outline"
               size="sm"
@@ -200,125 +199,148 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage
-                  src={landlord.profile_picture || "/placeholder.svg"}
-                />
-                <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white text-lg font-medium">
-                  {landlord.firstName?.[0] || "L"}
-                  {landlord.lastName?.[0] || "L"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {landlord.fullName ||
-                    `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim() ||
-                    "Unknown Landlord"}
-                </h1>
-                <p className="text-gray-600">
-                  {landlord.userType || "Landowner"}
-                </p>
-                <div className="flex items-center space-x-2 mt-1">
-                  {getStatusBadge(landlord.accountStatus)}
-                  {landlord.isAccountVerified && (
-                    <Badge className="bg-blue-100 text-blue-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  )}
-                  {landlord.accountApproved && (
-                    <Badge className="bg-green-100 text-green-800">
-                      Approved
-                    </Badge>
-                  )}
-                  {landlord.accountId && (
-                    <Badge variant="outline">ID: {landlord.accountId}</Badge>
-                  )}
-                </div>
+            <Button variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
+              <AvatarImage
+                src={landlord.profile_picture || "/placeholder.svg"}
+              />
+              <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white text-xl font-medium">
+                {landlord.firstName?.[0] || "L"}
+                {landlord.lastName?.[0] || "L"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                {landlord.fullName ||
+                  `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim() ||
+                  "Unknown Landlord"}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {landlord.userType || "Landowner"}
+              </p>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+                {getStatusBadge(landlord.accountStatus)}
+                {landlord.isAccountVerified && (
+                  <Badge className="bg-blue-100 text-blue-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Verified
+                  </Badge>
+                )}
+                {landlord.accountApproved && (
+                  <Badge className="bg-green-100 text-green-800">
+                    Approved
+                  </Badge>
+                )}
+                {landlord.accountId && (
+                  <Badge variant="outline">ID: {landlord.accountId}</Badge>
+                )}
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" size="sm">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <Button variant="outline" size="sm" className="w-full">
               <Mail className="h-4 w-4 mr-2" />
               Send Email
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full">
               <Phone className="h-4 w-4 mr-2" />
               Call Landlord
             </Button>
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:col-span-2 lg:col-span-1"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              View Reports
             </Button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Properties</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">Properties</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {landlord.stats.totalProperties}
                   </p>
                 </div>
-                <Building className="h-8 w-8 text-blue-600" />
+                <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Transactions</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Transactions
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {landlord.stats.totalTransactions}
                   </p>
                 </div>
-                <Home className="h-8 w-8 text-green-600" />
+                <Home className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Completed Inspections</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Inspections
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {landlord.stats.completedInspections}
                   </p>
                 </div>
-                <Users className="h-8 w-8 text-purple-600" />
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending Negotiations</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Negotiations
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {landlord.stats.pendingNegotiations}
                   </p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-orange-600" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             <Tabs defaultValue="properties" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="properties">Properties</TabsTrigger>
-                <TabsTrigger value="tenants">Tenants</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="properties" className="text-xs sm:text-sm">
+                  Properties
+                </TabsTrigger>
+                <TabsTrigger value="tenants" className="text-xs sm:text-sm">
+                  Tenants
+                </TabsTrigger>
+                <TabsTrigger value="activity" className="text-xs sm:text-sm">
+                  Activity
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="properties">
