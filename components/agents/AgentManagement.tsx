@@ -73,6 +73,8 @@ import {
   MoreHorizontal,
   Trash2,
   UserX,
+  Power,
+  PowerOff,
 } from "lucide-react";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState, AgentsEmptyState } from "@/components/shared/EmptyState";
@@ -116,6 +118,17 @@ export function AgentManagement({
     useState(false);
   const [selectedUpgradeRequest, setSelectedUpgradeRequest] =
     useState<any>(null);
+
+  // Agent status and delete modal states
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAgentForAction, setSelectedAgentForAction] = useState<{
+    id: string;
+    name: string;
+    isActive: boolean;
+  } | null>(null);
+  const [statusReason, setStatusReason] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
 
   // Pagination for different sections
   const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
@@ -300,7 +313,7 @@ export function AgentManagement({
 
   const handleViewAgent = (agentId: string) => {
     router.push(`/agents/${agentId}`);
-  }; 
+  };
 
   const handleVerificationFilterChange = (value: string) => {
     setVerificationFilter(value);
@@ -377,43 +390,67 @@ export function AgentManagement({
     });
   };
 
-  const handleChangeStatus = (agentId: string, agentName: string) => {
-    confirmAction({
-      title: "Change Agent Status",
-      description: `Are you sure you want to change the status for ${agentName}? This will affect their account access.`,
-      confirmText: "Change Status",
-      cancelText: "Cancel",
-      variant: "warning",
-      onConfirm: async () => {
-        showLoader();
-        try {
-          // This would call an API to change status - using deleteAgent for now as placeholder
-          await deleteAgent(agentId);
-          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-        } finally {
-          hideLoader();
-        }
-      },
+  const handleToggleAgentStatus = (
+    agentId: string,
+    agentName: string,
+    isActive: boolean,
+  ) => {
+    setSelectedAgentForAction({
+      id: agentId,
+      name: agentName,
+      isActive: isActive,
     });
+    setStatusDialogOpen(true);
+  };
+
+  const handleStatusSubmit = async () => {
+    if (!selectedAgentForAction) return;
+
+    try {
+      showLoader();
+      const response = await apiService.updateAgentStatus(
+        selectedAgentForAction.id,
+        !selectedAgentForAction.isActive,
+        statusReason,
+      );
+      if (response.success) {
+        await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        setStatusDialogOpen(false);
+        setStatusReason("");
+        setSelectedAgentForAction(null);
+      }
+    } finally {
+      hideLoader();
+    }
   };
 
   const handleDeleteAgent = (agentId: string, agentName: string) => {
-    confirmAction({
-      title: "Delete Agent",
-      description: `Are you sure you want to delete ${agentName}? This action cannot be undone and will permanently remove their account and all associated data.`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      variant: "danger",
-      onConfirm: async () => {
-        showLoader();
-        try {
-          await deleteAgent(agentId);
-          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-        } finally {
-          hideLoader();
-        }
-      },
+    setSelectedAgentForAction({
+      id: agentId,
+      name: agentName,
+      isActive: false, // not relevant for delete
     });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSubmit = async () => {
+    if (!selectedAgentForAction) return;
+
+    try {
+      showLoader();
+      const response = await apiService.deleteAgentNew(
+        selectedAgentForAction.id,
+        deleteReason,
+      );
+      if (response.success) {
+        await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        setDeleteDialogOpen(false);
+        setDeleteReason("");
+        setSelectedAgentForAction(null);
+      }
+    } finally {
+      hideLoader();
+    }
   };
 
   // Filter functions
@@ -947,11 +984,32 @@ export function AgentManagement({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                            handleChangeStatus(agent.id || agent._id, agentName)
+                            handleToggleAgentStatus(
+                              agent.id || agent._id,
+                              agentName,
+                              agent.accountStatus === "active" &&
+                                !agent.isInActive,
+                            )
+                          }
+                          className={
+                            agent.accountStatus === "active" &&
+                            !agent.isInActive
+                              ? "text-orange-600"
+                              : "text-green-600"
                           }
                         >
-                          <UserX className="mr-2 h-4 w-4" />
-                          Change Status
+                          {agent.accountStatus === "active" &&
+                          !agent.isInActive ? (
+                            <>
+                              <PowerOff className="mr-2 h-4 w-4" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <Power className="mr-2 h-4 w-4" />
+                              Activate
+                            </>
+                          )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -1041,7 +1099,7 @@ export function AgentManagement({
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white font-medium">
-                      {((landlord.fullName || ""))
+                      {(landlord.fullName || "")
                         .trim()
                         .split(" ")
                         .map((n: string) => n[0])
@@ -1050,8 +1108,7 @@ export function AgentManagement({
                   </Avatar>
                   <div>
                     <p className="font-medium text-gray-900">
-                      {(
-                        (landlord.fullName || "")).trim() || "Unknown Landlord"}
+                      {(landlord.fullName || "").trim() || "Unknown Landlord"}
                     </p>
                     <div className="flex items-center space-x-1 mt-1">
                       {landlord.accountId && (
@@ -1739,6 +1796,96 @@ export function AgentManagement({
         }}
         request={selectedUpgradeRequest}
       />
+
+      {/* Agent Status Dialog */}
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedAgentForAction?.isActive ? "Deactivate" : "Activate"}{" "}
+              Agent
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to{" "}
+              {selectedAgentForAction?.isActive ? "deactivate" : "activate"}{" "}
+              {selectedAgentForAction?.name}? Please provide a reason.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="reason">Reason</Label>
+              <Textarea
+                id="reason"
+                placeholder={`Enter reason for ${
+                  selectedAgentForAction?.isActive
+                    ? "deactivating"
+                    : "activating"
+                } this agent...`}
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusSubmit}
+              disabled={!statusReason.trim()}
+              className={
+                selectedAgentForAction?.isActive
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }
+            >
+              {selectedAgentForAction?.isActive ? "Deactivate" : "Activate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Agent Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedAgentForAction?.name}?
+              This action cannot be undone and will permanently remove their
+              account and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="deleteReason">Reason for deletion</Label>
+              <Textarea
+                id="deleteReason"
+                placeholder="Enter reason for deleting this agent..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSubmit}
+              disabled={!deleteReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
