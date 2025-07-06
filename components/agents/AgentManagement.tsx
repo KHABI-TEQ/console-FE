@@ -86,6 +86,7 @@ export function AgentManagement({
   const tabFromUrl = searchParams.get("tab") as
     | "pending-agents"
     | "approved-agents"
+    | "upgrade-requests"
     | "landlords"
     | null;
   const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
