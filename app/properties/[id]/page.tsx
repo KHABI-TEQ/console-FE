@@ -126,6 +126,7 @@ export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addNotification } = useApp();
+  const { confirmAction } = useConfirmation();
   const [activeTab, setActiveTab] = useState("overview");
   const [inspectionPage, setInspectionPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
