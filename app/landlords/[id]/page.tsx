@@ -215,9 +215,13 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {landlord.firstName} {landlord.lastName}
+                  {landlord.fullName ||
+                    `${landlord.firstName || ""} ${landlord.lastName || ""}`.trim() ||
+                    "Unknown Landlord"}
                 </h1>
-                <p className="text-gray-600">{landlord.userType} Landlord</p>
+                <p className="text-gray-600">
+                  {landlord.userType || "Landowner"}
+                </p>
                 <div className="flex items-center space-x-2 mt-1">
                   {getStatusBadge(landlord.accountStatus)}
                   {landlord.isAccountVerified && (
