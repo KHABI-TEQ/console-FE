@@ -502,7 +502,7 @@ class ApiService {
   }
 
   async getBuyer(id: string): Promise<ApiResponse<any>> {
-    return this.get(`/buyer/${id}`);
+    return this.get(`/buyers/${id}`);
   }
 
   async createBuyer(buyerData: any): Promise<ApiResponse<any>> {
@@ -510,11 +510,11 @@ class ApiService {
   }
 
   async updateBuyer(id: string, buyerData: any): Promise<ApiResponse<any>> {
-    return this.put(`/buyer/${id}`, buyerData);
+    return this.put(`/buyers/${id}/update`, buyerData);
   }
 
   async deleteBuyer(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/buyer/${id}`);
+    return this.delete(`/buyers/${id}/delete`);
   }
 
   async getBuyerInspections(
@@ -550,27 +550,6 @@ class ApiService {
 
   async deleteBrief(id: string): Promise<ApiResponse<any>> {
     return this.delete(`/brief/${id}`);
-  }
-
-  // Contact-specific methods
-  async getContacts(filters?: any): Promise<ApiResponse<any[]>> {
-    return this.get("/contacts", filters);
-  }
-
-  async getContact(id: string): Promise<ApiResponse<any>> {
-    return this.get(`/contact/${id}`);
-  }
-
-  async createContact(contactData: any): Promise<ApiResponse<any>> {
-    return this.post("/contacts", contactData);
-  }
-
-  async updateContact(id: string, contactData: any): Promise<ApiResponse<any>> {
-    return this.put(`/contact/${id}`, contactData);
-  }
-
-  async deleteContact(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/contact/${id}`);
   }
 
   // Preferences-specific methods

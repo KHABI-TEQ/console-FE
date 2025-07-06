@@ -92,12 +92,6 @@ const navItems: NavItem[] = [
     disabled: false,
   },
   {
-    href: "/contacts",
-    label: "Contacts",
-    icon: MessageSquare,
-    disabled: false,
-  },
-  {
     href: "/preferences",
     label: "Preferences",
     icon: Settings,
