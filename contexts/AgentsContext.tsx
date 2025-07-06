@@ -195,7 +195,7 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const getAgentProperties = useCallback(
     async (agentId: string): Promise<any[]> => {
       try {
-        const response = await apiService.getAgentProperties(agentId);
+        const response = await apiService.getUserProperties(agentId);
         if (response.success) {
           return response.data || [];
         } else {

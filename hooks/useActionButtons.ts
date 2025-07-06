@@ -42,7 +42,7 @@ export function useActionButtons({
           let response;
 
           switch (entityType) {
-            case "property":
+            case "propertie":
               response = await apiService.deleteProperty(id);
               break;
             case "agent":
@@ -110,11 +110,11 @@ export function useActionButtons({
           let response;
 
           switch (entityType) {
-            case "property":
+            case "propertie":
               response = await apiService.approveBrief(id);
               break;
             case "agent":
-              response = await apiService.approveAgent(id, 1);
+              response = await apiService.approveAgent(id, true);
               break;
             default:
               throw new Error(`Approval not implemented for ${entityType}`);
@@ -161,11 +161,11 @@ export function useActionButtons({
           let response;
 
           switch (entityType) {
-            case "property":
+            case "propertie":
               response = await apiService.rejectBrief(id);
               break;
             case "agent":
-              response = await apiService.approveAgent(id, 0);
+              response = await apiService.approveAgent(id, false);
               break;
             default:
               throw new Error(`Rejection not implemented for ${entityType}`);
