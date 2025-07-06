@@ -218,7 +218,9 @@ function PropertiesContent() {
           {properties.length > 0 && pagination.totalPages > 1 && (
             <div
               className={
-                isPropertiesLoading ? "opacity-50 pointer-events-none" : ""
+                isPropertiesLoading || isRefreshing
+                  ? "opacity-50 pointer-events-none"
+                  : ""
               }
             >
               <Pagination
