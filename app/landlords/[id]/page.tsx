@@ -73,79 +73,49 @@ function LandlordDetailContent({ params }: LandlordDetailPageProps) {
     enabled: !!landlordId,
   });
 
-  // Mock data for demonstration - replace with actual API data when available
-  const mockLandlord = {
-    _id: landlordId,
-    firstName: "John",
-    lastName: "Smith",
-    email: "john.smith@example.com",
-    phoneNumber: "+234 803 456 7890",
-    role: "Landlord",
-    avatar: "/placeholder.svg",
-    isAccountVerified: true,
-    accountApproved: true,
-    accountStatus: "active",
-    isFlagged: false,
-    isInActive: false,
-    createdAt: "2024-06-01T13:39:07.618Z",
-    updatedAt: "2024-06-01T13:39:07.618Z",
-    bio: "Experienced property owner with a diverse portfolio of residential and commercial properties across Lagos and Abuja. Committed to providing quality housing solutions.",
-    location: "Lagos, Nigeria",
-    userType: "Individual",
-    accountId: "LL001234",
-    stats: {
-      totalProperties: 12,
-      activeListings: 8,
-      totalTenants: 45,
-      totalRevenue: 850000000,
-      rating: 4.6,
-      reviews: 32,
-      occupancyRate: 92,
-      avgRent: 2500000,
-    },
-    bankDetails: {
-      accountName: "John Smith",
-      accountNumber: "0123456789",
-      bankName: "First Bank of Nigeria",
-      isVerified: true,
-    },
-  };
+  // Extract data from API response or use fallback
+  const landlordData = landlordResponse?.data;
+  const landlord = landlordData?.user
+    ? {
+        ...landlordData.user,
+        stats: landlordData.stats || {
+          totalProperties: landlordData.properties?.length || 0,
+          totalTransactions: landlordData.transactions?.length || 0,
+          totalEarned: landlordData.stats?.totalEarned || 0,
+          completedInspections:
+            landlordData.inspections?.filter(
+              (i: any) => i.status === "completed",
+            )?.length || 0,
+          pendingNegotiations:
+            landlordData.inspections?.filter(
+              (i: any) => i.stage === "negotiation",
+            )?.length || 0,
+        },
+      }
+    : {
+        _id: landlordId,
+        firstName: "Landlord",
+        lastName: "Name",
+        email: "landlord@example.com",
+        phoneNumber: "+234 000 000 0000",
+        fullName: "Landlord Name",
+        userType: "Landowners",
+        accountApproved: false,
+        accountStatus: "pending",
+        isFlagged: false,
+        profile_picture: "/placeholder.svg",
+        stats: {
+          totalProperties: 0,
+          totalTransactions: 0,
+          totalEarned: 0,
+          completedInspections: 0,
+          pendingNegotiations: 0,
+        },
+      };
 
-  const mockProperties = [
-    {
-      _id: "1",
-      title: "Modern 3-Bedroom Apartment",
-      location: "Victoria Island, Lagos",
-      price: 75000000,
-      type: "Residential",
-      status: "occupied",
-      tenant: "Sarah Johnson",
-      images: [
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
-      ],
-      bedrooms: 3,
-      bathrooms: 2,
-      monthlyRent: 2500000,
-      createdAt: "2024-01-15T10:30:00Z",
-    },
-    {
-      _id: "2",
-      title: "Executive Office Complex",
-      location: "Ikoyi, Lagos",
-      price: 450000000,
-      type: "Commercial",
-      status: "vacant",
-      images: [
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
-      ],
-      size: "3000 sqft",
-      monthlyRent: 8500000,
-      createdAt: "2024-01-10T14:20:00Z",
-    },
-  ];
-
-  const landlord = mockLandlord;
-  const properties = mockProperties;
+  const properties = landlordData?.properties || [];
+  const transactions = landlordData?.transactions || [];
+  const inspections = landlordData?.inspections || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
