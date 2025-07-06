@@ -38,18 +38,9 @@ interface EditBuyerModalProps {
   onSuccess?: () => void;
   buyerData?: {
     id: string;
-    name: string;
+    fullName: string;
     email: string;
-    phone: string;
-    location: string;
-    status: string;
-    budgetMin: number;
-    budgetMax: number;
-    preferences: string[];
-    agent: string;
-    preApproved: boolean;
-    firstTimeBuyer: boolean;
-    notes: string;
+    phoneNumber: string;
   };
 }
 
@@ -60,18 +51,9 @@ export function EditBuyerModal({
   buyerData,
 }: EditBuyerModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
-    phone: "",
-    location: "",
-    status: "Lead",
-    budgetMin: "",
-    budgetMax: "",
-    preferences: [] as string[],
-    agent: "",
-    preApproved: false,
-    firstTimeBuyer: false,
-    notes: "",
+    phoneNumber: "",
   });
   const [newPreference, setNewPreference] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,18 +61,9 @@ export function EditBuyerModal({
   useEffect(() => {
     if (buyerData) {
       setFormData({
-        name: buyerData.name || "",
+        fullName: buyerData.fullName || "",
         email: buyerData.email || "",
-        phone: buyerData.phone || "",
-        location: buyerData.location || "",
-        status: buyerData.status || "Lead",
-        budgetMin: buyerData.budgetMin?.toString() || "",
-        budgetMax: buyerData.budgetMax?.toString() || "",
-        preferences: buyerData.preferences || [],
-        agent: buyerData.agent || "",
-        preApproved: buyerData.preApproved || false,
-        firstTimeBuyer: buyerData.firstTimeBuyer || false,
-        notes: buyerData.notes || "",
+        phoneNumber: buyerData.phoneNumber || "",
       });
     }
   }, [buyerData]);

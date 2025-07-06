@@ -88,10 +88,7 @@ export function PropertiesProvider({
           limit: pagination.perPage,
         };
 
-        // Use submitted briefs endpoint if userType is specified, otherwise use all-properties
-        const response = mergedFilters.userType
-          ? await apiService.getSubmittedBriefs(mergedFilters)
-          : await apiService.getAllProperties(mergedFilters);
+        const response = await apiService.getAllProperties(mergedFilters);
 
         if (response.success) {
           setProperties(response.data || []);
