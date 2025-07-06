@@ -47,8 +47,14 @@ interface AgentsContextType {
   upgradeRequests: any[];
   pendingLoading: boolean;
   approvedLoading: boolean;
-  fetchPendingAgents: () => Promise<void>;
-  fetchApprovedAgents: (type?: string) => Promise<void>;
+  pendingPagination: any;
+  approvedPagination: any;
+  fetchPendingAgents: (
+    page?: number,
+    search?: string,
+    verified?: string,
+  ) => Promise<void>;
+  fetchApprovedAgents: (page?: number, search?: string) => Promise<void>;
   fetchUpgradeRequests: () => Promise<void>;
   approveAgent: (agentId: string, approved: number) => Promise<void>;
 }
@@ -72,6 +78,18 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
   const [upgradeRequests, setUpgradeRequests] = useState<any[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [approvedLoading, setApprovedLoading] = useState(false);
+  const [pendingPagination, setPendingPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const [approvedPagination, setApprovedPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
   const { addNotification } = useApp();
 
   const fetchAgents = useCallback(
@@ -199,37 +217,51 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     await fetchAgents();
   }, [fetchAgents]);
 
-  const fetchPendingAgents = useCallback(async () => {
-    setPendingLoading(true);
-    try {
-      const response = await apiService.getPendingAgents();
-      if (response.success) {
-        setPendingAgents(response.users || response.data || []);
-      } else {
+  const fetchPendingAgents = useCallback(
+    async (page: number = 1, search?: string, verified?: string) => {
+      setPendingLoading(true);
+      try {
+        const response = await apiService.getPendingAgents(
+          page,
+          10,
+          search,
+          verified,
+        );
+        if (response.success) {
+          setPendingAgents(response.users || response.data || []);
+          if (response.pagination) {
+            setPendingPagination(response.pagination);
+          }
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to fetch pending agents",
+          });
+        }
+      } catch (error) {
         addNotification({
           type: "error",
           title: "Error",
-          message: response.error || "Failed to fetch pending agents",
+          message: "Failed to fetch pending agents",
         });
+      } finally {
+        setPendingLoading(false);
       }
-    } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Error",
-        message: "Failed to fetch pending agents",
-      });
-    } finally {
-      setPendingLoading(false);
-    }
-  }, [addNotification]);
+    },
+    [addNotification],
+  );
 
   const fetchApprovedAgents = useCallback(
-    async (type: string = "all") => {
+    async (page: number = 1, search?: string) => {
       setApprovedLoading(true);
       try {
-        const response = await apiService.getApprovedAgents(type);
+        const response = await apiService.getApprovedAgents(page, 10, search);
         if (response.success) {
           setApprovedAgents(response.users || response.data || []);
+          if (response.pagination) {
+            setApprovedPagination(response.pagination);
+          }
         } else {
           addNotification({
             type: "error",
@@ -358,6 +390,8 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     upgradeRequests,
     pendingLoading,
     approvedLoading,
+    pendingPagination,
+    approvedPagination,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
