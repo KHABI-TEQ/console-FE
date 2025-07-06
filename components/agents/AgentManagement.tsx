@@ -71,7 +71,11 @@ import { apiService } from "@/lib/services/apiService";
 import { formatCurrency } from "@/lib/utils";
 
 interface AgentManagementProps {
-  defaultTab?: "pending-agents" | "approved-agents" | "landlords";
+  defaultTab?:
+    | "pending-agents"
+    | "approved-agents"
+    | "upgrade-requests"
+    | "landlords";
 }
 
 export function AgentManagement({
