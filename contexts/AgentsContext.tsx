@@ -47,16 +47,20 @@ interface AgentsContextType {
   upgradeRequests: any[];
   pendingLoading: boolean;
   approvedLoading: boolean;
+  upgradeLoading: boolean;
   pendingPagination: any;
   approvedPagination: any;
+  upgradePagination: any;
   fetchPendingAgents: (
     page?: number,
     search?: string,
     verified?: string,
   ) => Promise<void>;
   fetchApprovedAgents: (page?: number, search?: string) => Promise<void>;
-  fetchUpgradeRequests: () => Promise<void>;
+  fetchUpgradeRequests: (page?: number) => Promise<void>;
   approveAgent: (agentId: string, approved: number) => Promise<void>;
+  approveUpgradeRequest: (requestId: string) => Promise<void>;
+  rejectUpgradeRequest: (requestId: string, reason?: string) => Promise<void>;
 }
 
 const AgentsContext = createContext<AgentsContextType | undefined>(undefined);
