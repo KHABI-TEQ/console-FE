@@ -102,6 +102,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@radix-ui/react-label";
 
 interface AgentManagementProps {
   defaultTab?:
