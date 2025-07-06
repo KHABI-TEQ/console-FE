@@ -344,8 +344,28 @@ class ApiService {
     return this.post("/approve-agent", { agentId, approved });
   }
 
-  async getUpgradeRequests(): Promise<ApiResponse<any>> {
-    return this.get("/upgrade-agent");
+  async getUpgradeRequests(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<ApiResponse<any>> {
+    const params = {
+      page: page.toString(),
+      limit: limit.toString(),
+    };
+    return this.get("/agents/upgrade-requests", params);
+  }
+
+  async approveUpgradeRequest(requestId: string): Promise<ApiResponse<any>> {
+    return this.post(`/agents/upgrade-requests/${requestId}/approve`);
+  }
+
+  async rejectUpgradeRequest(
+    requestId: string,
+    reason?: string,
+  ): Promise<ApiResponse<any>> {
+    return this.post(`/agents/upgrade-requests/${requestId}/reject`, {
+      reason,
+    });
   }
 
   // Landowners-specific methods
