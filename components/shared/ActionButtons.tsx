@@ -39,6 +39,7 @@ interface ActionButtonsProps {
   size?: "sm" | "default";
   variant?: "inline" | "dropdown";
   onRefresh?: () => void;
+  onEdit?: (entityId: string) => void;
 }
 
 export function ActionButtons({
@@ -53,6 +54,7 @@ export function ActionButtons({
   size = "sm",
   variant = "inline",
   onRefresh,
+  onEdit,
 }: ActionButtonsProps) {
   const {
     handleView,
@@ -62,6 +64,14 @@ export function ActionButtons({
     handleApprove,
     handleReject,
   } = useActionButtons({ entityType, onRefresh });
+
+  const handleEditClick = () => {
+    if (onEdit) {
+      onEdit(entityId);
+    } else {
+      handleEdit(entityId);
+    }
+  };
 
   if (variant === "dropdown") {
     return (
@@ -76,7 +86,7 @@ export function ActionButtons({
             <Eye className="mr-2 h-4 w-4" />
             View Details
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleEdit(entityId)}>
+          <DropdownMenuItem onClick={handleEditClick}>
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
@@ -132,7 +142,7 @@ export function ActionButtons({
         variant="outline"
         size={size}
         className="hover:bg-green-50 hover:border-green-300"
-        onClick={() => handleEdit(entityId)}
+        onClick={handleEditClick}
       >
         <Edit className="h-4 w-4" />
       </Button>

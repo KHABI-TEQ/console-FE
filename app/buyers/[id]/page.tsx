@@ -43,6 +43,7 @@ import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Pagination } from "@/components/shared/Pagination";
+import { EditBuyerModal } from "@/components/modals/EditBuyerModal";
 import { apiService } from "@/lib/services/apiService";
 
 export default function BuyerDetailPage() {
@@ -52,6 +53,7 @@ export default function BuyerDetailPage() {
   const [activeTab, setActiveTab] = useState("inspections");
   const [inspectionsPage, setInspectionsPage] = useState(1);
   const [preferencesPage, setPreferencesPage] = useState(1);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const limit = 10;
 
   // Fetch buyer details
@@ -171,6 +173,10 @@ export default function BuyerDetailPage() {
     }
   };
 
+  const handleEditBuyer = () => {
+    setIsEditModalOpen(true);
+  };
+
   if (isBuyerLoading) {
     return (
       <AdminLayout>
@@ -245,7 +251,10 @@ export default function BuyerDetailPage() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            onClick={handleEditBuyer}
+          >
             <Edit className="h-4 w-4 mr-2" />
             Edit Buyer
           </Button>
@@ -652,6 +661,28 @@ export default function BuyerDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <EditBuyerModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => {
+          handleRefresh();
+          setIsEditModalOpen(false);
+        }}
+        buyerData={
+          buyer
+            ? {
+                id: buyer._id || buyer.id,
+                fullName:
+                  buyer.fullName ||
+                  `${buyer.firstName || ""} ${buyer.lastName || ""}`.trim() ||
+                  "Unknown Buyer",
+                email: buyer.email || "",
+                phoneNumber: buyer.phoneNumber || "",
+              }
+            : undefined
+        }
+      />
     </AdminLayout>
   );
 }

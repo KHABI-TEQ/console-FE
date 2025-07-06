@@ -404,6 +404,7 @@ function BuyersContent() {
                             showMore={true}
                             variant="dropdown"
                             onRefresh={handleRefresh}
+                            onEdit={() => handleEditBuyer(buyer)}
                           />
                         </TableCell>
                       </TableRow>
