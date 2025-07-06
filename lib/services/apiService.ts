@@ -517,6 +517,20 @@ class ApiService {
     return this.delete(`/buyer/${id}`);
   }
 
+  async getBuyerInspections(
+    buyerId: string,
+    filters?: any,
+  ): Promise<ApiResponse<any>> {
+    return this.get(`/buyers/${buyerId}/inspections`, filters);
+  }
+
+  async getBuyerPreferencesByBuyerId(
+    buyerId: string,
+    filters?: any,
+  ): Promise<ApiResponse<any>> {
+    return this.get(`/buyers/${buyerId}/preferences`, filters);
+  }
+
   // Brief-specific methods
   async getBriefs(filters?: any): Promise<ApiResponse<any[]>> {
     return this.get("/briefs", filters);
