@@ -26,14 +26,15 @@ interface Property {
   features: string[];
 }
 
+
 interface PropertiesContextType {
   properties: Property[];
   selectedProperty: Property | null;
   isLoading: boolean;
   filters: any;
   pagination: {
-    page: number;
-    limit: number;
+    currentPage: number;
+    perPage: number;
     total: number;
     totalPages: number;
   };
@@ -66,8 +67,8 @@ export function PropertiesProvider({
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<any>({});
   const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
+    currentPage: 1,
+    perPage: 10,
     total: 0,
     totalPages: 0,
   });
@@ -78,12 +79,12 @@ export function PropertiesProvider({
       setIsLoading(true);
       try {
         const currentPage =
-          newFilters?.page !== undefined ? newFilters.page : pagination.page;
+          newFilters?.page !== undefined ? newFilters.page : pagination.currentPage;
         const mergedFilters = {
           ...filters,
           ...newFilters,
           page: currentPage,
-          limit: pagination.limit,
+          limit: pagination.perPage,
         };
 
         // Use submitted briefs endpoint if userType is specified
@@ -95,18 +96,18 @@ export function PropertiesProvider({
           setProperties(response.data || []);
           if (response.pagination) {
             setPagination({
-              page:
-                response.pagination.currentPage ||
+              currentPage:
+                response.pagination?.currentPage ||
                 response.pagination.page ||
                 1,
-              limit:
-                response.pagination.perPage || response.pagination.limit || 10,
+              perPage:
+                response.pagination?.perPage || response.pagination.limit || 10,
               total: response.pagination.total || 0,
               totalPages:
                 response.pagination.totalPages ||
                 Math.ceil(
                   (response.pagination.total || 0) /
-                    (response.pagination.perPage ||
+                    (response?.pagination?.perPage ||
                       response.pagination.limit ||
                       10),
                 ),
@@ -115,7 +116,7 @@ export function PropertiesProvider({
             setPagination((prev) => ({
               ...prev,
               total: response.total || 0,
-              totalPages: Math.ceil((response.total || 0) / prev.limit),
+              totalPages: Math.ceil((response.total || 0) / prev.perPage),
             }));
           }
         } else {
@@ -135,7 +136,7 @@ export function PropertiesProvider({
         setIsLoading(false);
       }
     },
-    [pagination.page, pagination.limit, addNotification],
+    [pagination.currentPage, pagination.perPage, addNotification],
   );
 
   const getProperty = useCallback(

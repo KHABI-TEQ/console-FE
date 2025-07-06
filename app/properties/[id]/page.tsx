@@ -114,6 +114,14 @@ interface InspectionRequest {
   };
 }
 
+interface PaginationMeta {
+  currentPage: number;
+  perPage: number;
+  total: number;
+  totalPages: number;
+}
+
+
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -149,11 +157,20 @@ export default function PropertyDetailPage() {
 
   const property: PropertyData | null = propertyResponse?.data || null;
   const inspections: InspectionRequest[] = inspectionsResponse?.data || [];
-  const inspectionPagination = inspectionsResponse?.pagination || {
-    total: 0,
-    currentPage: 1,
-    totalPages: 1,
-    perPage: 10,
+  // const inspectionPagination: PaginationMeta  = inspectionsResponse?.pagination || {
+  //   total: 0,
+  //   currentPage: 1,
+  //   totalPages: 1,
+  //   perPage: 10,
+  // };
+
+  const rawPagination = inspectionsResponse?.pagination;
+
+  const inspectionPagination: PaginationMeta = {
+    currentPage: rawPagination?.currentPage ?? rawPagination?.page ?? 1,
+    perPage: rawPagination?.perPage ?? rawPagination?.limit ?? 10,
+    total: rawPagination?.total ?? 0,
+    totalPages: rawPagination?.totalPages ?? 1,
   };
 
   const formatCurrency = (amount: number) => {

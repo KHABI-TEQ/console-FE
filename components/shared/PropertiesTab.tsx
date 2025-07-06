@@ -8,7 +8,7 @@ import { PropertyCard } from "@/components/shared/PropertyCard";
 import { apiService } from "@/lib/services/apiService";
 
 interface PropertiesTabProps {
-  userId: string;
+  userId: string | null;
   userType: "agent" | "landlord";
 }
 
