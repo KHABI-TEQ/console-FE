@@ -19,6 +19,7 @@ import {
 import { AddUserTypeModal } from "@/components/modals/AddUserTypeModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
 import { AgentOnboardingModal } from "@/components/modals/AgentOnboardingModal";
+import { UpgradeRequestModal } from "@/components/modals/UpgradeRequestModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
 import { useRequestLoader } from "@/components/ui/request-loader";
