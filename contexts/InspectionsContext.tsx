@@ -200,17 +200,33 @@ export function InspectionsProvider({
         const response = await apiService.updateInspectionStatus(id, status);
 
         if (!response.success) {
-          throw new Error(response.message || "Failed to update inspection status");
+          throw new Error(
+            response.message || "Failed to update inspection status",
+          );
         }
-        
-        fetchInspections();
+
+        // Update the specific inspection in the list if it exists
+        setInspections((prev) =>
+          prev.map((inspection) =>
+            inspection.id === id
+              ? { ...inspection, status: response.data?.status || status }
+              : inspection,
+          ),
+        );
+
+        // Also update selected inspection if it's the same
+        if (selectedInspection?.id === id) {
+          setSelectedInspection((prev) =>
+            prev ? { ...prev, status: response.data?.status || status } : null,
+          );
+        }
+
         return response;
-        
       } catch (error) {
         throw error;
       }
     },
-    [addNotification, fetchInspections],
+    [selectedInspection?.id],
   );
 
   const setPage = useCallback((page: number) => {

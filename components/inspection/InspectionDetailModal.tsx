@@ -56,6 +56,10 @@ import {
   Award,
   Target,
   ImageIcon,
+  Users,
+  HandCoins,
+  Timer,
+  CheckSquare,
 } from "lucide-react";
 import { apiService } from "@/lib/services/apiService";
 import { cn } from "@/lib/utils";
@@ -120,6 +124,7 @@ export function InspectionDetailModal({
     data: inspectionResponse,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["inspection", inspectionId],
     queryFn: async () => {
@@ -135,25 +140,25 @@ export function InspectionDetailModal({
 
   const inspection = inspectionResponse?.data;
 
-
-
   const approveMutation = useApiMutation({
     mutationFn: () => updateInspectionStatus(inspectionId!, "approve"),
     invalidateQueries: ["inspections", `inspection-${inspectionId}`],
     successMessage: "Inspection approved successfully",
     errorMessage: "Failed to approve inspection",
     onSuccess: () => {
-      onClose(); // Close the modal after successful approval
+      refetch();
+      onClose();
     },
   });
- 
+
   const rejectMutation = useApiMutation({
     mutationFn: () => updateInspectionStatus(inspectionId!, "reject"),
     invalidateQueries: ["inspections", `inspection-${inspectionId}`],
-    successMessage: "Inspection rejected successfully", 
+    successMessage: "Inspection rejected successfully",
     errorMessage: "Failed to reject inspection",
     onSuccess: () => {
       setRejectReason("");
+      refetch();
       onClose();
     },
   });
@@ -296,6 +301,55 @@ export function InspectionDetailModal({
     },
   ];
 
+  const activities = [
+    {
+      id: 1,
+      type: "created",
+      title: "Inspection Request Created",
+      description: `${inspection.requestedBy.fullName} requested an inspection for this property`,
+      timestamp: inspection.createdAt,
+      icon: Calendar,
+      color: "blue",
+    },
+    {
+      id: 2,
+      type: "payment",
+      title: "Transaction Payment",
+      description: "Payment receipt uploaded for inspection",
+      timestamp: inspection.transaction?.createdAt || inspection.createdAt,
+      icon: CreditCard,
+      color: "green",
+    },
+    ...(inspection.status === "inspection_approved"
+      ? [
+          {
+            id: 3,
+            type: "approved",
+            title: "Inspection Approved",
+            description: "Admin approved the inspection request",
+            timestamp: inspection.updatedAt,
+            icon: CheckCircle,
+            color: "green",
+          },
+        ]
+      : []),
+    ...(inspection.isNegotiating
+      ? [
+          {
+            id: 4,
+            type: "negotiation",
+            title: "Price Negotiation Started",
+            description: `Buyer offered ${formatCurrency(
+              inspection.negotiationPrice,
+            )}`,
+            timestamp: inspection.updatedAt,
+            icon: HandCoins,
+            color: "purple",
+          },
+        ]
+      : []),
+  ];
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-5xl overflow-y-auto">
@@ -333,6 +387,99 @@ export function InspectionDetailModal({
               </Badge>
             </div>
           </div>
+
+          {/* Show approve/reject buttons for pending transactions */}
+          {canApprove && (
+            <div className="flex items-center justify-center gap-3 mt-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200">
+              <div className="flex items-center gap-2">
+                <Timer className="h-5 w-5 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-800">
+                  Pending Transaction Approval
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span>Approve Inspection</span>
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to approve this inspection
+                        transaction? This action will notify both the buyer and
+                        seller and allow the inspection to proceed as scheduled.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => approveMutation.mutate("approve")}
+                        disabled={approveMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {approveMutation.isPending ? "Approving..." : "Approve"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center space-x-2">
+                        <XCircle className="h-5 w-5 text-red-600" />
+                        <span>Reject Inspection</span>
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Please provide a reason for rejecting this inspection.
+                        This will be communicated to the parties involved.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-4">
+                      <Textarea
+                        placeholder="Enter reason for rejection..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        className="border-gray-300 focus:border-red-500"
+                      />
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => rejectMutation.mutate("reject")}
+                        disabled={
+                          rejectMutation.isPending || !rejectReason.trim()
+                        }
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          )}
         </SheetHeader>
 
         <Tabs
@@ -356,10 +503,10 @@ export function InspectionDetailModal({
               <span className="text-xs sm:text-sm mt-1 sm:mt-0">Property</span>
             </TabsTrigger>
             <TabsTrigger
-              value="participants"
+              value="people"
               className="flex-col sm:flex-row p-2 sm:p-3"
             >
-              <User className="h-4 w-4 sm:mr-2" />
+              <Users className="h-4 w-4 sm:mr-2" />
               <span className="text-xs sm:text-sm mt-1 sm:mt-0">People</span>
             </TabsTrigger>
             <TabsTrigger
@@ -370,11 +517,13 @@ export function InspectionDetailModal({
               <span className="text-xs sm:text-sm mt-1 sm:mt-0">Financial</span>
             </TabsTrigger>
             <TabsTrigger
-              value="actions"
+              value="activities"
               className="flex-col sm:flex-row p-2 sm:p-3"
             >
-              <Shield className="h-4 w-4 sm:mr-2" />
-              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Actions</span>
+              <Activity className="h-4 w-4 sm:mr-2" />
+              <span className="text-xs sm:text-sm mt-1 sm:mt-0">
+                Activities
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -383,7 +532,7 @@ export function InspectionDetailModal({
             className="space-y-4 sm:space-y-6 mt-4 sm:mt-6"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
+              <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -402,7 +551,7 @@ export function InspectionDetailModal({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -423,7 +572,7 @@ export function InspectionDetailModal({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -445,60 +594,8 @@ export function InspectionDetailModal({
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-5 w-5" />
-                  <span>Timeline</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="h-3 w-3 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Inspection Requested</p>
-                      <p className="text-sm text-gray-500">
-                        {formatDate(inspection.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {inspection.status === "pending_inspection" && (
-                    <div className="flex items-start space-x-3">
-                      <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <Clock className="h-3 w-3 text-yellow-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Pending Approval</p>
-                        <p className="text-sm text-gray-500">
-                          Awaiting admin action
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {inspection.status === "inspection_approved" && (
-                    <div className="flex items-start space-x-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                        <Award className="h-3 w-3 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Inspection Approved</p>
-                        <p className="text-sm text-gray-500">
-                          Ready to proceed
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
             {inspection.letterOfIntention && (
-              <Card>
+              <Card className="border-gray-200">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <MessageSquare className="h-5 w-5" />
@@ -520,7 +617,7 @@ export function InspectionDetailModal({
             value="property"
             className="space-y-4 sm:space-y-6 mt-4 sm:mt-6"
           >
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden border-gray-200">
               {inspection.propertyId.pictures &&
               inspection.propertyId.pictures.length > 0 ? (
                 <div className="relative">
@@ -604,9 +701,9 @@ export function InspectionDetailModal({
             </Card>
           </TabsContent>
 
-          <TabsContent value="participants" className="space-y-6 mt-6">
+          <TabsContent value="people" className="space-y-6 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+              <Card className="border-gray-200 bg-gradient-to-br from-blue-50 to-cyan-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
@@ -646,7 +743,7 @@ export function InspectionDetailModal({
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+              <Card className="border-gray-200 bg-gradient-to-br from-green-50 to-emerald-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
@@ -681,7 +778,7 @@ export function InspectionDetailModal({
           </TabsContent>
 
           <TabsContent value="financial" className="space-y-6 mt-6">
-            <Card className="border-0 shadow-lg">
+            <Card className="border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5" />
@@ -725,7 +822,7 @@ export function InspectionDetailModal({
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg">
+            <Card className="border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5" />
@@ -769,142 +866,52 @@ export function InspectionDetailModal({
             </Card>
           </TabsContent>
 
-          <TabsContent value="actions" className="space-y-6 mt-6">
-            {canApprove || canReject ? (
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5" />
-                    <span>Administrative Actions</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {canApprove && (
-                        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                              <CheckCircle className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-green-900">
-                                Approve Inspection Transaction
-                              </h3>
-                              <p className="text-sm text-green-700">
-                                Grant permission to proceed
-                              </p>
-                            </div>
-                          </div>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve Inspection Transaction
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="flex items-center space-x-2">
-                                  <CheckCircle className="h-5 w-5 text-green-600" />
-                                  <span>Approve Inspection</span>
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to approve this
-                                  inspection transaction? This action will
-                                  notify both the buyer and seller and allow the
-                                  inspection to proceed as scheduled.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => approveMutation.mutate('approve')}
-                                  disabled={approveMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  {approveMutation.isPending
-                                    ? "Approving..."
-                                    : "Approve"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+          <TabsContent value="activities" className="space-y-6 mt-6">
+            <Card className="border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5" />
+                  <span>Activity Timeline</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {activities.map((activity, index) => (
+                    <div
+                      key={activity.id}
+                      className="flex items-start space-x-4"
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full bg-${activity.color}-100 flex items-center justify-center flex-shrink-0`}
+                      >
+                        <activity.icon
+                          className={`h-5 w-5 text-${activity.color}-600`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-900">
+                            {activity.title}
+                          </h4>
+                          <span className="text-sm text-gray-500">
+                            {formatDate(activity.timestamp)}
+                          </span>
                         </div>
-                      )}
-
-                      {canReject && (
-                        <div className="p-6 bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border border-red-200">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center">
-                              <XCircle className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-red-900">
-                                Reject Inspection
-                              </h3>
-                              <p className="text-sm text-red-700">
-                                Decline the inspection request
-                              </p>
-                            </div>
-                          </div>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject Inspection
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="flex items-center space-x-2">
-                                  <XCircle className="h-5 w-5 text-red-600" />
-                                  <span>Reject Inspection</span>
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Please provide a reason for rejecting this
-                                  inspection. This will be communicated to the
-                                  parties involved.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <div className="py-4">
-                                <Textarea
-                                  placeholder="Enter reason for rejection..."
-                                  value={rejectReason}
-                                  onChange={(e) =>
-                                    setRejectReason(e.target.value)
-                                  }
-                                  className="border-gray-300 focus:border-red-500"
-                                />
-                              </div>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => rejectMutation.mutate('reject')}
-                                  disabled={
-                                    rejectMutation.isPending ||
-                                    !rejectReason.trim()
-                                  }
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  {rejectMutation.isPending
-                                    ? "Rejecting..."
-                                    : "Reject"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      )}
+                        <p className="text-sm text-gray-600 mt-1">
+                          {activity.description}
+                        </p>
+                        {index < activities.length - 1 && (
+                          <div className="w-px h-6 bg-gray-200 ml-5 mt-4"></div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border-0 shadow-lg">
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {!canApprove && !canReject && (
+              <Card className="border-gray-200">
                 <CardContent className="text-center p-8">
                   <Info className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-600 mb-2">
