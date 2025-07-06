@@ -54,6 +54,7 @@ import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
+import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 
 interface BuyerFilters {
@@ -88,7 +89,12 @@ export default function BuyersPage() {
   });
 
   const buyers = buyersResponse?.data || [];
-  const totalCount = buyersResponse?.total || 0;
+  const pagination = buyersResponse?.pagination || {
+    total: 0,
+    currentPage: 1,
+    totalPages: 1,
+  };
+  const totalCount = pagination.total || 0;
 
   if (isLoading) {
     return (
@@ -443,6 +449,16 @@ export default function BuyersPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+            {buyers.length > 0 && pagination.totalPages > 1 && (
+              <div className="px-6 pb-6">
+                <Pagination
+                  currentPage={pagination.currentPage || page}
+                  totalItems={totalCount}
+                  itemsPerPage={limit}
+                  onPageChange={setPage}
+                />
               </div>
             )}
           </CardContent>
