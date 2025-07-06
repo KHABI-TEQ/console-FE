@@ -1209,7 +1209,6 @@ export function AgentManagement({
                     <SelectItem value="unverified">Unverified</SelectItem>
                   </SelectContent>
                 </Select>
-                </div>
               </div>
             </CardContent>
           </Card>
