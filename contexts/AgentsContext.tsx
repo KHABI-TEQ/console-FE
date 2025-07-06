@@ -389,6 +389,69 @@ export function AgentsProvider({ children }: { children: React.ReactNode }) {
     [addNotification, fetchApprovedAgents],
   );
 
+  const approveUpgradeRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const response = await apiService.approveUpgradeRequest(requestId);
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: "Upgrade request approved successfully",
+          });
+          // Refresh upgrade requests data
+          await fetchUpgradeRequests(upgradePagination.page);
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to approve upgrade request",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to approve upgrade request",
+        });
+      }
+    },
+    [addNotification, fetchUpgradeRequests, upgradePagination.page],
+  );
+
+  const rejectUpgradeRequest = useCallback(
+    async (requestId: string, reason?: string) => {
+      try {
+        const response = await apiService.rejectUpgradeRequest(
+          requestId,
+          reason,
+        );
+        if (response.success) {
+          addNotification({
+            type: "success",
+            title: "Success",
+            message: "Upgrade request rejected successfully",
+          });
+          // Refresh upgrade requests data
+          await fetchUpgradeRequests(upgradePagination.page);
+        } else {
+          addNotification({
+            type: "error",
+            title: "Error",
+            message: response.error || "Failed to reject upgrade request",
+          });
+        }
+      } catch (error) {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to reject upgrade request",
+        });
+      }
+    },
+    [addNotification, fetchUpgradeRequests, upgradePagination.page],
+  );
+
   const value: AgentsContextType = {
     agents,
     selectedAgent,
