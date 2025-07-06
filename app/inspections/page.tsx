@@ -35,11 +35,12 @@ import {
   Activity,
   Building,
   FileText,
-  Download,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Users,
+  HandCoins,
 } from "lucide-react";
 import {
   InspectionFilters,
@@ -72,7 +73,6 @@ import { apiService } from "@/lib/services/apiService";
 import { Pagination } from "@/components/shared/Pagination";
 import { InspectionsProvider } from "@/contexts/InspectionsContext";
 import { InspectionsSkeleton } from "@/components/skeletons/PageSkeletons";
-import { useRequestLoader } from "@/components/ui/request-loader";
 
 export default function InspectionsPage() {
   const [filters, setFilters] = useState<InspectionFilters>({});
@@ -84,11 +84,21 @@ export default function InspectionsPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const limit = 10;
 
+  // Fetch inspection stats
+  const {
+    data: statsResponse,
+    isLoading: statsLoading,
+    refetch: refetchStats,
+  } = useQuery({
+    queryKey: ["inspection-stats"],
+    queryFn: () => apiService.getInspectionStats(),
+  });
+
   const {
     data: inspectionsResponse,
-    isLoading,
+    isLoading: inspectionsLoading,
     error,
-    refetch,
+    refetch: refetchInspections,
   } = useQuery({
     queryKey: ["inspections", filters, page],
     queryFn: () => apiService.getInspections({ ...filters, page, limit }),
@@ -116,6 +126,11 @@ export default function InspectionsPage() {
     setIsDetailOpen(true);
   };
 
+  const handleRefresh = () => {
+    refetchStats();
+    refetchInspections();
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -133,52 +148,47 @@ export default function InspectionsPage() {
 
   const inspectionsData = inspectionsResponse?.data || [];
   const totalCount = inspectionsResponse?.total || 0;
-
-  if (isLoading) {
-    return (
-      <InspectionsProvider>
-        <AdminLayout>
-          <InspectionsSkeleton />
-        </AdminLayout>
-      </InspectionsProvider>
-    );
-  }
+  const stats = statsResponse?.data || {};
 
   const statsData = [
     {
-      title: "Pending Transaction Status",
-      value:
-        inspectionsData.filter((i) => i.status === "pending_transaction")
-          .length || 0,
-      change: "+12%",
+      title: "Total Inspections",
+      value: stats.totalInspections || 0,
+      change: "+15%",
       trend: "up",
-      icon: Calendar,
+      icon: Building,
       color: "blue",
     },
     {
-      title: "Active Negotiations",
-      value: inspectionsData.filter((i) => i.isNegotiating).length || 0,
-      change: "+8%",
+      title: "Pending Inspections",
+      value: stats.totalPendingInspections || 0,
+      change: "+12%",
       trend: "up",
-      icon: DollarSign,
-      color: "green",
-    },
-    {
-      title: "Pending Responses",
-      value:
-        inspectionsData.filter((i) => i.pendingResponseFrom !== "none")
-          .length || 0,
-      change: "-5%",
-      trend: "down",
       icon: Clock,
       color: "orange",
     },
     {
-      title: "Total Inspections",
-      value: totalCount,
-      change: "+15%",
+      title: "Completed Inspections",
+      value: stats.totalCompletedInspections || 0,
+      change: "+8%",
       trend: "up",
-      icon: Building,
+      icon: CheckCircle,
+      color: "green",
+    },
+    {
+      title: "Cancelled Inspections",
+      value: stats.totalCancelledInspections || 0,
+      change: "-5%",
+      trend: "down",
+      icon: XCircle,
+      color: "red",
+    },
+    {
+      title: "Active Negotiations",
+      value: stats.totalActiveNegotiations || 0,
+      change: "+20%",
+      trend: "up",
+      icon: HandCoins,
       color: "purple",
     },
   ];
@@ -204,7 +214,7 @@ export default function InspectionsPage() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => refetch()}
+                  onClick={handleRefresh}
                   className="w-full mt-4 bg-red-600 hover:bg-red-700"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -235,7 +245,7 @@ export default function InspectionsPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Button
                 variant="outline"
-                onClick={() => refetch()}
+                onClick={handleRefresh}
                 className="w-full sm:w-auto"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -244,35 +254,50 @@ export default function InspectionsPage() {
             </div>
           </div>
 
-          {/* Enhanced Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statsData.map((stat, index) => (
-              <Card
-                key={index}
-                className="border border-gray-200 hover:border-gray-300 transition-all duration-200 hover:shadow-md"
-              >
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
-                        {stat.title}
-                      </p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">
-                        {stat.value}
-                      </p>
-                      <div className="flex items-center mt-1 sm:mt-2"></div>
-                    </div>
-                    <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-${stat.color}-100 flex items-center justify-center flex-shrink-0 ml-2`}
-                    >
-                      <stat.icon
-                        className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600`}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            {statsLoading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <Card key={index} className="border border-gray-200">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="animate-pulse">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                            <div className="h-6 bg-gray-200 rounded w-16"></div>
+                          </div>
+                          <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              : statsData.map((stat, index) => (
+                  <Card
+                    key={index}
+                    className="border border-gray-200 hover:border-gray-300 transition-all duration-200 hover:shadow-sm"
+                  >
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                            {stat.title}
+                          </p>
+                          <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">
+                            {stat.value}
+                          </p>
+                        </div>
+                        <div
+                          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-${stat.color}-100 flex items-center justify-center flex-shrink-0 ml-2`}
+                        >
+                          <stat.icon
+                            className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600`}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
           </div>
 
           {/* Enhanced Filters */}
@@ -405,7 +430,7 @@ export default function InspectionsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {isLoading ? (
+              {inspectionsLoading ? (
                 <div className="flex flex-col items-center justify-center py-20 space-y-4">
                   <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                   <p className="text-gray-600 font-medium">
@@ -414,6 +439,18 @@ export default function InspectionsPage() {
                   <p className="text-gray-500 text-sm">
                     Please wait while we filter and fetch the latest information
                   </p>
+                </div>
+              ) : inspectionsData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                  <Activity className="h-16 w-16 text-gray-400" />
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No Inspections Found
+                    </h3>
+                    <p className="text-gray-600">
+                      No inspections match your current filters.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <>
