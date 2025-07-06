@@ -251,10 +251,13 @@ export default function InspectionsPage() {
               <Button
                 variant="outline"
                 onClick={handleRefresh}
+                disabled={isRefreshing}
                 className="w-full sm:w-auto"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+                {isRefreshing ? "Refreshing..." : "Refresh"}
               </Button>
             </div>
           </div>
