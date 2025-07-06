@@ -306,20 +306,35 @@ class ApiService {
   }
 
   // New agent management methods
-  async getPendingAgents(): Promise<ApiResponse<any>> {
-    return this.get("/all-agents", {
-      type: "all",
-      userType: "Agent",
-      approved: "false",
-    });
+  async getPendingAgents(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    verified?: string,
+  ): Promise<ApiResponse<any>> {
+    const params: any = {
+      accountApproved: "false",
+      page: page.toString(),
+      limit: limit.toString(),
+    };
+    if (search) params.search = search;
+    if (verified && verified !== "all")
+      params.isVerified = verified === "verified";
+    return this.get("/agents", params);
   }
 
-  async getApprovedAgents(type: string = "all"): Promise<ApiResponse<any>> {
-    return this.get("/all-agents", {
-      type,
-      userType: "Agent",
-      approved: "true",
-    });
+  async getApprovedAgents(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ): Promise<ApiResponse<any>> {
+    const params: any = {
+      accountApproved: "true",
+      page: page.toString(),
+      limit: limit.toString(),
+    };
+    if (search) params.search = search;
+    return this.get("/agents", params);
   }
 
   async approveAgent(
