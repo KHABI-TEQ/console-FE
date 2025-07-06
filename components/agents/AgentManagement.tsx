@@ -19,6 +19,7 @@ import {
 import { AddUserTypeModal } from "@/components/modals/AddUserTypeModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
 import { AgentOnboardingModal } from "@/components/modals/AgentOnboardingModal";
+import { UpgradeRequestModal } from "@/components/modals/UpgradeRequestModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
 import { useRequestLoader } from "@/components/ui/request-loader";
@@ -71,7 +72,11 @@ import { apiService } from "@/lib/services/apiService";
 import { formatCurrency } from "@/lib/utils";
 
 interface AgentManagementProps {
-  defaultTab?: "pending-agents" | "approved-agents" | "landlords";
+  defaultTab?:
+    | "pending-agents"
+    | "approved-agents"
+    | "upgrade-requests"
+    | "landlords";
 }
 
 export function AgentManagement({
@@ -82,6 +87,7 @@ export function AgentManagement({
   const tabFromUrl = searchParams.get("tab") as
     | "pending-agents"
     | "approved-agents"
+    | "upgrade-requests"
     | "landlords"
     | null;
   const [activeTab, setActiveTab] = useState(tabFromUrl || defaultTab);
@@ -95,10 +101,15 @@ export function AgentManagement({
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [isUpgradeRequestModalOpen, setIsUpgradeRequestModalOpen] =
+    useState(false);
+  const [selectedUpgradeRequest, setSelectedUpgradeRequest] =
+    useState<any>(null);
 
   // Pagination for different sections
   const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
   const [approvedAgentsPage, setApprovedAgentsPage] = useState(1);
+  const [upgradeRequestsPage, setUpgradeRequestsPage] = useState(1);
   const [landlordsPage, setLandlordsPage] = useState(1);
   const limit = 10;
 
@@ -117,13 +128,17 @@ export function AgentManagement({
     upgradeRequests,
     pendingLoading,
     approvedLoading,
+    upgradeLoading,
     pendingPagination,
     approvedPagination,
+    upgradePagination,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
     approveAgent,
     flagAgent,
+    approveUpgradeRequest,
+    rejectUpgradeRequest,
   } = useAgents();
 
   // Computed filtered arrays
@@ -165,6 +180,13 @@ export function AgentManagement({
       if (trackRequest(key)) {
         fetchAgentData().finally(() => untrackRequest(key));
       }
+    } else if (activeTab === "upgrade-requests") {
+      const key = `upgrade-requests-${upgradeRequestsPage}`;
+      if (trackRequest(key)) {
+        fetchUpgradeRequests(upgradeRequestsPage).finally(() =>
+          untrackRequest(key),
+        );
+      }
     } else if (activeTab === "landlords") {
       const key = `landlords-${searchQuery}-${statusFilter}-${landlordsPage}`;
       if (trackRequest(key)) {
@@ -177,13 +199,14 @@ export function AgentManagement({
     searchQuery,
     pendingAgentsPage,
     approvedAgentsPage,
+    upgradeRequestsPage,
     landlordsPage,
     approvedAgentType,
   ]);
 
   const fetchAgentData = async () => {
     try {
-      const promises = [fetchUpgradeRequests()];
+      const promises = [];
 
       if (activeTab === "pending-agents") {
         promises.push(
@@ -227,6 +250,9 @@ export function AgentManagement({
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
       fetchAgentData();
+    } else if (activeTab === "upgrade-requests") {
+      setUpgradeRequestsPage(1);
+      fetchUpgradeRequests(1);
     } else {
       setLandlordsPage(1);
       fetchLandlordsData();
@@ -354,11 +380,16 @@ export function AgentManagement({
     fetchApprovedAgents(page, searchQuery);
   };
 
+  const handleUpgradePageChange = (page: number) => {
+    setUpgradeRequestsPage(page);
+    fetchUpgradeRequests(page);
+  };
+
   // Stats for agents
   const agentStats = [
     {
       title: "Pending Agents",
-      value: pendingAgents.length.toString(),
+      value: (pendingPagination.total || 0).toString(),
       change: "+8.2%",
       trend: "up" as const,
       icon: Clock,
@@ -366,7 +397,7 @@ export function AgentManagement({
     },
     {
       title: "Approved Agents",
-      value: approvedAgents.length.toString(),
+      value: (approvedPagination.total || 0).toString(),
       change: "+5.1%",
       trend: "up" as const,
       icon: UserCheck,
@@ -374,7 +405,7 @@ export function AgentManagement({
     },
     {
       title: "Upgrade Requests",
-      value: upgradeRequests.length.toString(),
+      value: (upgradePagination.total || 0).toString(),
       change: "-12.5%",
       trend: "down" as const,
       icon: TrendingUp,
@@ -382,7 +413,9 @@ export function AgentManagement({
     },
     {
       title: "Total Agents",
-      value: (pendingAgents.length + approvedAgents.length).toString(),
+      value: (
+        (pendingPagination.total || 0) + (approvedPagination.total || 0)
+      ).toString(),
       change: "+18.7%",
       trend: "up" as const,
       icon: Users,
@@ -435,8 +468,8 @@ export function AgentManagement({
     },
   ];
 
-  const currentStats = activeTab === "agents" ? agentStats : landlordStats;
-  const isLoading = activeTab === "agents" ? false : landlordsLoading;
+  const currentStats = activeTab === "landlords" ? landlordStats : agentStats;
+  const isLoading = activeTab === "landlords" ? landlordsLoading : false;
 
   // Utility functions
 
@@ -1099,14 +1132,14 @@ export function AgentManagement({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {activeTab === "agents"
-              ? "Agent Management"
-              : "Landlord Management"}
+            {activeTab === "landlords"
+              ? "Landlord Management"
+              : "Agent Management"}
           </h1>
           <p className="text-gray-600">
-            {activeTab === "agents"
-              ? "Manage real estate agents, track performance, and oversee operations"
-              : "Manage property landlords, verification status, and revenue tracking"}
+            {activeTab === "landlords"
+              ? "Manage property landlords, verification status, and revenue tracking"
+              : "Manage real estate agents, track performance, and oversee operations"}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
@@ -1133,18 +1166,26 @@ export function AgentManagement({
         value={activeTab}
         onValueChange={(value) =>
           setActiveTab(
-            value as "pending-agents" | "approved-agents" | "landlords",
+            value as
+              | "pending-agents"
+              | "approved-agents"
+              | "upgrade-requests"
+              | "landlords",
           )
         }
       >
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="pending-agents" className="flex items-center">
             <Clock className="h-4 w-4 mr-2" />
-            Pending Agent Requests ({pendingAgents.length || 0})
+            Pending ({pendingPagination.total || 0})
           </TabsTrigger>
           <TabsTrigger value="approved-agents" className="flex items-center">
             <CheckCircle className="h-4 w-4 mr-2" />
-            Approved Agents ({approvedAgents.length || 0})
+            Approved ({approvedPagination.total || 0})
+          </TabsTrigger>
+          <TabsTrigger value="upgrade-requests" className="flex items-center">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Upgrades ({upgradePagination.total || 0})
           </TabsTrigger>
           <TabsTrigger value="landlords" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
@@ -1360,44 +1401,190 @@ export function AgentManagement({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Upgrade Requests Section */}
-          {upgradeRequests.length > 0 && (
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                <CardTitle className="flex items-center justify-between">
+        <TabsContent value="upgrade-requests" className="space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {agentStats.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="p-6">
                   <div className="flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-purple-600" />
-                    <div>
-                      <span className="text-lg font-medium">
-                        Upgrade Requests
-                      </span>
-                      <p className="text-sm text-gray-600 font-normal">
-                        Agent tier upgrade requests
+                    <stat.icon className={`h-8 w-8 text-${stat.color}-600`} />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">
+                        {stat.title}
                       </p>
+                      <div className="flex items-center">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stat.value}
+                        </p>
+                        <span
+                          className={`ml-2 text-sm font-medium ${
+                            stat.trend === "up"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {stat.change}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-sm px-3 py-1 bg-purple-100 text-purple-800"
-                  >
-                    {upgradeRequests.length} requests
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="text-center py-4">
-                  <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Upgrade requests functionality
-                  </h3>
-                  <p className="text-gray-600">
-                    Upgrade request management will be implemented here.
-                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Actions Row */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                className="flex items-center"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Data
+              </Button>
+            </div>
+          </div>
+
+          {/* Upgrade Requests Table */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-purple-600" />
+                  <div>
+                    <span className="text-lg font-medium">
+                      Agent Upgrade Requests
+                    </span>
+                    <p className="text-sm text-gray-600 font-normal">
+                      Manage agent tier upgrade requests
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  {upgradeRequests.length} showing
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                {upgradeLoading ? (
+                  <LoadingPlaceholder type="table" count={5} />
+                ) : upgradeRequests.length === 0 ? (
+                  <EmptyState
+                    icon={TrendingUp}
+                    title="No upgrade requests found"
+                    description="No agent upgrade requests are currently pending review."
+                  />
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Agent</TableHead>
+                        <TableHead>Current Type</TableHead>
+                        <TableHead>Requested Type</TableHead>
+                        <TableHead>Request Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {upgradeRequests.map((request: any) => (
+                        <TableRow key={request.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src="" alt={request.fullName} />
+                                <AvatarFallback>
+                                  {request.fullName
+                                    ?.split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                    .toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {request.fullName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {request.email}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {request.currentAgentType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="default">
+                              {request.requestedUpgradeAgentType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {request.upgradeRequestDate}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={
+                                  request.accountStatus === "active"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {request.accountStatus}
+                              </Badge>
+                              {request.isVerified && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-green-600"
+                                >
+                                  <Shield className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                              {request.isFlagged && (
+                                <Badge variant="destructive">Flagged</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUpgradeRequest(request);
+                                setIsUpgradeRequestModalOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+              <Pagination
+                currentPage={upgradeRequestsPage}
+                totalItems={upgradePagination.total || 0}
+                itemsPerPage={10}
+                onPageChange={handleUpgradePageChange}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="landlords" className="space-y-6">
@@ -1545,6 +1732,15 @@ export function AgentManagement({
           setSelectedAgent(null);
         }}
         agent={selectedAgent}
+      />
+
+      <UpgradeRequestModal
+        isOpen={isUpgradeRequestModalOpen}
+        onClose={() => {
+          setIsUpgradeRequestModalOpen(false);
+          setSelectedUpgradeRequest(null);
+        }}
+        request={selectedUpgradeRequest}
       />
     </div>
   );
