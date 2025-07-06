@@ -180,6 +180,13 @@ export function AgentManagement({
       if (trackRequest(key)) {
         fetchAgentData().finally(() => untrackRequest(key));
       }
+    } else if (activeTab === "upgrade-requests") {
+      const key = `upgrade-requests-${upgradeRequestsPage}`;
+      if (trackRequest(key)) {
+        fetchUpgradeRequests(upgradeRequestsPage).finally(() =>
+          untrackRequest(key),
+        );
+      }
     } else if (activeTab === "landlords") {
       const key = `landlords-${searchQuery}-${statusFilter}-${landlordsPage}`;
       if (trackRequest(key)) {
@@ -192,6 +199,7 @@ export function AgentManagement({
     searchQuery,
     pendingAgentsPage,
     approvedAgentsPage,
+    upgradeRequestsPage,
     landlordsPage,
     approvedAgentType,
   ]);
