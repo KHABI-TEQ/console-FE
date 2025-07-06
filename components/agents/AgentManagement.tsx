@@ -1100,10 +1100,6 @@ export function AgentManagement({
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Export Data
-          </Button>
           <Button
             variant="outline"
             className="w-full sm:w-auto"
@@ -1188,15 +1184,31 @@ export function AgentManagement({
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search pending agents by name, email..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10 h-11"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search pending agents by name, email..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      className="pl-10 h-11"
+                    />
+                  </div>
+                </div>
+                <Select
+                  value={verificationFilter}
+                  onValueChange={handleVerificationFilterChange}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Verification Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Verification</SelectItem>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="unverified">Unverified</SelectItem>
+                  </SelectContent>
+                </Select>
                 </div>
               </div>
             </CardContent>
@@ -1515,6 +1527,15 @@ export function AgentManagement({
           setEditingAgentId(null);
         }}
         agentId={editingAgentId}
+      />
+
+      <AgentOnboardingModal
+        isOpen={isOnboardingModalOpen}
+        onClose={() => {
+          setIsOnboardingModalOpen(false);
+          setSelectedAgent(null);
+        }}
+        agent={selectedAgent}
       />
     </div>
   );
