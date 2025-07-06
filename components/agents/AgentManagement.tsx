@@ -83,6 +83,25 @@ import { LandlordActions } from "@/components/shared/LandlordActions";
 import { Pagination } from "@/components/shared/Pagination";
 import { apiService } from "@/lib/services/apiService";
 import { formatCurrency } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AgentManagementProps {
   defaultTab?:
