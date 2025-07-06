@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -63,6 +64,7 @@ interface BuyerFilters {
 }
 
 export default function BuyersPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -308,9 +310,12 @@ export default function BuyersPage() {
                     {buyers.map((buyer: any, index: number) => (
                       <TableRow
                         key={buyer._id || buyer.id}
-                        className={`hover:bg-gray-50 transition-colors ${
+                        className={`hover:bg-gray-50 transition-colors cursor-pointer ${
                           index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                         }`}
+                        onClick={() =>
+                          router.push(`/buyers/${buyer._id || buyer.id}`)
+                        }
                       >
                         <TableCell className="py-4">
                           <div className="flex items-center space-x-3">
@@ -395,28 +400,44 @@ export default function BuyersPage() {
                           </div>
                         </TableCell>
 
-                        <TableCell className="py-4">
-                          <ActionButtons
-                            entityType="buyer"
-                            entityId={buyer._id || buyer.id}
-                            entityName={
-                              (
-                                (buyer.firstName || "") +
-                                " " +
-                                (buyer.lastName || "")
-                              ).trim() ||
-                              buyer.fullName ||
-                              "Buyer"
-                            }
-                            email={buyer.email}
-                            phone={buyer.phoneNumber}
-                            showContact={true}
-                            showEdit={true}
-                            showDelete={true}
-                            showVerification={!buyer.isAccountVerified}
-                            showMore={true}
-                            onRefresh={handleRefresh}
-                          />
+                        <TableCell
+                          className="py-4"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`/buyers/${buyer._id || buyer.id}`)
+                              }
+                              className="hover:bg-blue-50 hover:border-blue-300"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <ActionButtons
+                              entityType="buyer"
+                              entityId={buyer._id || buyer.id}
+                              entityName={
+                                (
+                                  (buyer.firstName || "") +
+                                  " " +
+                                  (buyer.lastName || "")
+                                ).trim() ||
+                                buyer.fullName ||
+                                "Buyer"
+                              }
+                              email={buyer.email}
+                              phone={buyer.phoneNumber}
+                              showContact={true}
+                              showEdit={true}
+                              showDelete={true}
+                              showVerification={!buyer.isAccountVerified}
+                              showMore={true}
+                              onRefresh={handleRefresh}
+                            />
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
