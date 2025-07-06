@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiService } from "@/lib/services/apiService";
+import { PropertiesTab } from "@/components/shared/PropertiesTab";
 
 interface LandlordDetailPageProps {
   params: Promise<{ id: string }>;
