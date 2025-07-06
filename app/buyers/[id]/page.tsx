@@ -458,7 +458,11 @@ export default function BuyerDetailPage() {
                 {inspections.length > 0 &&
                   inspectionsPagination.totalPages > 1 && (
                     <Pagination
-                      currentPage={inspectionsPagination.currentPage}
+                      currentPage={
+                        inspectionsPagination.currentPage ||
+                        inspectionsPagination.page ||
+                        inspectionsPage
+                      }
                       totalItems={inspectionsPagination.total}
                       itemsPerPage={limit}
                       onPageChange={setInspectionsPage}
@@ -609,7 +613,11 @@ export default function BuyerDetailPage() {
                 {preferences.length > 0 &&
                   preferencesPagination.totalPages > 1 && (
                     <Pagination
-                      currentPage={preferencesPagination.currentPage}
+                      currentPage={
+                        preferencesPagination.currentPage ||
+                        preferencesPagination.page ||
+                        preferencesPage
+                      }
                       totalItems={preferencesPagination.total}
                       itemsPerPage={limit}
                       onPageChange={setPreferencesPage}
