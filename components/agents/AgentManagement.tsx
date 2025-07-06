@@ -101,10 +101,15 @@ export function AgentManagement({
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [isUpgradeRequestModalOpen, setIsUpgradeRequestModalOpen] =
+    useState(false);
+  const [selectedUpgradeRequest, setSelectedUpgradeRequest] =
+    useState<any>(null);
 
   // Pagination for different sections
   const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
   const [approvedAgentsPage, setApprovedAgentsPage] = useState(1);
+  const [upgradeRequestsPage, setUpgradeRequestsPage] = useState(1);
   const [landlordsPage, setLandlordsPage] = useState(1);
   const limit = 10;
 
