@@ -42,6 +42,7 @@ import {
 import { apiService } from "@/lib/services/apiService";
 import { useAgents } from "@/contexts/AgentsContext";
 import { AgentsProvider } from "@/contexts/AgentsContext";
+import { PropertiesTab } from "@/components/shared/PropertiesTab";
 
 interface AgentDetailPageProps {
   params: Promise<{ id: string }>;
