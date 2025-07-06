@@ -1396,44 +1396,6 @@ export function AgentManagement({
               </div>
             </CardContent>
           </Card>
-
-          {/* Upgrade Requests Section */}
-          {upgradeRequests.length > 0 && (
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-purple-600" />
-                    <div>
-                      <span className="text-lg font-medium">
-                        Upgrade Requests
-                      </span>
-                      <p className="text-sm text-gray-600 font-normal">
-                        Agent tier upgrade requests
-                      </p>
-                    </div>
-                  </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-sm px-3 py-1 bg-purple-100 text-purple-800"
-                  >
-                    {upgradeRequests.length} requests
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="text-center py-4">
-                  <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Upgrade requests functionality
-                  </h3>
-                  <p className="text-gray-600">
-                    Upgrade request management will be implemented here.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="landlords" className="space-y-6">
