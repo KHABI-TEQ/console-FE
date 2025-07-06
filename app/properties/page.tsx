@@ -67,7 +67,7 @@ function PropertiesContent() {
     refreshProperties();
   };
 
-  if (isPropertiesLoading && !propertiesResponse) {
+  if (isPropertiesLoading && properties.length === 0) {
     return (
       <AdminLayout>
         <PropertiesSkeleton />
