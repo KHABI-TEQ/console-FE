@@ -1263,9 +1263,12 @@ export function AgentManagement({
             variant="outline"
             className="w-full sm:w-auto"
             onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
           <Button
             onClick={() => setIsAddModalOpen(true)}
