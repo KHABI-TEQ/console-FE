@@ -63,9 +63,13 @@ function PropertiesContent() {
     fetchProperties({ ...filters, page, limit: 12 });
   };
 
-  const handleRefresh = () => {
-    refetchStats();
-    refreshProperties();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchStats(), refreshProperties()]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (isPropertiesLoading && properties.length === 0) {
