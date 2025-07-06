@@ -51,6 +51,7 @@ function PropertiesContent() {
   const pagination = propertiesResponse?.pagination || {
     total: 0,
     currentPage: 1,
+    page: 1,
     totalPages: 1,
   };
   const total = pagination.total || 0;
@@ -213,7 +214,7 @@ function PropertiesContent() {
               }
             >
               <Pagination
-                currentPage={pagination.currentPage || page}
+                currentPage={page}
                 totalItems={total}
                 itemsPerPage={limit}
                 onPageChange={setPage}
