@@ -72,7 +72,7 @@ export default function BuyersPage() {
   const limit = 20;
 
   const filters: BuyerFilters = {
-    ...(searchQuery && { search: searchQuery }),
+    ...(searchQuery.trim() && { search: searchQuery.trim() }),
     ...(statusFilter !== "all" && { status: statusFilter }),
     page,
     limit,
@@ -455,8 +455,10 @@ export default function BuyersPage() {
             {buyers.length > 0 && pagination.totalPages > 1 && (
               <div className="px-6 pb-6">
                 <Pagination
-                  currentPage={page}
-                  totalItems={totalCount}
+                  currentPage={
+                    pagination.currentPage || pagination.page || page
+                  }
+                  totalItems={pagination.total || totalCount}
                   itemsPerPage={limit}
                   onPageChange={setPage}
                 />

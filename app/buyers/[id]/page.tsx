@@ -227,7 +227,7 @@ export default function BuyerDetailPage() {
       <div className="p-4 sm:p-6 space-y-6">
         <PageHeader
           title="Buyer Details"
-          description={`Complete profile and activity for ${buyer.fullName || `${buyer.firstName} ${buyer.lastName}`.trim()}`}
+          description={`Complete profile and activity for ${buyer?.fullName || `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() || "Unknown Buyer"}`}
         >
           <Button
             variant="outline"
@@ -258,8 +258,9 @@ export default function BuyerDetailPage() {
               <Avatar className="h-20 w-20 mx-auto sm:mx-0 mb-4 sm:mb-0">
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-xl">
                   {(
-                    buyer.fullName ||
-                    `${buyer.firstName} ${buyer.lastName}`.trim()
+                    buyer?.fullName ||
+                    `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() ||
+                    "Unknown Buyer"
                   )
                     .split(" ")
                     .map((n: string) => n[0])
@@ -269,17 +270,19 @@ export default function BuyerDetailPage() {
 
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {buyer.fullName ||
-                    `${buyer.firstName} ${buyer.lastName}`.trim() ||
+                  {buyer?.fullName ||
+                    `${buyer?.firstName || ""} ${buyer?.lastName || ""}`.trim() ||
                     "Unknown Buyer"}
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{buyer.email}</span>
+                    <span className="text-sm text-gray-600">
+                      {buyer?.email || "No email"}
+                    </span>
                   </div>
-                  {buyer.phoneNumber && (
+                  {buyer?.phoneNumber && (
                     <div className="flex items-center justify-center sm:justify-start space-x-2">
                       <Phone className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-600">
@@ -290,16 +293,19 @@ export default function BuyerDetailPage() {
                   <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">
-                      Joined {formatDate(buyer.createdAt)}
+                      Joined{" "}
+                      {buyer?.createdAt
+                        ? formatDate(buyer.createdAt)
+                        : "Unknown"}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                   <Badge className="bg-blue-100 text-blue-800">
-                    ID: {buyer.accountId || buyer._id}
+                    ID: {buyer?.accountId || buyer?._id || "Unknown"}
                   </Badge>
-                  {buyer.isAccountVerified ? (
+                  {buyer?.isAccountVerified ? (
                     <Badge className="bg-green-100 text-green-800">
                       <Star className="h-3 w-3 mr-1" />
                       Verified
@@ -310,13 +316,13 @@ export default function BuyerDetailPage() {
                       Pending Verification
                     </Badge>
                   )}
-                  {buyer.isPremium && (
+                  {buyer?.isPremium && (
                     <Badge className="bg-purple-100 text-purple-800">
                       <Star className="h-3 w-3 mr-1" />
                       Premium
                     </Badge>
                   )}
-                  {buyer.isFlagged && (
+                  {buyer?.isFlagged && (
                     <Badge className="bg-red-100 text-red-800">Flagged</Badge>
                   )}
                 </div>
@@ -410,44 +416,46 @@ export default function BuyerDetailPage() {
                             <TableCell className="py-4">
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {inspection.propertyId?.title || "Property"}
+                                  {inspection?.propertyId?.title || "Property"}
                                 </p>
                                 <p className="text-sm text-gray-500 flex items-center mt-1">
                                   <MapPin className="h-3 w-3 mr-1" />
-                                  {inspection.propertyId?.location?.area},{" "}
-                                  {
-                                    inspection.propertyId?.location
-                                      ?.localGovernment
-                                  }
+                                  {inspection?.propertyId?.location?.area ||
+                                    "Unknown"}
+                                  ,{" "}
+                                  {inspection?.propertyId?.location
+                                    ?.localGovernment || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div>
                                 <p className="text-sm font-medium">
-                                  {formatDate(inspection.inspectionDate)}
+                                  {inspection?.inspectionDate
+                                    ? formatDate(inspection.inspectionDate)
+                                    : "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {inspection.inspectionTime}
+                                  {inspection?.inspectionTime || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
-                              {getStatusBadge(inspection.status)}
+                              {getStatusBadge(inspection?.status || "unknown")}
                             </TableCell>
                             <TableCell className="py-4">
                               <Badge variant="secondary" className="text-xs">
-                                {inspection.stage}
+                                {inspection?.stage || "Unknown"}
                               </Badge>
                             </TableCell>
                             <TableCell className="py-4">
                               <div>
                                 <p className="text-sm font-medium">
-                                  {inspection.owner?.firstName}{" "}
-                                  {inspection.owner?.lastName}
+                                  {inspection?.owner?.firstName || "Unknown"}{" "}
+                                  {inspection?.owner?.lastName || ""}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {inspection.owner?.email}
+                                  {inspection?.owner?.email || "No email"}
                                 </p>
                               </div>
                             </TableCell>
@@ -459,12 +467,18 @@ export default function BuyerDetailPage() {
                 )}
                 {inspections.length > 0 &&
                   inspectionsPagination.totalPages > 1 && (
-                    <Pagination
-                      currentPage={inspectionsPage}
-                      totalItems={inspectionsPagination.total}
-                      itemsPerPage={limit}
-                      onPageChange={setInspectionsPage}
-                    />
+                    <div className="px-6 pb-6">
+                      <Pagination
+                        currentPage={
+                          inspectionsPagination.currentPage ||
+                          inspectionsPagination.page ||
+                          inspectionsPage
+                        }
+                        totalItems={inspectionsPagination.total || 0}
+                        itemsPerPage={limit}
+                        onPageChange={setInspectionsPage}
+                      />
+                    </div>
                   )}
               </CardContent>
             </Card>
@@ -539,35 +553,41 @@ export default function BuyerDetailPage() {
                             <TableCell className="py-4">
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {preference.propertyType}
+                                  {preference?.propertyType || "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {preference.propertyCondition}
+                                  {preference?.propertyCondition || "N/A"}
                                 </p>
                                 <Badge
                                   variant="outline"
                                   className="text-xs mt-1"
                                 >
-                                  {preference.preferenceType}
+                                  {preference?.preferenceType || "N/A"}
                                 </Badge>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {preference.location?.area}
+                                  {preference?.location?.area || "Unknown"}
                                 </p>
                                 <p className="text-gray-500">
-                                  {preference.location?.localGovernment},{" "}
-                                  {preference.location?.state}
+                                  {preference?.location?.localGovernment ||
+                                    "Unknown"}
+                                  , {preference?.location?.state || "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {formatCurrency(preference.budgetMin)} -{" "}
-                                  {formatCurrency(preference.budgetMax)}
+                                  {preference?.budgetMin
+                                    ? formatCurrency(preference.budgetMin)
+                                    : "N/A"}{" "}
+                                  -{" "}
+                                  {preference?.budgetMax
+                                    ? formatCurrency(preference.budgetMax)
+                                    : "N/A"}
                                 </p>
                               </div>
                             </TableCell>
@@ -575,17 +595,17 @@ export default function BuyerDetailPage() {
                               <div className="text-sm space-y-1">
                                 <p>
                                   <Building className="h-3 w-3 inline mr-1" />
-                                  {preference.noOfBedrooms} beds,{" "}
-                                  {preference.noOfBathrooms} baths
+                                  {preference?.noOfBedrooms || 0} beds,{" "}
+                                  {preference?.noOfBathrooms || 0} baths
                                 </p>
-                                {preference.landSize && (
+                                {preference?.landSize && (
                                   <p>
                                     <Home className="h-3 w-3 inline mr-1" />
                                     {preference.landSize}{" "}
-                                    {preference.measurementType}
+                                    {preference?.measurementType || ""}
                                   </p>
                                 )}
-                                {preference.features?.length > 0 && (
+                                {preference?.features?.length > 0 && (
                                   <p className="text-xs text-gray-500">
                                     +{preference.features.length} features
                                   </p>
@@ -593,12 +613,16 @@ export default function BuyerDetailPage() {
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
-                              {getPreferenceStatusBadge(preference.status)}
+                              {getPreferenceStatusBadge(
+                                preference?.status || "unknown",
+                              )}
                             </TableCell>
                             <TableCell className="py-4">
                               <div className="text-sm">
                                 <p className="font-medium">
-                                  {formatDate(preference.createdAt)}
+                                  {preference?.createdAt
+                                    ? formatDate(preference.createdAt)
+                                    : "Unknown"}
                                 </p>
                               </div>
                             </TableCell>
@@ -610,12 +634,18 @@ export default function BuyerDetailPage() {
                 )}
                 {preferences.length > 0 &&
                   preferencesPagination.totalPages > 1 && (
-                    <Pagination
-                      currentPage={preferencesPage}
-                      totalItems={preferencesPagination.total}
-                      itemsPerPage={limit}
-                      onPageChange={setPreferencesPage}
-                    />
+                    <div className="px-6 pb-6">
+                      <Pagination
+                        currentPage={
+                          preferencesPagination.currentPage ||
+                          preferencesPagination.page ||
+                          preferencesPage
+                        }
+                        totalItems={preferencesPagination.total || 0}
+                        itemsPerPage={limit}
+                        onPageChange={setPreferencesPage}
+                      />
+                    </div>
                   )}
               </CardContent>
             </Card>
