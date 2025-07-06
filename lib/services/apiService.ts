@@ -642,7 +642,7 @@ class ApiService {
   }
 
   async getInspectionStats(): Promise<ApiResponse<any>> {
-    return this.get("/analytics/inspections");
+    return this.get("/inspections/stats");
   }
 }
 
