@@ -300,7 +300,7 @@ export function AgentManagement({
 
   const handleViewAgent = (agentId: string) => {
     router.push(`/agents/${agentId}`);
-  }; 
+  };
 
   const handleVerificationFilterChange = (value: string) => {
     setVerificationFilter(value);
@@ -377,43 +377,158 @@ export function AgentManagement({
     });
   };
 
-  const handleChangeStatus = (agentId: string, agentName: string) => {
-    confirmAction({
-      title: "Change Agent Status",
-      description: `Are you sure you want to change the status for ${agentName}? This will affect their account access.`,
-      confirmText: "Change Status",
-      cancelText: "Cancel",
-      variant: "warning",
-      onConfirm: async () => {
+  const handleToggleAgentStatus = (
+    agentId: string,
+    agentName: string,
+    isActive: boolean,
+  ) => {
+    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+    const [statusReason, setStatusReason] = useState("");
+    const action = isActive ? "deactivate" : "activate";
+
+    const handleStatusSubmit = async () => {
+      try {
         showLoader();
-        try {
-          // This would call an API to change status - using deleteAgent for now as placeholder
-          await deleteAgent(agentId);
+        const response = await apiService.updateAgentStatus(
+          agentId,
+          !isActive,
+          statusReason,
+        );
+        if (response.success) {
           await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-        } finally {
-          hideLoader();
+          setStatusDialogOpen(false);
+          setStatusReason("");
         }
-      },
-    });
+      } finally {
+        hideLoader();
+      }
+    };
+
+    return (
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogTrigger asChild>
+          <button className="flex items-center w-full text-left">
+            {isActive ? (
+              <>
+                <PowerOff className="mr-2 h-4 w-4" />
+                Deactivate
+              </>
+            ) : (
+              <>
+                <Power className="mr-2 h-4 w-4" />
+                Activate
+              </>
+            )}
+          </button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {action.charAt(0).toUpperCase() + action.slice(1)} Agent
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to {action} {agentName}? Please provide a
+              reason.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="reason">Reason</Label>
+              <Textarea
+                id="reason"
+                placeholder={`Enter reason for ${action}ing this agent...`}
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusSubmit}
+              disabled={!statusReason.trim()}
+              className={
+                isActive
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }
+            >
+              {action.charAt(0).toUpperCase() + action.slice(1)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   const handleDeleteAgent = (agentId: string, agentName: string) => {
-    confirmAction({
-      title: "Delete Agent",
-      description: `Are you sure you want to delete ${agentName}? This action cannot be undone and will permanently remove their account and all associated data.`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      variant: "danger",
-      onConfirm: async () => {
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteReason, setDeleteReason] = useState("");
+
+    const handleDeleteSubmit = async () => {
+      try {
         showLoader();
-        try {
-          await deleteAgent(agentId);
+        const response = await apiService.deleteAgentNew(agentId, deleteReason);
+        if (response.success) {
           await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-        } finally {
-          hideLoader();
+          setDeleteDialogOpen(false);
+          setDeleteReason("");
         }
-      },
-    });
+      } finally {
+        hideLoader();
+      }
+    };
+
+    return (
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogTrigger asChild>
+          <button className="flex items-center w-full text-left text-red-600">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {agentName}? This action cannot be
+              undone and will permanently remove their account and all
+              associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="deleteReason">Reason for deletion</Label>
+              <Textarea
+                id="deleteReason"
+                placeholder="Enter reason for deleting this agent..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSubmit}
+              disabled={!deleteReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
   };
 
   // Filter functions
@@ -1041,7 +1156,7 @@ export function AgentManagement({
                 <div className="flex items-start space-x-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white font-medium">
-                      {((landlord.fullName || ""))
+                      {(landlord.fullName || "")
                         .trim()
                         .split(" ")
                         .map((n: string) => n[0])
@@ -1050,8 +1165,7 @@ export function AgentManagement({
                   </Avatar>
                   <div>
                     <p className="font-medium text-gray-900">
-                      {(
-                        (landlord.fullName || "")).trim() || "Unknown Landlord"}
+                      {(landlord.fullName || "").trim() || "Unknown Landlord"}
                     </p>
                     <div className="flex items-center space-x-1 mt-1">
                       {landlord.accountId && (
