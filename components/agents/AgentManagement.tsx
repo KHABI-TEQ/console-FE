@@ -1728,6 +1728,15 @@ export function AgentManagement({
         }}
         agent={selectedAgent}
       />
+
+      <UpgradeRequestModal
+        isOpen={isUpgradeRequestModalOpen}
+        onClose={() => {
+          setIsUpgradeRequestModalOpen(false);
+          setSelectedUpgradeRequest(null);
+        }}
+        request={selectedUpgradeRequest}
+      />
     </div>
   );
 }
