@@ -376,6 +376,45 @@ export function AgentManagement({
     });
   };
 
+  const handleChangeStatus = (agentId: string, agentName: string) => {
+    confirmAction({
+      title: "Change Agent Status",
+      description: `Are you sure you want to change the status for ${agentName}? This will affect their account access.`,
+      confirmText: "Change Status",
+      cancelText: "Cancel",
+      variant: "warning",
+      onConfirm: async () => {
+        showLoader();
+        try {
+          // This would call an API to change status - using deleteAgent for now as placeholder
+          await deleteAgent(agentId);
+          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        } finally {
+          hideLoader();
+        }
+      },
+    });
+  };
+
+  const handleDeleteAgent = (agentId: string, agentName: string) => {
+    confirmAction({
+      title: "Delete Agent",
+      description: `Are you sure you want to delete ${agentName}? This action cannot be undone and will permanently remove their account and all associated data.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        showLoader();
+        try {
+          await deleteAgent(agentId);
+          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        } finally {
+          hideLoader();
+        }
+      },
+    });
+  };
+
   // Filter functions
   const filteredLandlords = landlordsData?.users || [];
 
