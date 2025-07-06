@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -30,74 +29,75 @@ import {
   Users,
   UserCheck,
   UserPlus,
-  DollarSign,
-  Heart,
-  Eye,
-  Search,
-  Filter,
-  Plus,
-  Download,
-  RefreshCw,
-  AlertTriangle,
-  Edit,
   Mail,
   Phone,
-  MapPin,
+  Search,
+  Filter,
+  RefreshCw,
+  AlertTriangle,
   Calendar,
-  TrendingUp,
   Clock,
   Star,
-  Home,
-  CreditCard,
 } from "lucide-react";
 import { ListPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ActionButtons } from "@/components/shared/ActionButtons";
 import { Pagination } from "@/components/shared/Pagination";
-import { apiService } from "@/lib/services/apiService";
+import { AddBuyerModal } from "@/components/modals/AddBuyerModal";
+import { EditBuyerModal } from "@/components/modals/EditBuyerModal";
+import { useBuyers, BuyersProvider } from "@/contexts/BuyersContext";
 
-interface BuyerFilters {
-  search?: string;
-  status?: string;
-  page?: number;
-  limit?: number;
-}
-
-export default function BuyersPage() {
+function BuyersContent() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const limit = 20;
-
-  const filters: BuyerFilters = {
-    ...(searchQuery.trim() && { search: searchQuery.trim() }),
-    ...(statusFilter !== "all" && { status: statusFilter }),
-    page,
-    limit,
-  };
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
 
   const {
-    data: buyersResponse,
+    buyers,
     isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["buyers", filters],
-    queryFn: () => apiService.getBuyers(filters),
-  });
+    filters,
+    pagination,
+    fetchBuyers,
+    refreshBuyers,
+    setFilters,
+    setPage,
+  } = useBuyers();
 
-  const buyers = buyersResponse?.data || [];
-  const pagination = buyersResponse?.pagination || {
-    total: 0,
-    currentPage: 1,
-    page: 1,
-    totalPages: 1,
+  useEffect(() => {
+    fetchBuyers();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const newFilters = {
+        ...(searchQuery.trim() && { search: searchQuery.trim() }),
+        ...(statusFilter !== "all" && { status: statusFilter }),
+      };
+      setFilters(newFilters);
+      fetchBuyers({ ...newFilters, page: 1 });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, statusFilter]);
+
+  const handleRefresh = () => {
+    refreshBuyers();
   };
-  const totalCount = pagination.total || 0;
 
-  if (isLoading) {
+  const handleEditBuyer = (buyer: any) => {
+    setSelectedBuyer(buyer);
+    setIsEditModalOpen(true);
+  };
+
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
+
+  if (isLoading && buyers.length === 0) {
     return (
       <AdminLayout>
         <ListPageSkeleton title="Buyer Management" />
@@ -108,7 +108,7 @@ export default function BuyersPage() {
   const stats = [
     {
       title: "Total Buyers",
-      value: totalCount.toString(),
+      value: pagination.total.toString(),
       change: "+15.2%",
       trend: "up" as const,
       icon: Users,
@@ -154,43 +154,6 @@ export default function BuyersPage() {
     }
   };
 
-  const handleRefresh = () => {
-    refetch();
-  };
-
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <Card className="max-w-md mx-auto border-red-200 bg-red-50">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-red-900">
-                    Error Loading Data
-                  </h3>
-                  <p className="text-red-700 text-sm">
-                    Failed to load buyers. Please try again.
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={handleRefresh}
-                className="w-full mt-4 bg-red-600 hover:bg-red-700"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
@@ -206,7 +169,10 @@ export default function BuyersPage() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             <UserPlus className="h-4 w-4 mr-2" />
             Add Buyer
           </Button>
@@ -265,7 +231,7 @@ export default function BuyersPage() {
                 <div>
                   <span className="text-lg font-medium">Registered Buyers</span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {totalCount} buyers found
+                    {pagination.total} buyers found
                   </p>
                 </div>
               </div>
@@ -276,7 +242,14 @@ export default function BuyersPage() {
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <LoadingPlaceholder type="table" count={10} />
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+                <div className="opacity-50">
+                  <LoadingPlaceholder type="table" count={10} />
+                </div>
+              </div>
             ) : buyers.length === 0 ? (
               <EmptyState
                 icon={Users}
@@ -303,9 +276,6 @@ export default function BuyersPage() {
                         Status & Activity
                       </TableHead>
                       <TableHead className="font-semibold text-gray-900">
-                        Preferences
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-900">
                         Registration
                       </TableHead>
                       <TableHead className="font-semibold text-gray-900">
@@ -329,9 +299,10 @@ export default function BuyersPage() {
                             <Avatar className="h-10 w-10">
                               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-medium">
                                 {(
+                                  buyer.fullName ||
                                   (buyer.firstName || "") +
-                                  " " +
-                                  (buyer.lastName || "")
+                                    " " +
+                                    (buyer.lastName || "")
                                 )
                                   .trim()
                                   .split(" ")
@@ -341,12 +312,12 @@ export default function BuyersPage() {
                             </Avatar>
                             <div>
                               <p className="font-medium text-gray-900">
-                                {(
-                                  (buyer.firstName || "") +
-                                  " " +
-                                  (buyer.lastName || "")
-                                ).trim() ||
-                                  buyer.fullName ||
+                                {buyer.fullName ||
+                                  (
+                                    (buyer.firstName || "") +
+                                    " " +
+                                    (buyer.lastName || "")
+                                  ).trim() ||
                                   "Unknown Buyer"}
                               </p>
                               <p className="text-sm text-gray-500">
@@ -389,14 +360,6 @@ export default function BuyersPage() {
                         </TableCell>
 
                         <TableCell className="py-4">
-                          <div className="text-sm text-gray-600">
-                            <p>Budget: N/A</p>
-                            <p>Location: N/A</p>
-                            <p>Type: N/A</p>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-4">
                           <div className="text-sm">
                             <p className="font-medium">
                               {new Date(buyer.createdAt).toLocaleDateString()}
@@ -411,40 +374,28 @@ export default function BuyersPage() {
                           className="py-4"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                router.push(`/buyers/${buyer._id || buyer.id}`)
-                              }
-                              className="hover:bg-blue-50 hover:border-blue-300"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            <ActionButtons
-                              entityType="buyer"
-                              entityId={buyer._id || buyer.id}
-                              entityName={
-                                (
-                                  (buyer.firstName || "") +
-                                  " " +
-                                  (buyer.lastName || "")
-                                ).trim() ||
-                                buyer.fullName ||
-                                "Buyer"
-                              }
-                              email={buyer.email}
-                              phone={buyer.phoneNumber}
-                              showContact={true}
-                              showEdit={true}
-                              showDelete={true}
-                              showVerification={!buyer.isAccountVerified}
-                              showMore={true}
-                              onRefresh={handleRefresh}
-                            />
-                          </div>
+                          <ActionButtons
+                            entityType="buyer"
+                            entityId={buyer._id || buyer.id}
+                            entityName={
+                              buyer.fullName ||
+                              (
+                                (buyer.firstName || "") +
+                                " " +
+                                (buyer.lastName || "")
+                              ).trim() ||
+                              "Buyer"
+                            }
+                            email={buyer.email}
+                            phone={buyer.phoneNumber}
+                            showContact={false}
+                            showEdit={true}
+                            showDelete={true}
+                            showVerification={!buyer.isAccountVerified}
+                            showMore={true}
+                            variant="dropdown"
+                            onRefresh={handleRefresh}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -453,20 +404,51 @@ export default function BuyersPage() {
               </div>
             )}
             {buyers.length > 0 && pagination.totalPages > 1 && (
-              <div className="px-6 pb-6">
+              <div
+                className={`px-6 pb-6 ${isLoading ? "opacity-50 pointer-events-none" : ""}`}
+              >
                 <Pagination
-                  currentPage={
-                    pagination.currentPage || pagination.page || page
-                  }
-                  totalItems={pagination.total || totalCount}
-                  itemsPerPage={limit}
-                  onPageChange={setPage}
+                  currentPage={pagination.currentPage}
+                  totalItems={pagination.total}
+                  itemsPerPage={pagination.perPage}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      <AddBuyerModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          refreshBuyers();
+          setIsAddModalOpen(false);
+        }}
+      />
+
+      <EditBuyerModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedBuyer(null);
+        }}
+        onSuccess={() => {
+          refreshBuyers();
+          setIsEditModalOpen(false);
+          setSelectedBuyer(null);
+        }}
+        buyerData={selectedBuyer}
+      />
     </AdminLayout>
+  );
+}
+
+export default function BuyersPage() {
+  return (
+    <BuyersProvider>
+      <BuyersContent />
+    </BuyersProvider>
   );
 }
