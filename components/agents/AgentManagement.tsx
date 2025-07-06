@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { AddUserTypeModal } from "@/components/modals/AddUserTypeModal";
 import { EditAgentModal } from "@/components/modals/EditAgentModal";
+import { AgentOnboardingModal } from "@/components/modals/AgentOnboardingModal";
 import { useAgents } from "@/contexts/AgentsContext";
 import { useLandlords } from "@/contexts/LandlordsContext";
 import { useRequestLoader } from "@/components/ui/request-loader";
@@ -91,6 +92,8 @@ export function AgentManagement({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
 
   // Pagination for different sections
   const [pendingAgentsPage, setPendingAgentsPage] = useState(1);
@@ -113,6 +116,8 @@ export function AgentManagement({
     upgradeRequests,
     pendingLoading,
     approvedLoading,
+    pendingPagination,
+    approvedPagination,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
@@ -161,11 +166,21 @@ export function AgentManagement({
 
   const fetchAgentData = async () => {
     try {
-      await Promise.all([
-        fetchPendingAgents(),
-        fetchApprovedAgents(approvedAgentType),
-        fetchUpgradeRequests(),
-      ]);
+      const promises = [fetchUpgradeRequests()];
+
+      if (activeTab === "pending-agents") {
+        promises.push(
+          fetchPendingAgents(
+            pendingAgentsPage,
+            searchQuery,
+            verificationFilter,
+          ),
+        );
+      } else if (activeTab === "approved-agents") {
+        promises.push(fetchApprovedAgents(approvedAgentsPage, searchQuery));
+      }
+
+      await Promise.all(promises);
     } catch (error) {
       console.error("Error fetching agent data:", error);
     }
@@ -203,9 +218,12 @@ export function AgentManagement({
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (activeTab === "pending-agents" || activeTab === "approved-agents") {
+    if (activeTab === "pending-agents") {
       setPendingAgentsPage(1);
+      fetchPendingAgents(1, value, verificationFilter);
+    } else if (activeTab === "approved-agents") {
       setApprovedAgentsPage(1);
+      fetchApprovedAgents(1, value);
     } else {
       setLandlordsPage(1);
     }
@@ -228,6 +246,19 @@ export function AgentManagement({
 
   const handleViewAgent = (agentId: string) => {
     router.push(`/agents/${agentId}`);
+  };
+
+  const handleVerificationFilterChange = (value: string) => {
+    setVerificationFilter(value);
+    if (activeTab === "pending-agents") {
+      setPendingAgentsPage(1);
+      fetchPendingAgents(1, searchQuery, value);
+    }
+  };
+
+  const handleViewPendingAgent = (agent: any) => {
+    setSelectedAgent(agent);
+    setIsOnboardingModalOpen(true);
   };
 
   // Confirmation handlers with loading states
@@ -284,7 +315,7 @@ export function AgentManagement({
         showLoader();
         try {
           await flagAgent(agentId, isFlagged ? "false" : "true");
-          await fetchApprovedAgents(approvedAgentType);
+          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
         } finally {
           hideLoader();
         }
@@ -295,40 +326,16 @@ export function AgentManagement({
   // Filter functions
   const filteredLandlords = landlordsData?.users || [];
 
-  // Filter pending agents based on search with pagination
-  const filteredPendingAgents = pendingAgents.filter((agent: any) => {
-    if (!searchQuery) return true;
-    const fullName =
-      `${agent.firstName || ""} ${agent.lastName || ""}`.toLowerCase();
-    const email = (agent.email || "").toLowerCase();
-    return (
-      fullName.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase())
-    );
-  });
+  // Handle pagination changes
+  const handlePendingPageChange = (page: number) => {
+    setPendingAgentsPage(page);
+    fetchPendingAgents(page, searchQuery, verificationFilter);
+  };
 
-  // Filter approved agents based on search with pagination
-  const filteredApprovedAgents = approvedAgents.filter((agent: any) => {
-    if (!searchQuery) return true;
-    const fullName =
-      `${agent.firstName || ""} ${agent.lastName || ""}`.toLowerCase();
-    const email = (agent.email || "").toLowerCase();
-    return (
-      fullName.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase())
-    );
-  });
-
-  // Paginate filtered results
-  const paginatedPendingAgents = filteredPendingAgents.slice(
-    (pendingAgentsPage - 1) * limit,
-    pendingAgentsPage * limit,
-  );
-
-  const paginatedApprovedAgents = filteredApprovedAgents.slice(
-    (approvedAgentsPage - 1) * limit,
-    approvedAgentsPage * limit,
-  );
+  const handleApprovedPageChange = (page: number) => {
+    setApprovedAgentsPage(page);
+    fetchApprovedAgents(page, searchQuery);
+  };
 
   // Stats for agents
   const agentStats = [
