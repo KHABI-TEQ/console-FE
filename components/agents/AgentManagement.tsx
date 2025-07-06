@@ -250,6 +250,9 @@ export function AgentManagement({
       setPendingAgentsPage(1);
       setApprovedAgentsPage(1);
       fetchAgentData();
+    } else if (activeTab === "upgrade-requests") {
+      setUpgradeRequestsPage(1);
+      fetchUpgradeRequests(1);
     } else {
       setLandlordsPage(1);
       fetchLandlordsData();
