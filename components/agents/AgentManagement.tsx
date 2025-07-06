@@ -128,13 +128,17 @@ export function AgentManagement({
     upgradeRequests,
     pendingLoading,
     approvedLoading,
+    upgradeLoading,
     pendingPagination,
     approvedPagination,
+    upgradePagination,
     fetchPendingAgents,
     fetchApprovedAgents,
     fetchUpgradeRequests,
     approveAgent,
     flagAgent,
+    approveUpgradeRequest,
+    rejectUpgradeRequest,
   } = useAgents();
 
   // Computed filtered arrays
