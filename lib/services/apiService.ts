@@ -276,6 +276,18 @@ class ApiService {
     return this.patch(`/inspections/${id}/status`, { status });
   }
 
+  async getInspectionActivities(
+    inspectionId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<ApiResponse<any>> {
+    return this.get("/inspection/logs", {
+      inspectionId,
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+  }
+
   // Agent-specific methods
   async getAgents(filters?: any): Promise<ApiResponse<any>> {
     return this.get("/agents", filters);
