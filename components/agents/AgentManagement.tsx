@@ -1535,9 +1535,12 @@ export function AgentManagement({
                 onClick={handleRefresh}
                 variant="outline"
                 className="flex items-center"
+                disabled={isRefreshing}
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Data
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+                {isRefreshing ? "Refreshing..." : "Refresh Data"}
               </Button>
             </div>
           </div>
