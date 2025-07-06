@@ -278,9 +278,11 @@ export default function BuyerDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{buyer.email}</span>
+                    <span className="text-sm text-gray-600">
+                      {buyer?.email || "No email"}
+                    </span>
                   </div>
-                  {buyer.phoneNumber && (
+                  {buyer?.phoneNumber && (
                     <div className="flex items-center justify-center sm:justify-start space-x-2">
                       <Phone className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-600">
@@ -291,7 +293,10 @@ export default function BuyerDetailPage() {
                   <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">
-                      Joined {formatDate(buyer.createdAt)}
+                      Joined{" "}
+                      {buyer?.createdAt
+                        ? formatDate(buyer.createdAt)
+                        : "Unknown"}
                     </span>
                   </div>
                 </div>
