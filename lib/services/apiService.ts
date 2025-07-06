@@ -276,6 +276,18 @@ class ApiService {
     return this.patch(`/inspections/${id}/status`, { status });
   }
 
+  async getInspectionActivities(
+    inspectionId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<ApiResponse<any>> {
+    return this.get("/inspection/logs", {
+      inspectionId,
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+  }
+
   // Agent-specific methods
   async getAgents(filters?: any): Promise<ApiResponse<any>> {
     return this.get("/agents", filters);
@@ -503,6 +515,20 @@ class ApiService {
 
   async deleteBuyer(id: string): Promise<ApiResponse<any>> {
     return this.delete(`/buyer/${id}`);
+  }
+
+  async getBuyerInspections(
+    buyerId: string,
+    filters?: any,
+  ): Promise<ApiResponse<any>> {
+    return this.get(`/buyers/${buyerId}/inspections`, filters);
+  }
+
+  async getBuyerPreferencesByBuyerId(
+    buyerId: string,
+    filters?: any,
+  ): Promise<ApiResponse<any>> {
+    return this.get(`/buyers/${buyerId}/preferences`, filters);
   }
 
   // Brief-specific methods

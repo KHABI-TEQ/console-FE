@@ -484,6 +484,12 @@ export default function InspectionsPage() {
                             key={inspection._id}
                             className={`hover:bg-gray-50 transition-colors ${
                               index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                            } ${
+                              inspection.status === "pending_transaction"
+                                ? "border-l-4 border-l-orange-500 bg-orange-50/30"
+                                : inspection.status === "completed"
+                                  ? "border-l-4 border-l-green-500 bg-green-50/30"
+                                  : ""
                             }`}
                           >
                             <TableCell className="py-4">
@@ -581,11 +587,31 @@ export default function InspectionsPage() {
 
                             <TableCell className="py-4">
                               <div className="space-y-1">
-                                <Badge variant="outline" className="text-xs">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    inspection.status === "pending_transaction"
+                                      ? "bg-orange-100 text-orange-800 border-orange-200"
+                                      : inspection.status === "completed"
+                                        ? "bg-green-100 text-green-800 border-green-200"
+                                        : inspection.status.includes("rejected")
+                                          ? "bg-red-100 text-red-800 border-red-200"
+                                          : "bg-gray-100 text-gray-800 border-gray-200"
+                                  }`}
+                                >
                                   {inspection.status.replace(/_/g, " ")}
                                 </Badge>
                                 <br />
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge
+                                  variant="secondary"
+                                  className={`text-xs ${
+                                    inspection.stage === "negotiation"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : inspection.stage === "inspection"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
                                   {inspection.stage}
                                 </Badge>
                               </div>
@@ -673,10 +699,30 @@ export default function InspectionsPage() {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                inspection.status === "pending_transaction"
+                                  ? "bg-orange-100 text-orange-800 border-orange-200"
+                                  : inspection.status === "completed"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : inspection.status.includes("rejected")
+                                      ? "bg-red-100 text-red-800 border-red-200"
+                                      : "bg-gray-100 text-gray-800 border-gray-200"
+                              }`}
+                            >
                               {inspection.status.replace(/_/g, " ")}
                             </Badge>
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge
+                              variant="secondary"
+                              className={`text-xs ${
+                                inspection.stage === "negotiation"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : inspection.stage === "inspection"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
                               {inspection.stage}
                             </Badge>
                           </div>
