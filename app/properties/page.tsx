@@ -1,370 +1,73 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/layout/AdminLayout";
-import {
-  PropertiesProvider,
-  useProperties,
-} from "@/contexts/PropertiesContext";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatCard } from "@/components/shared/StatCard";
+import { PropertyStats } from "@/components/shared/PropertyStats";
+import { PropertyFilters } from "@/components/shared/PropertyFilters";
+import { PropertyCard } from "@/components/shared/PropertyCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Building,
-  MapPin,
-  DollarSign,
-  Bed,
-  Bath,
-  Square,
-  Search,
-  Filter,
-  Plus,
-  Download,
-  RefreshCw,
-  Eye,
-  Edit,
-  Trash2,
-  Star,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Grid3X3,
-  List,
-  Heart,
-  Share2,
-  TrendingUp,
-  Calendar,
-  Users,
-  Camera,
-} from "lucide-react";
-import { LoadingPlaceholder } from "@/components/shared/LoadingPlaceholder";
+import { Building, Plus, RefreshCw, Grid3X3, List } from "lucide-react";
 import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
-import {
-  EmptyState,
-  PropertiesEmptyState,
-} from "@/components/shared/EmptyState";
-import { ActionButtons } from "@/components/shared/ActionButtons";
-
-interface PropertyFilters {
-  search?: string;
-  status?: string;
-  type?: string;
-  userType?: string;
-  isApproved?: boolean;
-  isRejected?: boolean;
-  isAvailable?: string;
-  page?: number;
-  limit?: number;
-}
+import { PropertiesEmptyState } from "@/components/shared/EmptyState";
+import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [userTypeFilter, setUserTypeFilter] = useState("Landowners");
+  const [filters, setFilters] = useState<any>({});
+  const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const limit = 12;
 
+  // Fetch property stats
   const {
-    properties,
-    isLoading,
-    pagination,
-    fetchProperties,
-    refreshProperties,
-    setFilters,
-    setPage,
-  } = useProperties();
+    data: statsResponse,
+    isLoading: isStatsLoading,
+    refetch: refetchStats,
+  } = useQuery({
+    queryKey: ["property-stats"],
+    queryFn: () => apiService.getPropertyStats(),
+  });
 
-  const totalCount = pagination.total;
+  // Fetch properties
+  const {
+    data: propertiesResponse,
+    isLoading: isPropertiesLoading,
+    refetch: refetchProperties,
+  } = useQuery({
+    queryKey: ["all-properties", filters, page],
+    queryFn: () =>
+      apiService.getAllProperties({
+        ...filters,
+        page,
+        limit,
+      }),
+  });
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 500);
+  const properties = propertiesResponse?.data || [];
+  const total = propertiesResponse?.total || 0;
+  const totalPages = Math.ceil(total / limit);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page when filters change
+  };
 
-  useEffect(() => {
-    const filters: PropertyFilters = {
-      ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
-      ...(statusFilter !== "all" && { status: statusFilter }),
-      ...(typeFilter !== "all" && { type: typeFilter }),
-      userType: userTypeFilter,
-    };
+  const handleRefresh = () => {
+    refetchStats();
+    refetchProperties();
+  };
 
-    setFilters(filters);
-    fetchProperties(filters);
-  }, [debouncedSearchQuery, statusFilter, typeFilter, userTypeFilter]);
-
-  if (isLoading) {
+  if (isPropertiesLoading && !propertiesResponse) {
     return (
       <AdminLayout>
         <PropertiesSkeleton />
       </AdminLayout>
     );
   }
-
-  const stats = [
-    {
-      title: "Total Properties",
-      value: totalCount.toString(),
-      change: "+12.5%",
-      trend: "up" as const,
-      icon: Building,
-      color: "blue" as const,
-    },
-    {
-      title: "Active Listings",
-      value: properties
-        .filter((p: any) => p.isApproved && p.isAvailable)
-        .length.toString(),
-      change: "+8.2%",
-      trend: "up" as const,
-      icon: CheckCircle,
-      color: "green" as const,
-    },
-    {
-      title: "Pending Approval",
-      value: properties
-        .filter((p: any) => !p.isApproved && !p.isRejected)
-        .length.toString(),
-      change: "-15.3%",
-      trend: "down" as const,
-      icon: Clock,
-      color: "orange" as const,
-    },
-    {
-      title: "Total Value",
-      value: `₦${(properties.reduce((sum: number, p: any) => sum + (p.price || 0), 0) / 1000000).toFixed(0)}M`,
-      change: "+22.1%",
-      trend: "up" as const,
-      icon: DollarSign,
-      color: "purple" as const,
-    },
-  ];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const getStatusBadge = (property: any) => {
-    if (property.isApproved) {
-      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-    } else if (property.isRejected) {
-      return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
-    } else {
-      return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-    }
-  };
-
-  const handleRefresh = () => {
-    refreshProperties();
-  };
-
-  const PropertyCard = ({ property }: { property: any }) => (
-    <Card className="group hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300">
-      <div className="relative overflow-hidden rounded-t-lg">
-        <img
-          src={property.pictures?.[0] || "/placeholder.svg"}
-          alt={property.propertyType}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-        />
-        <div className="absolute top-3 left-3 flex items-center space-x-2">
-          {getStatusBadge(property)}
-          {property.isPremium && (
-            <Badge className="bg-purple-100 text-purple-800">
-              <Star className="h-3 w-3 mr-1" />
-              Premium
-            </Badge>
-          )}
-        </div>
-        <div className="absolute top-3 right-3 flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-              {property.propertyType} - {property.briefType}
-            </h3>
-            <p className="text-sm text-gray-500 flex items-center mt-1">
-              <MapPin className="h-3 w-3 mr-1" />
-              {property.location?.area}, {property.location?.localGovernment},{" "}
-              {property.location?.state}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <div className="flex items-center space-x-3">
-              {property.additionalFeatures?.noOfBedrooms && (
-                <div className="flex items-center">
-                  <Bed className="h-4 w-4 mr-1" />
-                  <span>{property.additionalFeatures.noOfBedrooms}</span>
-                </div>
-              )}
-              {property.additionalFeatures?.noOfBathrooms && (
-                <div className="flex items-center">
-                  <Bath className="h-4 w-4 mr-1" />
-                  <span>{property.additionalFeatures.noOfBathrooms}</span>
-                </div>
-              )}
-              <div className="flex items-center">
-                <Building className="h-4 w-4 mr-1" />
-                <span>{property.propertyType}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(property.price)}
-              </p>
-              <p className="text-xs text-gray-500">
-                Listed {new Date(property.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-            <ActionButtons
-              entityType="property"
-              entityId={property._id}
-              entityName={`${property.propertyType} Property`}
-              showView={true}
-              showEdit={true}
-              showDelete={true}
-              showApproval={!property.isApproved}
-              variant="dropdown"
-              onRefresh={handleRefresh}
-            />
-          </div>
-
-          {property.features && property.features.length > 0 && (
-            <div className="pt-2 border-t">
-              <div className="flex flex-wrap gap-1">
-                {property.features
-                  .slice(0, 3)
-                  .map((feature: string, idx: number) => (
-                    <Badge key={idx} variant="outline" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                {property.features.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{property.features.length - 3}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const PropertyListItem = ({ property }: { property: any }) => (
-    <Card className="hover:shadow-md transition-all duration-200">
-      <CardContent className="p-4">
-        <div className="flex items-start space-x-4">
-          <img
-            src={property.pictures?.[0] || "/placeholder.svg"}
-            alt={property.propertyType}
-            className="w-24 h-20 object-cover rounded-lg flex-shrink-0"
-          />
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                  {property.propertyType} - {property.briefType}
-                </h3>
-                <p className="text-sm text-gray-500 flex items-center mt-1">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  {property.location?.area},{" "}
-                  {property.location?.localGovernment}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">
-                  {formatCurrency(property.price)}
-                </p>
-                {getStatusBadge(property)}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
-                {property.additionalFeatures?.noOfBedrooms && (
-                  <div className="flex items-center">
-                    <Bed className="h-4 w-4 mr-1" />
-                    <span>{property.additionalFeatures.noOfBedrooms} bed</span>
-                  </div>
-                )}
-                {property.additionalFeatures?.noOfBathrooms && (
-                  <div className="flex items-center">
-                    <Bath className="h-4 w-4 mr-1" />
-                    <span>
-                      {property.additionalFeatures.noOfBathrooms} bath
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  <span>
-                    {new Date(property.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-
-              <ActionButtons
-                entityType="property"
-                entityId={property._id}
-                entityName={`${property.propertyType} Property`}
-                showView={true}
-                showEdit={true}
-                showDelete={true}
-                showApproval={!property.isApproved}
-                variant="dropdown"
-                onRefresh={handleRefresh}
-              />
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <AdminLayout>
@@ -388,67 +91,16 @@ function PropertiesContent() {
         </PageHeader>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
-        </div>
+        <PropertyStats
+          data={statsResponse?.data || {}}
+          isLoading={isStatsLoading}
+        />
 
         {/* Filters */}
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b">
-            <CardTitle className="flex items-center">
-              <Filter className="h-5 w-5 mr-2 text-gray-600" />
-              Filter Properties
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search properties by location, type, or features..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11"
-                  />
-                </div>
-              </div>
-              <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="User Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Landowners">Landowners</SelectItem>
-                  <SelectItem value="Agent">Agents</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="approved">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Residential">Residential</SelectItem>
-                  <SelectItem value="Commercial">Commercial</SelectItem>
-                  <SelectItem value="Land">Land</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <PropertyFilters
+          onFiltersChange={handleFiltersChange}
+          initialFilters={filters}
+        />
 
         {/* Properties */}
         <Card className="border border-gray-200 shadow-sm">
@@ -461,7 +113,7 @@ function PropertiesContent() {
                     Property Portfolio
                   </span>
                   <p className="text-sm text-gray-600 font-normal">
-                    {totalCount} properties found
+                    {total} properties found
                   </p>
                 </div>
               </div>
@@ -491,7 +143,7 @@ function PropertiesContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {isLoading ? (
+            {isPropertiesLoading ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 <p className="text-gray-600 font-medium">
@@ -505,11 +157,7 @@ function PropertiesContent() {
               <PropertiesEmptyState
                 onAction={() => {}}
                 onSecondaryAction={() => {
-                  setSearchQuery("");
-                  setDebouncedSearchQuery("");
-                  setStatusFilter("all");
-                  setTypeFilter("all");
-                  setUserTypeFilter("Landowners");
+                  setFilters({});
                   setPage(1);
                 }}
                 secondaryActionLabel="Clear Filters"
@@ -522,21 +170,22 @@ function PropertiesContent() {
                     : "space-y-4"
                 }
               >
-                {properties.map((property: any) =>
-                  viewMode === "grid" ? (
-                    <PropertyCard key={property._id} property={property} />
-                  ) : (
-                    <PropertyListItem key={property._id} property={property} />
-                  ),
-                )}
+                {properties.map((property: any) => (
+                  <PropertyCard
+                    key={property._id || property.id}
+                    property={property}
+                    variant={viewMode}
+                    onRefresh={handleRefresh}
+                  />
+                ))}
               </div>
             )}
           </CardContent>
-          {!isLoading && (
+          {!isPropertiesLoading && properties.length > 0 && (
             <Pagination
-              currentPage={pagination.page || 1}
-              totalItems={pagination.total || 0}
-              itemsPerPage={pagination.limit || 10}
+              currentPage={page}
+              totalItems={total}
+              itemsPerPage={limit}
               onPageChange={setPage}
             />
           )}
@@ -547,9 +196,5 @@ function PropertiesContent() {
 }
 
 export default function PropertiesPage() {
-  return (
-    <PropertiesProvider>
-      <PropertiesContent />
-    </PropertiesProvider>
-  );
+  return <PropertiesContent />;
 }
