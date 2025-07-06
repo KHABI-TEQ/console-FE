@@ -61,18 +61,9 @@ export function EditBuyerModal({
   useEffect(() => {
     if (buyerData) {
       setFormData({
-        name: buyerData.name || "",
+        fullName: buyerData.fullName || "",
         email: buyerData.email || "",
-        phone: buyerData.phone || "",
-        location: buyerData.location || "",
-        status: buyerData.status || "Lead",
-        budgetMin: buyerData.budgetMin?.toString() || "",
-        budgetMax: buyerData.budgetMax?.toString() || "",
-        preferences: buyerData.preferences || [],
-        agent: buyerData.agent || "",
-        preApproved: buyerData.preApproved || false,
-        firstTimeBuyer: buyerData.firstTimeBuyer || false,
-        notes: buyerData.notes || "",
+        phoneNumber: buyerData.phoneNumber || "",
       });
     }
   }, [buyerData]);
