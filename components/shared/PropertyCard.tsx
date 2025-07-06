@@ -123,33 +123,48 @@ export function PropertyCard({
               </div>
 
               <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-2 sm:space-x-4 text-sm text-gray-600 overflow-x-auto">
                   {property.additionalFeatures?.noOfBedrooms && (
-                    <div className="flex items-center">
+                    <div className="flex items-center whitespace-nowrap">
                       <Bed className="h-4 w-4 mr-1" />
-                      <span>
+                      <span className="hidden sm:inline">
                         {property.additionalFeatures.noOfBedrooms} bed
+                      </span>
+                      <span className="sm:hidden">
+                        {property.additionalFeatures.noOfBedrooms}
                       </span>
                     </div>
                   )}
                   {property.additionalFeatures?.noOfBathrooms && (
-                    <div className="flex items-center">
+                    <div className="flex items-center whitespace-nowrap">
                       <Bath className="h-4 w-4 mr-1" />
-                      <span>
+                      <span className="hidden sm:inline">
                         {property.additionalFeatures.noOfBathrooms} bath
+                      </span>
+                      <span className="sm:hidden">
+                        {property.additionalFeatures.noOfBathrooms}
                       </span>
                     </div>
                   )}
                   {property.additionalFeatures?.noOfCarParks && (
-                    <div className="flex items-center">
+                    <div className="flex items-center whitespace-nowrap">
                       <Car className="h-4 w-4 mr-1" />
                       <span>{property.additionalFeatures.noOfCarParks}</span>
                     </div>
                   )}
-                  <div className="flex items-center">
+                  <div className="flex items-center whitespace-nowrap">
                     <Calendar className="h-4 w-4 mr-1" />
-                    <span>
+                    <span className="hidden sm:inline">
                       {new Date(property.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="sm:hidden">
+                      {new Date(property.createdAt).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                        },
+                      )}
                     </span>
                   </div>
                 </div>
@@ -229,28 +244,33 @@ export function PropertyCard({
           </div>
 
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3 overflow-x-auto">
               {property.additionalFeatures?.noOfBedrooms && (
-                <div className="flex items-center">
+                <div className="flex items-center whitespace-nowrap">
                   <Bed className="h-4 w-4 mr-1" />
                   <span>{property.additionalFeatures.noOfBedrooms}</span>
                 </div>
               )}
               {property.additionalFeatures?.noOfBathrooms && (
-                <div className="flex items-center">
+                <div className="flex items-center whitespace-nowrap">
                   <Bath className="h-4 w-4 mr-1" />
                   <span>{property.additionalFeatures.noOfBathrooms}</span>
                 </div>
               )}
               {property.additionalFeatures?.noOfCarParks && (
-                <div className="flex items-center">
+                <div className="flex items-center whitespace-nowrap">
                   <Car className="h-4 w-4 mr-1" />
                   <span>{property.additionalFeatures.noOfCarParks}</span>
                 </div>
               )}
-              <div className="flex items-center">
+              <div className="flex items-center whitespace-nowrap">
                 <Building className="h-4 w-4 mr-1" />
-                <span>{property.buildingType}</span>
+                <span className="hidden sm:inline">
+                  {property.buildingType}
+                </span>
+                <span className="sm:hidden">
+                  {property.buildingType.substring(0, 8)}...
+                </span>
               </div>
             </div>
           </div>
