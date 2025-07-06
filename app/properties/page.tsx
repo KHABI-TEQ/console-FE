@@ -14,15 +14,25 @@ import { Building, Plus, RefreshCw, Grid3X3, List } from "lucide-react";
 import { PropertiesSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Pagination } from "@/components/shared/Pagination";
 import { PropertiesEmptyState } from "@/components/shared/EmptyState";
+import { useProperties } from "@/contexts/PropertiesContext";
 import { apiService } from "@/lib/services/apiService";
 
 function PropertiesContent() {
-  const [filters, setFilters] = useState<any>({});
-  const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const limit = 12;
 
-  // Fetch property stats
+  // Use properties context
+  const {
+    properties,
+    isLoading: isPropertiesLoading,
+    filters,
+    pagination,
+    fetchProperties,
+    refreshProperties,
+    setFilters,
+    setPage,
+  } = useProperties();
+
+  // Fetch property stats (separate from context)
   const {
     data: statsResponse,
     isLoading: isStatsLoading,
@@ -32,39 +42,25 @@ function PropertiesContent() {
     queryFn: () => apiService.getPropertyStats(),
   });
 
-  // Fetch properties
-  const {
-    data: propertiesResponse,
-    isLoading: isPropertiesLoading,
-    refetch: refetchProperties,
-  } = useQuery({
-    queryKey: ["all-properties", filters, page],
-    queryFn: () =>
-      apiService.getAllProperties({
-        ...filters,
-        page,
-        limit,
-      }),
-  });
-
-  const properties = propertiesResponse?.data || [];
-  const pagination = propertiesResponse?.pagination || {
-    total: 0,
-    currentPage: 1,
-    page: 1,
-    totalPages: 1,
-  };
-  const total = pagination.total || 0;
-  const totalPages = pagination.totalPages || Math.ceil(total / limit);
+  // Initialize pagination with 12 items per page for properties grid
+  useEffect(() => {
+    if (pagination.perPage !== 12) {
+      fetchProperties({ ...filters, page: 1, limit: 12 });
+    }
+  }, []);
 
   const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters);
-    setPage(1); // Reset to first page when filters change
+    fetchProperties({ ...newFilters, page: 1, limit: 12 });
+  };
+
+  const handlePageChange = (page: number) => {
+    setPage(page);
   };
 
   const handleRefresh = () => {
     refetchStats();
-    refetchProperties();
+    refreshProperties();
   };
 
   if (isPropertiesLoading && !propertiesResponse) {
