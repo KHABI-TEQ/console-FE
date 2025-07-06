@@ -393,89 +393,33 @@ export function AgentManagement({
     agentName: string,
     isActive: boolean,
   ) => {
-    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-    const [statusReason, setStatusReason] = useState("");
-    const action = isActive ? "deactivate" : "activate";
+    setSelectedAgentForAction({
+      id: agentId,
+      name: agentName,
+      isActive: isActive,
+    });
+    setStatusDialogOpen(true);
+  };
 
-    const handleStatusSubmit = async () => {
-      try {
-        showLoader();
-        const response = await apiService.updateAgentStatus(
-          agentId,
-          !isActive,
-          statusReason,
-        );
-        if (response.success) {
-          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-          setStatusDialogOpen(false);
-          setStatusReason("");
-        }
-      } finally {
-        hideLoader();
+  const handleStatusSubmit = async () => {
+    if (!selectedAgentForAction) return;
+
+    try {
+      showLoader();
+      const response = await apiService.updateAgentStatus(
+        selectedAgentForAction.id,
+        !selectedAgentForAction.isActive,
+        statusReason,
+      );
+      if (response.success) {
+        await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        setStatusDialogOpen(false);
+        setStatusReason("");
+        setSelectedAgentForAction(null);
       }
-    };
-
-    return (
-      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-        <DialogTrigger asChild>
-          <button className="flex items-center w-full text-left">
-            {isActive ? (
-              <>
-                <PowerOff className="mr-2 h-4 w-4" />
-                Deactivate
-              </>
-            ) : (
-              <>
-                <Power className="mr-2 h-4 w-4" />
-                Activate
-              </>
-            )}
-          </button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {action.charAt(0).toUpperCase() + action.slice(1)} Agent
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to {action} {agentName}? Please provide a
-              reason.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="reason">Reason</Label>
-              <Textarea
-                id="reason"
-                placeholder={`Enter reason for ${action}ing this agent...`}
-                value={statusReason}
-                onChange={(e) => setStatusReason(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setStatusDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleStatusSubmit}
-              disabled={!statusReason.trim()}
-              className={
-                isActive
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
-              }
-            >
-              {action.charAt(0).toUpperCase() + action.slice(1)}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
+    } finally {
+      hideLoader();
+    }
   };
 
   const handleDeleteAgent = (agentId: string, agentName: string) => {
