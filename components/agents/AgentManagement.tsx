@@ -423,67 +423,32 @@ export function AgentManagement({
   };
 
   const handleDeleteAgent = (agentId: string, agentName: string) => {
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [deleteReason, setDeleteReason] = useState("");
+    setSelectedAgentForAction({
+      id: agentId,
+      name: agentName,
+      isActive: false, // not relevant for delete
+    });
+    setDeleteDialogOpen(true);
+  };
 
-    const handleDeleteSubmit = async () => {
-      try {
-        showLoader();
-        const response = await apiService.deleteAgentNew(agentId, deleteReason);
-        if (response.success) {
-          await fetchApprovedAgents(approvedAgentsPage, searchQuery);
-          setDeleteDialogOpen(false);
-          setDeleteReason("");
-        }
-      } finally {
-        hideLoader();
+  const handleDeleteSubmit = async () => {
+    if (!selectedAgentForAction) return;
+
+    try {
+      showLoader();
+      const response = await apiService.deleteAgentNew(
+        selectedAgentForAction.id,
+        deleteReason,
+      );
+      if (response.success) {
+        await fetchApprovedAgents(approvedAgentsPage, searchQuery);
+        setDeleteDialogOpen(false);
+        setDeleteReason("");
+        setSelectedAgentForAction(null);
       }
-    };
-
-    return (
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogTrigger asChild>
-          <button className="flex items-center w-full text-left text-red-600">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Agent</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete {agentName}? This action cannot be
-              undone and will permanently remove their account and all
-              associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="deleteReason">Reason for deletion</Label>
-              <Textarea
-                id="deleteReason"
-                placeholder="Enter reason for deleting this agent..."
-                value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteSubmit}
-              disabled={!deleteReason.trim()}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
+    } finally {
+      hideLoader();
+    }
   };
 
   // Filter functions
