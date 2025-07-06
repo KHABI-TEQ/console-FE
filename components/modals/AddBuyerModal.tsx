@@ -29,7 +29,6 @@ export function AddBuyerModal({
     email: "",
     phoneNumber: "",
   });
-  const [newPreference, setNewPreference] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: string, value: string | boolean) => {
