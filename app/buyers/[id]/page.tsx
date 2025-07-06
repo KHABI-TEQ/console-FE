@@ -634,12 +634,18 @@ export default function BuyerDetailPage() {
                 )}
                 {preferences.length > 0 &&
                   preferencesPagination.totalPages > 1 && (
-                    <Pagination
-                      currentPage={preferencesPage}
-                      totalItems={preferencesPagination.total}
-                      itemsPerPage={limit}
-                      onPageChange={setPreferencesPage}
-                    />
+                    <div className="px-6 pb-6">
+                      <Pagination
+                        currentPage={
+                          preferencesPagination.currentPage ||
+                          preferencesPagination.page ||
+                          preferencesPage
+                        }
+                        totalItems={preferencesPagination.total || 0}
+                        itemsPerPage={limit}
+                        onPageChange={setPreferencesPage}
+                      />
+                    </div>
                   )}
               </CardContent>
             </Card>
