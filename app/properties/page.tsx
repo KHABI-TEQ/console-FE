@@ -48,8 +48,13 @@ function PropertiesContent() {
   });
 
   const properties = propertiesResponse?.data || [];
-  const total = propertiesResponse?.total || 0;
-  const totalPages = Math.ceil(total / limit);
+  const pagination = propertiesResponse?.pagination || {
+    total: 0,
+    currentPage: 1,
+    totalPages: 1,
+  };
+  const total = pagination.total || 0;
+  const totalPages = pagination.totalPages || Math.ceil(total / limit);
 
   const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters);
@@ -143,7 +148,7 @@ function PropertiesContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {isPropertiesLoading ? (
+            {isPropertiesLoading && !propertiesResponse ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 <p className="text-gray-600 font-medium">
@@ -152,6 +157,26 @@ function PropertiesContent() {
                 <p className="text-gray-500 text-sm">
                   Please wait while we fetch the latest information
                 </p>
+              </div>
+            ) : isPropertiesLoading ? (
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+                <div
+                  className={
+                    "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-50"
+                  }
+                >
+                  {properties.map((property: any) => (
+                    <PropertyCard
+                      key={property._id || property.id}
+                      property={property}
+                      variant={viewMode}
+                      onRefresh={handleRefresh}
+                    />
+                  ))}
+                </div>
               </div>
             ) : properties.length === 0 ? (
               <PropertiesEmptyState
@@ -188,7 +213,7 @@ function PropertiesContent() {
               }
             >
               <Pagination
-                currentPage={page}
+                currentPage={pagination.currentPage || page}
                 totalItems={total}
                 itemsPerPage={limit}
                 onPageChange={setPage}
