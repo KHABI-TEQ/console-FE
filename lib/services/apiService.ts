@@ -240,7 +240,7 @@ class ApiService {
   ): Promise<ApiResponse<any>> {
     return this.post("/reset-password", { token, password }, false);
   }
- 
+
   async getProfile(): Promise<ApiResponse<any>> {
     return this.get("/profile");
   }
@@ -644,6 +644,83 @@ class ApiService {
 
   async getInspectionStats(): Promise<ApiResponse<any>> {
     return this.get("/inspections/stats");
+  }
+
+  // Testimonials methods
+  async getTestimonials(filters?: any): Promise<ApiResponse<any>> {
+    return this.get("/testimonials", filters);
+  }
+
+  async getTestimonial(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/testimonials/${id}`);
+  }
+
+  async createTestimonial(testimonialData: any): Promise<ApiResponse<any>> {
+    return this.post("/testimonials", testimonialData);
+  }
+
+  async updateTestimonial(
+    id: string,
+    testimonialData: any,
+  ): Promise<ApiResponse<any>> {
+    return this.put(`/testimonials/${id}`, testimonialData);
+  }
+
+  async deleteTestimonial(id: string): Promise<ApiResponse<any>> {
+    return this.delete(`/testimonials/${id}`);
+  }
+
+  async updateTestimonialStatus(
+    id: string,
+    status: string,
+  ): Promise<ApiResponse<any>> {
+    return this.patch(`/testimonials/${id}/status`, { status });
+  }
+
+  // File upload method for testimonials
+  async uploadImage(formData: FormData): Promise<ApiResponse<any>> {
+    const url = `${this.baseUrl}/upload-img`;
+
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        data = {};
+      }
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error:
+            data.message ||
+            data.error ||
+            `HTTP error! status: ${response.status}`,
+        };
+      }
+
+      return {
+        success: true,
+        ...data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Upload failed",
+      };
+    }
   }
 }
 
