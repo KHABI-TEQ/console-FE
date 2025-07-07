@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTestimonials } from "@/contexts/TestimonialsContext";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,6 +77,33 @@ export default function TestimonialManagement() {
 
   const { confirmAction } = useConfirmation();
 
+  // Mutation hooks for better error handling
+  const deleteTestimonialMutation = useApiMutation({
+    mutationFn: deleteTestimonial,
+    onSuccess: () => {
+      // Testimonials will be refetched automatically
+    },
+    invalidateQueries: ["testimonials"],
+    successMessage: "Testimonial deleted successfully",
+    errorMessage: "Failed to delete testimonial",
+  });
+
+  const updateStatusMutation = useApiMutation({
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: "approved" | "rejected";
+    }) => updateTestimonialStatus(id, status),
+    onSuccess: () => {
+      // Testimonials will be refetched automatically
+    },
+    invalidateQueries: ["testimonials"],
+    successMessage: "Testimonial status updated successfully",
+    errorMessage: "Failed to update testimonial status",
+  });
+
   useEffect(() => {
     fetchTestimonials();
   }, []);
@@ -120,8 +148,8 @@ export default function TestimonialManagement() {
       confirmText: "Delete Testimonial",
       cancelText: "Cancel",
       variant: "danger",
-      onConfirm: async () => {
-        await deleteTestimonial(testimonial._id);
+      onConfirm: () => {
+        deleteTestimonialMutation.mutate(testimonial._id);
       },
     });
   };
@@ -136,8 +164,11 @@ export default function TestimonialManagement() {
       confirmText: status === "approved" ? "Approve" : "Reject",
       cancelText: "Cancel",
       variant: status === "approved" ? "default" : "danger",
-      onConfirm: async () => {
-        await updateTestimonialStatus(testimonial._id, status);
+      onConfirm: () => {
+        updateStatusMutation.mutate({
+          id: testimonial._id,
+          status,
+        });
       },
     });
   };
