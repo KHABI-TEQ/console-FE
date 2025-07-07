@@ -71,10 +71,15 @@ export function AddTestimonialModal({
   const createTestimonialMutation = useApiMutation({
     mutationFn: createTestimonial,
     onSuccess: (data, variables) => {
+      // Reset form and close modal
       formik.resetForm();
       setProfileImageUrl("");
       onSuccess?.();
       onClose();
+    },
+    onError: (error, variables) => {
+      // Error is already handled by useApiMutation
+      console.error("Create testimonial error:", error);
     },
     invalidateQueries: ["testimonials"],
     successMessage: "Testimonial created successfully",
@@ -85,10 +90,15 @@ export function AddTestimonialModal({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updateTestimonial(id, data),
     onSuccess: (data, variables) => {
+      // Reset form and close modal
       formik.resetForm();
       setProfileImageUrl("");
       onSuccess?.();
       onClose();
+    },
+    onError: (error, variables) => {
+      // Error is already handled by useApiMutation
+      console.error("Update testimonial error:", error);
     },
     invalidateQueries: ["testimonials"],
     successMessage: "Testimonial updated successfully",
@@ -105,19 +115,23 @@ export function AddTestimonialModal({
     },
     validationSchema: testimonialValidationSchema,
     enableReinitialize: true,
-    onSubmit: (values) => {
-      const payload = {
-        ...values,
-        profileImage: profileImageUrl || undefined,
-      };
+    onSubmit: async (values) => {
+      try {
+        const payload = {
+          ...values,
+          profileImage: profileImageUrl || undefined,
+        };
 
-      if (isEdit && testimonialData) {
-        updateTestimonialMutation.mutate({
-          id: testimonialData._id,
-          data: payload,
-        });
-      } else {
-        createTestimonialMutation.mutate(payload);
+        if (isEdit && testimonialData) {
+          updateTestimonialMutation.mutate({
+            id: testimonialData._id,
+            data: payload,
+          });
+        } else {
+          createTestimonialMutation.mutate(payload);
+        }
+      } catch (error) {
+        console.error("Form submission error:", error);
       }
     },
   });
