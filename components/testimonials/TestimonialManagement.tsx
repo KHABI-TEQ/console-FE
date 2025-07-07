@@ -163,7 +163,7 @@ export default function TestimonialManagement() {
       description: `Are you sure you want to ${status === "approved" ? "approve" : "reject"} this testimonial from ${testimonial.fullName}?`,
       confirmText: status === "approved" ? "Approve" : "Reject",
       cancelText: "Cancel",
-      variant: status === "approved" ? "default" : "danger",
+      variant: status === "approved" ? "success" : "danger",
       onConfirm: () => {
         updateStatusMutation.mutate({
           id: testimonial._id,
@@ -204,7 +204,7 @@ export default function TestimonialManagement() {
       change: "+3.1%",
       trend: "up" as const,
       icon: Clock,
-      color: "yellow" as const,
+      color: "orange" as const,
     },
     {
       title: "Rejected",
@@ -307,7 +307,14 @@ export default function TestimonialManagement() {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value: string) =>
+                setStatusFilter(
+                  value as "all" | "pending" | "approved" | "rejected",
+                )
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>

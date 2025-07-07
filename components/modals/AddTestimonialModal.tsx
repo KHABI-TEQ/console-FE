@@ -156,8 +156,8 @@ export function AddTestimonialModal({
     await toast.promise(
       apiService.uploadImage(formData).then((response) => {
         console.log("Response from file upload:", response);
-        if (response.url) {
-          setProfileImageUrl(response.url);
+        if ((response as any).url) {
+          setProfileImageUrl((response as any).url);
           return "Image uploaded successfully";
         } else {
           throw new Error("Image upload failed");
