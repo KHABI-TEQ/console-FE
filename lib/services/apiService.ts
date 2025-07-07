@@ -648,33 +648,136 @@ class ApiService {
 
   // Testimonials methods
   async getTestimonials(filters?: any): Promise<ApiResponse<any>> {
-    return this.get("/testimonials", filters);
+    try {
+      const response = await this.get("/testimonials", filters);
+      return {
+        success: response.success ?? true,
+        data: response.data || response.testimonials || [],
+        testimonials: response.testimonials || response.data || [],
+        pagination: response.pagination || {
+          page: response.page || 1,
+          limit: response.limit || 10,
+          total: response.total || 0,
+          totalPages: response.totalPages || 0,
+        },
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch testimonials",
+        data: [],
+        testimonials: [],
+      };
+    }
   }
 
   async getTestimonial(id: string): Promise<ApiResponse<any>> {
-    return this.get(`/testimonials/${id}`);
+    try {
+      const response = await this.get(`/testimonials/${id}`);
+      return {
+        success: response.success ?? true,
+        data: response.data || response,
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch testimonial",
+      };
+    }
   }
 
   async createTestimonial(testimonialData: any): Promise<ApiResponse<any>> {
-    return this.post("/testimonials", testimonialData);
+    try {
+      const response = await this.post("/testimonials", testimonialData);
+      return {
+        success: response.success ?? true,
+        data: response.data || response,
+        message: response.message || "Testimonial created successfully",
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to create testimonial",
+      };
+    }
   }
 
   async updateTestimonial(
     id: string,
     testimonialData: any,
   ): Promise<ApiResponse<any>> {
-    return this.put(`/testimonials/${id}`, testimonialData);
+    try {
+      const response = await this.put(`/testimonials/${id}`, testimonialData);
+      return {
+        success: response.success ?? true,
+        data: response.data || response,
+        message: response.message || "Testimonial updated successfully",
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to update testimonial",
+      };
+    }
   }
 
   async deleteTestimonial(id: string): Promise<ApiResponse<any>> {
-    return this.delete(`/testimonials/${id}`);
+    try {
+      const response = await this.delete(`/testimonials/${id}`);
+      return {
+        success: response.success ?? true,
+        message: response.message || "Testimonial deleted successfully",
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete testimonial",
+      };
+    }
   }
 
   async updateTestimonialStatus(
     id: string,
     status: string,
   ): Promise<ApiResponse<any>> {
-    return this.patch(`/testimonials/${id}/status`, { status });
+    try {
+      const response = await this.patch(`/testimonials/${id}/status`, {
+        status,
+      });
+      return {
+        success: response.success ?? true,
+        message: response.message || `Testimonial ${status} successfully`,
+        ...response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : `Failed to ${status} testimonial`,
+      };
+    }
   }
 
   // File upload method for testimonials
