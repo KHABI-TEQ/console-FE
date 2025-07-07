@@ -233,60 +233,61 @@ export function TestimonialsProvider({
     async (id: string) => {
       try {
         const response = await apiService.deleteTestimonial(id);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: response.message || "Testimonial deleted successfully",
-          });
-          fetchTestimonials();
+
+        // Ensure response has the expected structure
+        const normalizedResponse = {
+          success: response?.success ?? false,
+          data: response?.data,
+          error: response?.error,
+          message: response?.message,
+        };
+
+        if (normalizedResponse.success) {
+          await fetchTestimonials();
+          return normalizedResponse;
         } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: response.error || "Failed to delete testimonial",
-          });
+          throw new Error(
+            normalizedResponse.error || "Failed to delete testimonial",
+          );
         }
       } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to delete testimonial",
-        });
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        throw new Error(errorMessage);
       }
     },
-    [addNotification, fetchTestimonials],
+    [fetchTestimonials],
   );
 
   const updateTestimonialStatus = useCallback(
     async (id: string, status: "approved" | "rejected") => {
       try {
         const response = await apiService.updateTestimonialStatus(id, status);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: `Testimonial ${status} successfully`,
-          });
-          fetchTestimonials();
+
+        // Ensure response has the expected structure
+        const normalizedResponse = {
+          success: response?.success ?? false,
+          data: response?.data,
+          error: response?.error,
+          message: response?.message,
+        };
+
+        if (normalizedResponse.success) {
+          await fetchTestimonials();
+          return normalizedResponse;
         } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message:
-              response.error ||
+          throw new Error(
+            normalizedResponse.error ||
               `Failed to ${status === "approved" ? "approve" : "reject"} testimonial`,
-          });
+          );
         }
       } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: `Failed to ${status === "approved" ? "approve" : "reject"} testimonial`,
-        });
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        throw new Error(errorMessage);
       }
     },
-    [addNotification, fetchTestimonials],
+    [fetchTestimonials],
   );
 
   const setPage = useCallback((page: number) => {
