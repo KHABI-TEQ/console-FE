@@ -110,10 +110,3 @@ export function useBuyers(filters?: any) {
 export function useBriefs(filters?: any) {
   return useApiQuery(["briefs", filters], () => apiService.getBriefs(filters));
 }
-
-// Note: getContacts method not implemented in apiService
-// export function useContacts(filters?: any) {
-//   return useApiQuery(["contacts", filters], () =>
-//     apiService.getContacts(filters),
-//   );
-// }
