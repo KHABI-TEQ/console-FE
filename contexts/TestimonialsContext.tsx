@@ -24,16 +24,36 @@ interface TestimonialsContextType {
   fetchTestimonials: (newFilters?: TestimonialsFilters) => Promise<void>;
   refreshTestimonials: () => Promise<void>;
   getTestimonial: (id: string) => Promise<Testimonial | null>;
-  createTestimonial: (data: CreateTestimonialPayload) => Promise<void>;
+  createTestimonial: (data: CreateTestimonialPayload) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+    message?: string;
+  }>;
   updateTestimonial: (
     id: string,
     data: UpdateTestimonialPayload,
-  ) => Promise<void>;
-  deleteTestimonial: (id: string) => Promise<void>;
+  ) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+    message?: string;
+  }>;
+  deleteTestimonial: (id: string) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+    message?: string;
+  }>;
   updateTestimonialStatus: (
     id: string,
     status: "approved" | "rejected",
-  ) => Promise<void>;
+  ) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+    message?: string;
+  }>;
   setFilters: (filters: TestimonialsFilters) => void;
   setPage: (page: number) => void;
   setSelectedTestimonial: (testimonial: Testimonial | null) => void;
@@ -75,7 +95,9 @@ export function TestimonialsProvider({
         const response = await apiService.getTestimonials(mergedFilters);
 
         if (response.success) {
-          setTestimonials(response.testimonials || response.data || []);
+          setTestimonials(
+            (response as any).testimonials || response.data || [],
+          );
           if (response.pagination) {
             setPagination({
               page: response.pagination.page,
