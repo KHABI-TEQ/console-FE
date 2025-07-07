@@ -157,82 +157,76 @@ export function TestimonialsProvider({
     async (data: CreateTestimonialPayload) => {
       try {
         const response = await apiService.createTestimonial(data);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: "Testimonial created successfully",
-          });
-          fetchTestimonials();
+
+        // Ensure response has the expected structure
+        const normalizedResponse = {
+          success: response?.success ?? false,
+          data: response?.data,
+          error: response?.error,
+          message: response?.message,
+        };
+
+        if (normalizedResponse.success) {
+          await fetchTestimonials();
+          return normalizedResponse;
         } else {
           // Check if it's an endpoint not found error
           if (
-            response.error?.includes("404") ||
-            response.error?.includes("Not Found")
+            normalizedResponse.error?.includes("404") ||
+            normalizedResponse.error?.includes("Not Found")
           ) {
-            addNotification({
-              type: "warning",
-              title: "Feature Not Available",
-              message:
-                "Testimonials API endpoint is not yet implemented on the backend",
-            });
+            throw new Error(
+              "Testimonials API endpoint is not yet implemented on the backend",
+            );
           } else {
-            addNotification({
-              type: "error",
-              title: "Error",
-              message: response.error || "Failed to create testimonial",
-            });
+            throw new Error(
+              normalizedResponse.error || "Failed to create testimonial",
+            );
           }
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         if (errorMessage.includes("fetch") || errorMessage.includes("404")) {
-          addNotification({
-            type: "warning",
-            title: "Feature Not Available",
-            message:
-              "Testimonials API endpoint is not yet implemented on the backend",
-          });
+          throw new Error(
+            "Testimonials API endpoint is not yet implemented on the backend",
+          );
         } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: "Failed to create testimonial",
-          });
+          throw new Error(errorMessage);
         }
       }
     },
-    [addNotification, fetchTestimonials],
+    [fetchTestimonials],
   );
 
   const updateTestimonial = useCallback(
     async (id: string, data: UpdateTestimonialPayload) => {
       try {
         const response = await apiService.updateTestimonial(id, data);
-        if (response.success) {
-          addNotification({
-            type: "success",
-            title: "Success",
-            message: "Testimonial updated successfully",
-          });
-          fetchTestimonials();
+
+        // Ensure response has the expected structure
+        const normalizedResponse = {
+          success: response?.success ?? false,
+          data: response?.data,
+          error: response?.error,
+          message: response?.message,
+        };
+
+        if (normalizedResponse.success) {
+          await fetchTestimonials();
+          return normalizedResponse;
         } else {
-          addNotification({
-            type: "error",
-            title: "Error",
-            message: response.error || "Failed to update testimonial",
-          });
+          throw new Error(
+            normalizedResponse.error || "Failed to update testimonial",
+          );
         }
       } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to update testimonial",
-        });
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        throw new Error(errorMessage);
       }
     },
-    [addNotification, fetchTestimonials],
+    [fetchTestimonials],
   );
 
   const deleteTestimonial = useCallback(
