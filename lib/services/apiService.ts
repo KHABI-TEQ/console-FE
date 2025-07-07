@@ -240,7 +240,7 @@ class ApiService {
   ): Promise<ApiResponse<any>> {
     return this.post("/reset-password", { token, password }, false);
   }
-
+ 
   async getProfile(): Promise<ApiResponse<any>> {
     return this.get("/profile");
   }

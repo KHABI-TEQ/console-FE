@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const response = await apiService.getProfile();
-
+ 
       if (response.success) {
         const userData =
           response.data?.user || response.admin?.admin || response.admin;
