@@ -339,9 +339,25 @@ export default function TestimonialManagement() {
                 {testimonials.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8">
-                      <div className="text-gray-500">
-                        No testimonials found. Create your first testimonial to
-                        get started.
+                      <div className="text-center">
+                        <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          No testimonials found
+                        </h3>
+                        <p className="text-gray-500 mb-4">
+                          {isLoading
+                            ? "Loading testimonials..."
+                            : "Get started by creating your first testimonial or check if the API endpoints are configured."}
+                        </p>
+                        {!isLoading && (
+                          <Button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add First Testimonial
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
