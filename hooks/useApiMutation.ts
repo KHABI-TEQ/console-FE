@@ -43,11 +43,11 @@ export function useApiMutation<TData = any, TVariables = any>({
 
         // Ensure response has the expected structure
         const normalizedResponse = {
+          ...response,
           success: response?.success ?? false,
           data: response?.data,
           error: response?.error,
           message: response?.message,
-          ...response,
         };
 
         if (!normalizedResponse.success) {
@@ -79,9 +79,9 @@ export function useApiMutation<TData = any, TVariables = any>({
         });
       }
 
-      // Call custom success handler - pass the entire response or just data
+      // Call custom success handler - pass the data
       if (onSuccess) {
-        onSuccess(response?.data || response, variables);
+        onSuccess(response?.data as TData, variables);
       }
     },
     onError: (error: any, variables) => {

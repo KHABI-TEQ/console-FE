@@ -647,20 +647,22 @@ class ApiService {
   }
 
   // Testimonials methods
-  async getTestimonials(filters?: any): Promise<ApiResponse<any>> {
+  async getTestimonials(
+    filters?: any,
+  ): Promise<ApiResponse<any> & { testimonials?: any[] }> {
     try {
       const response = await this.get("/testimonials", filters);
       return {
+        ...response,
         success: response.success ?? true,
-        data: response.data || response.testimonials || [],
-        testimonials: response.testimonials || response.data || [],
+        data: response.data || (response as any).testimonials || [],
+        testimonials: (response as any).testimonials || response.data || [],
         pagination: response.pagination || {
           page: response.page || 1,
           limit: response.limit || 10,
           total: response.total || 0,
-          totalPages: response.totalPages || 0,
+          totalPages: (response as any).totalPages || 0,
         },
-        ...response,
       };
     } catch (error) {
       return {
@@ -679,9 +681,9 @@ class ApiService {
     try {
       const response = await this.get(`/testimonials/${id}`);
       return {
+        ...response,
         success: response.success ?? true,
         data: response.data || response,
-        ...response,
       };
     } catch (error) {
       return {
@@ -698,10 +700,10 @@ class ApiService {
     try {
       const response = await this.post("/testimonials", testimonialData);
       return {
+        ...response,
         success: response.success ?? true,
         data: response.data || response,
         message: response.message || "Testimonial created successfully",
-        ...response,
       };
     } catch (error) {
       return {
@@ -721,10 +723,10 @@ class ApiService {
     try {
       const response = await this.put(`/testimonials/${id}`, testimonialData);
       return {
+        ...response,
         success: response.success ?? true,
         data: response.data || response,
         message: response.message || "Testimonial updated successfully",
-        ...response,
       };
     } catch (error) {
       return {
@@ -741,9 +743,9 @@ class ApiService {
     try {
       const response = await this.delete(`/testimonials/${id}`);
       return {
+        ...response,
         success: response.success ?? true,
         message: response.message || "Testimonial deleted successfully",
-        ...response,
       };
     } catch (error) {
       return {
@@ -765,9 +767,9 @@ class ApiService {
         status,
       });
       return {
+        ...response,
         success: response.success ?? true,
         message: response.message || `Testimonial ${status} successfully`,
-        ...response,
       };
     } catch (error) {
       return {
