@@ -89,18 +89,37 @@ export function TestimonialsProvider({
             });
           }
         } else {
+          // Set empty testimonials to prevent errors
+          setTestimonials([]);
+          setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 });
+
+          // Only show error notification if it's not a 404 (endpoint not found)
+          if (
+            !response.error?.includes("404") &&
+            !response.error?.includes("Not Found")
+          ) {
+            addNotification({
+              type: "error",
+              title: "Error",
+              message: response.error || "Failed to fetch testimonials",
+            });
+          }
+        }
+      } catch (error) {
+        // Set empty testimonials to prevent errors
+        setTestimonials([]);
+        setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 });
+
+        // Only show error notification for non-network errors
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        if (!errorMessage.includes("fetch") && !errorMessage.includes("404")) {
           addNotification({
             type: "error",
             title: "Error",
-            message: response.error || "Failed to fetch testimonials",
+            message: "Failed to fetch testimonials",
           });
         }
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to fetch testimonials",
-        });
       } finally {
         setIsLoading(false);
       }
@@ -146,18 +165,42 @@ export function TestimonialsProvider({
           });
           fetchTestimonials();
         } else {
+          // Check if it's an endpoint not found error
+          if (
+            response.error?.includes("404") ||
+            response.error?.includes("Not Found")
+          ) {
+            addNotification({
+              type: "warning",
+              title: "Feature Not Available",
+              message:
+                "Testimonials API endpoint is not yet implemented on the backend",
+            });
+          } else {
+            addNotification({
+              type: "error",
+              title: "Error",
+              message: response.error || "Failed to create testimonial",
+            });
+          }
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        if (errorMessage.includes("fetch") || errorMessage.includes("404")) {
+          addNotification({
+            type: "warning",
+            title: "Feature Not Available",
+            message:
+              "Testimonials API endpoint is not yet implemented on the backend",
+          });
+        } else {
           addNotification({
             type: "error",
             title: "Error",
-            message: response.error || "Failed to create testimonial",
+            message: "Failed to create testimonial",
           });
         }
-      } catch (error) {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to create testimonial",
-        });
       }
     },
     [addNotification, fetchTestimonials],
