@@ -1,5 +1,5 @@
 "use client";
- 
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRequestLoader } from "@/components/ui/request-loader";
 import { useApp } from "@/contexts/AppContext";
@@ -41,11 +41,20 @@ export function useApiMutation<TData = any, TVariables = any>({
       try {
         const response = await mutationFn(variables);
 
-        if (!response.success) {
-          throw new Error(response.error || "Operation failed");
+        // Ensure response has the expected structure
+        const normalizedResponse = {
+          ...response,
+          success: response?.success ?? false,
+          data: response?.data,
+          error: response?.error,
+          message: response?.message,
+        };
+
+        if (!normalizedResponse.success) {
+          throw new Error(normalizedResponse.error || "Operation failed");
         }
 
-        return response;
+        return normalizedResponse;
       } finally {
         if (showLoader) {
           hideLoader();
@@ -59,20 +68,20 @@ export function useApiMutation<TData = any, TVariables = any>({
       });
 
       // Show success notification
-      if (successMessage || response.message) {
+      if (successMessage || response?.message) {
         addNotification({
           type: "success",
           title: "Success",
           message:
             successMessage ||
-            response.message ||
+            response?.message ||
             "Operation completed successfully",
         });
       }
 
-      // Call custom success handler
-      if (onSuccess && response.data) {
-        onSuccess(response.data, variables);
+      // Call custom success handler - pass the data
+      if (onSuccess) {
+        onSuccess(response?.data as TData, variables);
       }
     },
     onError: (error: any, variables) => {

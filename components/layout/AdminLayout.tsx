@@ -137,6 +137,20 @@ const navItems: NavItem[] = [
     disabled: false,
   },
   {
+    href: "#",
+    label: "Extra Pages",
+    icon: Archive,
+    disabled: false,
+    children: [
+      {
+        href: "/testimonials",
+        label: "Testimonials",
+        icon: MessageSquare,
+        disabled: false,
+      },
+    ],
+  },
+  {
     href: "/profile",
     label: "Profile",
     icon: User,
