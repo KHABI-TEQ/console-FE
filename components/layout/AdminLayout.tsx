@@ -48,6 +48,7 @@ import {
   ChevronRight,
   Clock,
   TrendingUp,
+  CheckCircle
 } from "lucide-react";
 import { ToastNotifications } from "@/components/shared/ToastNotifications";
 
@@ -89,6 +90,12 @@ const navItems: NavItem[] = [
     href: "/inspections",
     label: "Inspections",
     icon: Search,
+    disabled: false,
+  },
+  {
+    href: "/verify_document",
+    label: "Document Verification",
+    icon: CheckCircle,
     disabled: false,
   },
   {

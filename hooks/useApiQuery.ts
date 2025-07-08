@@ -110,3 +110,44 @@ export function useBuyers(filters?: any) {
 export function useBriefs(filters?: any) {
   return useApiQuery(["briefs", filters], () => apiService.getBriefs(filters));
 }
+
+export function useVerificationDocuments(filters?: { status?: string; page?: number; limit?: number }) {
+  return useApiQuery([
+    "verification-documents",
+    JSON.stringify(filters || {})
+  ], () => apiService.getVerificationDocuments(filters), {});
+}
+
+export function useVerificationDocument(id: string | undefined) {
+  return useApiQuery([
+    'verification-document',
+    id || ''
+  ], () => id ? apiService.getVerificationDocumentById(id) : Promise.resolve({ success: false }), { enabled: !!id });
+}
+
+export function useConfirmVerificationPayment() {
+  return useApiMutation<any, string>(
+    (documentId) => apiService.confirmVerificationPayment(documentId),
+    {
+      invalidateQueries: [["verification-documents"]],
+    }
+  );
+}
+
+export function useRejectVerificationPayment() {
+  return useApiMutation<any, string>(
+    (documentId) => apiService.rejectVerificationPayment(documentId),
+    {
+      invalidateQueries: [["verification-documents"]],
+    }
+  );
+}
+
+export function useSendToProvider() {
+  return useApiMutation<any, { documentId: string; email: string }>(
+    ({ documentId, email }) => apiService.sendToProvider(documentId, email),
+    {
+      invalidateQueries: [["verification-documents"]],
+    }
+  );
+}
