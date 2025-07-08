@@ -645,6 +645,39 @@ class ApiService {
   async getInspectionStats(): Promise<ApiResponse<any>> {
     return this.get("/inspections/stats");
   }
+
+  // Verification Documents methods
+  async getVerificationDocuments({ status = 'pending', page = 1, limit = 10 } = {}): Promise<ApiResponse<any>> {
+    // The endpoint expects status as a query param, e.g. /verification-docs?status=pending&page=1
+    const params: Record<string, any> = { status, page, limit };
+    return this.get('/verification-docs', params);
+  }
+
+  // Fetch a single verification document by ID
+  async getVerificationDocumentById(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/verification-doc/${id}`);
+  }
+
+  // Confirm verification payment
+  async confirmVerificationPayment(documentId: string): Promise<ApiResponse<any>> {
+    return this.post(`/confirm-verification-payment/${documentId}`);
+  }
+
+  // Reject verification payment
+  async rejectVerificationPayment(documentId: string): Promise<ApiResponse<any>> {
+    return this.post(`/reject-verification-payment/${documentId}`);
+  }
+
+  // Send verification documents to provider
+  async sendToProvider(documentId: string, email: string): Promise<ApiResponse<any>> {
+    // Use application/x-www-form-urlencoded for the body
+    const body = new URLSearchParams({ email }).toString();
+    return this.request(`/send-to-provider/${documentId}`, {
+      method: 'POST',
+      body,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }, true);
+  }
 }
 
 export const apiService = new ApiService();
