@@ -678,8 +678,6 @@ class ApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     }, true);
   }
-
-  
 }
 
 export const apiService = new ApiService();
