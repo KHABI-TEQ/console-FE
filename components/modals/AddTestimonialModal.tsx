@@ -153,22 +153,22 @@ export function AddTestimonialModal({
 
     setIsUploading(true);
 
-    await toast.promise(
-      apiService.uploadImage(formData).then((response) => {
-        console.log("Response from file upload:", response);
-        if ((response as any).url) {
-          setProfileImageUrl((response as any).url);
-          return "Image uploaded successfully";
-        } else {
-          throw new Error("Image upload failed");
-        }
-      }),
-      {
-        loading: "Uploading...",
-        success: "Image uploaded successfully",
-        error: "Image upload failed",
-      },
-    );
+    // await toast.promise(
+    //   apiService.uploadImage(formData).then((response) => {
+    //     console.log("Response from file upload:", response);
+    //     if ((response as any).url) {
+    //       setProfileImageUrl((response as any).url);
+    //       return "Image uploaded successfully";
+    //     } else {
+    //       throw new Error("Image upload failed");
+    //     }
+    //   }),
+    //   {
+    //     loading: "Uploading...",
+    //     success: "Image uploaded successfully",
+    //     error: "Image upload failed",
+    //   },
+    // );
 
     setIsUploading(false);
   };
