@@ -614,6 +614,33 @@ class ApiService {
     return this.delete(`/admins/${id}`);
   }
 
+  // Testimonial management methods
+
+  async getTestimonials(mergedFilters: Record<string, any> = {}): Promise<ApiResponse<any[]>> {
+    const query = new URLSearchParams(mergedFilters).toString();
+    return this.get(`/testimonials?${query}`);
+  }
+
+  async getTestimonial(id: string): Promise<ApiResponse<any>> {
+    return this.get(`/testimonials/${id}`);
+  }
+
+  async createTestimonial(data: any): Promise<ApiResponse<any>> {
+    return this.post("/testimonials", data);
+  }
+
+  async updateTestimonial(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.put(`/testimonials/${id}`, data);
+  }
+
+  async deleteTestimonial(id: string): Promise<ApiResponse<any>> {
+    return this.delete(`/testimonials/${id}`);
+  }
+
+  async updateTestimonialStatus(id: string, status: any): Promise<ApiResponse<any>> {
+    return this.patch(`/testimonials/${id}/status`, { approved: status });
+  }
+
   async changeAdminStatus(
     id: string,
     status: string,
