@@ -34,7 +34,7 @@ class ApiService {
 
   constructor(
     baseUrl: string = process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "http://localhost:8081/api/admin",
+      "https://khabiteq-realty.onrender.com/api/admin",
   ) {
     this.baseUrl = baseUrl;
   }
@@ -699,11 +699,22 @@ class ApiService {
   async sendToProvider(documentId: string, email: string): Promise<ApiResponse<any>> {
     // Use application/x-www-form-urlencoded for the body
     const body = new URLSearchParams({ email }).toString();
+    
+    // Get auth token explicitly to ensure it's included
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = { 
+      'Content-Type': 'application/x-www-form-urlencoded' 
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     return this.request(`/send-to-provider/${documentId}`, {
       method: 'POST',
       body,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }, true);
+      headers
+    }, false); // Set to false since we're manually adding auth headers
   }
 }
 
