@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useVerificationDocument } from '@/hooks/useApiQuery';
 import { useApp } from '@/contexts/AppContext';
 import { useRouter } from 'next/navigation';
+import { apiService } from '@/lib/services/apiService';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://khabiteq-realty.onrender.com/api/admin';
 
@@ -33,26 +34,18 @@ const InProgressPage: React.FC = () => {
   const handleUpload = async () => {
     if (!id || selectedFiles.length === 0) return;
     setUploading(true);
-    const formData = new FormData();
-    selectedFiles.forEach(file => {
-      formData.append('resultDocuments', file);
-    });
     try {
-      const res = await fetch(`${API_BASE}/upload-result/${id}`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const res = await apiService.uploadVerificationResult(id, selectedFiles);
+      if (res.success) {
         addNotification && addNotification({
           type: 'success',
           title: 'Upload Successful',
-          message: data.data?.message || 'Result uploaded and sent to user.'
+          message: res.data?.message || 'Result uploaded and sent to user.'
         });
         setSelectedFiles([]);
         router.push('/verify_document');
       } else {
-        throw new Error(data?.data?.message || 'Failed to upload result.');
+        throw new Error(res?.data?.message || res?.error || 'Failed to upload result.');
       }
     } catch (err: any) {
       addNotification && addNotification({

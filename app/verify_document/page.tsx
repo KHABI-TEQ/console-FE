@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 
 const TABS = [
   { key: 'incoming', label: 'Incoming Request', status: 'pending' },
-  { key: 'inprogress', label: 'In Progress', status: 'in-progress' },
   { key: 'submit', label: 'Submit Report', status: 'confirmed' },
+  { key: 'inprogress', label: 'In Progress', status: 'in-progress' },
   { key: 'rejected', label: 'Rejected', status: 'rejected' },
   { key: 'successful', label: 'Successful', status: 'successful' },
 ];

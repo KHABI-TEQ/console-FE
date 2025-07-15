@@ -716,6 +716,19 @@ class ApiService {
       headers
     }, false); // Set to false since we're manually adding auth headers
   }
+
+  public async uploadVerificationResult(documentId: string, files: File[]): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    files.forEach(file => formData.append('resultDocuments', file));
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return this.request(`/upload-result/${documentId}`, {
+      method: 'POST',
+      body: formData,
+      headers,
+    }, false); // false because we manually set auth
+  }
 }
 
 export const apiService = new ApiService();
